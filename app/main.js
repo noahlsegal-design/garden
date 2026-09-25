@@ -6,6 +6,7 @@ import { renderMonths, renderCard, renderList, openLightbox } from "./ui.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd } from "./tasks.js";
 import { cloudReady, cloudBackend, account, signIn, signOut } from "./cloud.js";
 import { renderTasks } from "./tasklist.js";
+import { bloomCounts, createBloomBar } from "./bloom.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,8 +21,9 @@ const NO_FILTERS = { q: "", area: "all", unconfirmed: false, toxic: false, atten
 const HINT = matchMedia("(pointer: coarse)").matches
   ? "Drag to move around · Pinch to zoom · Slide two fingers to turn · Tap a plant"
   : "Drag to move around · Scroll to zoom · Shift-drag or right-drag to turn · Click a plant";
-const state = { month: TODAY, selectedId: null, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
-let garden, yard, byId, areaOrder, store;
+const state = { month: TODAY, bloom: false, selectedId: null, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
+let garden, yard, byId, areaOrder, store, bloomBar;
+let playTimer = null; // set while the bloom timeline is playing
 let hintDone = false; // the how-to-move hint goes away once you've moved the view
 
 async function start() {
@@ -50,13 +52,21 @@ async function start() {
     $("status").style.pointerEvents = "none";
     $("status").style.background = "transparent";
     has3d = false;
-    yard = { setPlants() {}, setMonth() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {} };
+    yard = { setPlants() {}, setMonth() {}, setBloom() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {} };
   }
-  yard.setPlants(garden.plants.filter((p) => !p.finished), garden.species, state.month);
+  const growing = garden.plants.filter((p) => !p.finished);
+  yard.setPlants(growing, garden.species, state.month);
   yard.setMonth(state.month);
   if (has3d) $("status").hidden = true;
 
   renderMonthsBar();
+  bloomBar = createBloomBar($("bloomBar"), {
+    counts: bloomCounts(growing, garden.species),
+    onScrub: (m) => { stopPlaying(); setBloom(true); setMonth(m); },
+    onPlay: () => (playTimer ? stopPlaying() : playYear()),
+    onOff: () => { stopPlaying(); setBloom(false); },
+  });
+  updateBloomBar();
   updateHint();
   setUpMapButtons();
   $("listBtn").onclick = openList;
@@ -68,6 +78,7 @@ async function start() {
     else if (!$("tasksPanel").hidden) closeTasks();
     else if (!$("listPanel").hidden) closeList();
     else if (state.selectedId) closeCard();
+    else if (state.bloom) { stopPlaying(); setBloom(false); }
   });
 
   // Open straight to a plant (address ends in #plant=pb-05) or to This week (#tasks). Handy for bookmarks.
@@ -84,7 +95,7 @@ function syncHash() {
 }
 
 function renderMonthsBar() {
-  renderMonths($("months"), state.month, TODAY, setMonth);
+  renderMonths($("months"), state.month, TODAY, (m) => { stopPlaying(); setMonth(m); });
 }
 
 function setMonth(m) {
@@ -94,6 +105,35 @@ function setMonth(m) {
   if (state.selectedId) showCard();
   if (!$("listPanel").hidden) drawList();
   updateHint();
+  updateBloomBar();
+}
+
+// ---------- bloom timeline ----------
+function updateBloomBar() {
+  bloomBar.update({ month: state.month, on: state.bloom, playing: !!playTimer });
+}
+function setBloom(on) {
+  if (on && !state.bloom) clearHighlight(); // one set of rings at a time
+  state.bloom = on;
+  yard.setBloom(on);
+  updateBloomBar();
+}
+// Plays one lap of the year, a month at a time, and stops back on the month it started from.
+function playYear() {
+  setBloom(true);
+  let steps = 0;
+  const step = () => {
+    setMonth((state.month + 1) % 12);
+    if (++steps === 12) stopPlaying();
+  };
+  playTimer = setInterval(step, 1100);
+  step();
+}
+function stopPlaying() {
+  if (!playTimer) return;
+  clearInterval(playTimer);
+  playTimer = null;
+  updateBloomBar();
 }
 
 // ---------- moving around the yard ----------
@@ -250,12 +290,18 @@ function describeFilters(f) {
 const filterColor = (f) => (f.toxic ? "#e0402f" : f.attention ? "#f0a020" : f.unconfirmed ? "#f2c94c" : "#3b82f6");
 
 function setHighlight(ids, label, color) {
+  stopPlaying();
+  setBloom(false);
   yard.setHighlight({ ids, color });
   const chip = $("highlightChip");
   chip.innerHTML = `<span>${ids.length} ringed: ${esc(label)}</span><button type="button" aria-label="Clear highlight">✕</button>`;
   chip.hidden = false;
-  chip.querySelector("button").onclick = () => { yard.setHighlight(null); chip.hidden = true; };
+  chip.querySelector("button").onclick = clearHighlight;
   yard.fitTo(ids);
+}
+function clearHighlight() {
+  yard.setHighlight(null);
+  $("highlightChip").hidden = true;
 }
 
 start();

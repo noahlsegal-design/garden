@@ -23,6 +23,7 @@ const GEO = {
   cone: new THREE.ConeGeometry(1, 1, 7).translate(0, 0.5, 0),
   box: new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0),
   ring: new THREE.RingGeometry(0.82, 1, 40).rotateX(-Math.PI / 2),
+  disc: new THREE.CircleGeometry(1, 40).rotateX(-Math.PI / 2),
   hit: new THREE.SphereGeometry(1, 8, 6),
 };
 const mats = new Map();
@@ -31,6 +32,7 @@ function mat(color, opts = {}) {
   if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, ...opts }));
   return mats.get(key);
 }
+const MUTED = new THREE.Color("#b3b5a8"); // plants that aren't flowering while the bloom timeline is on
 const HIT_MAT = new THREE.MeshBasicMaterial({ visible: false });
 
 function mesh(geom, material, pos, scale, { shadow = true, rot } = {}) {
@@ -49,7 +51,8 @@ const FALL = ["#d9822b", "#e3b23c", "#b8452a", "#c9a23a", "#8f6a3a"];
 const SKY = "#dde8ec";
 
 // ---------- one plant ----------
-function buildPlant(p, sp, month) {
+// bloomView: the bloom timeline is on, so plants in flower get a ring in their flower color and everything else is greyed.
+function buildPlant(p, sp, month, bloomView = false) {
   const g = new THREE.Group();
   const look = lookFor(p);
   const s = p.size || 1;
@@ -58,14 +61,16 @@ function buildPlant(p, sp, month) {
   const H = Math.max(0.3, r * 1.2 * look.h);
   const rand = rng(hashStr(p.id));
   const state = stateFor(sp, month);
+  const blooming = state === "bloom";
+  const paint = bloomView && !blooming ? (color, opts) => mat(MUTED.clone().lerp(new THREE.Color(color), 0.25).getStyle(), opts) : mat;
   const body = new THREE.Group();
   g.add(body);
 
-  const blob = (color, hFrac = 1, rFrac = 1, opts) => body.add(mesh(GEO.blob, mat(color, opts), V(0, (H * hFrac) / 2, 0), [r * rFrac, (H * hFrac) / 2, r * rFrac]));
+  const blob = (color, hFrac = 1, rFrac = 1, opts) => body.add(mesh(GEO.blob, paint(color, opts), V(0, (H * hFrac) / 2, 0), [r * rFrac, (H * hFrac) / 2, r * rFrac]));
   const tufts = (color, hFrac = 1) => {
     for (let i = 0; i < 7; i++) {
       const a = rand() * Math.PI * 2, d = r * 0.55 * Math.sqrt(rand());
-      body.add(mesh(GEO.cone, mat(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.16 * s + 0.05, H * hFrac * (0.7 + 0.4 * rand()), 0.16 * s + 0.05], { rot: [(rand() - 0.5) * 0.5, 0, (rand() - 0.5) * 0.5] }));
+      body.add(mesh(GEO.cone, paint(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.16 * s + 0.05, H * hFrac * (0.7 + 0.4 * rand()), 0.16 * s + 0.05], { rot: [(rand() - 0.5) * 0.5, 0, (rand() - 0.5) * 0.5] }));
     }
   };
   const foliage = (color = look.leaf, hFrac = 1) => (look.grass ? tufts(color, hFrac) : blob(color, hFrac));
@@ -73,22 +78,22 @@ function buildPlant(p, sp, month) {
     for (let i = 0; i < n; i++) {
       const a = rand() * Math.PI * 2, d = r * 0.75 * Math.sqrt(rand());
       const y = H * yTop * (0.62 + 0.42 * rand()) * Math.sqrt(1 - (d / r) ** 2 * 0.6);
-      body.add(mesh(GEO.ball, mat(color), V(Math.cos(a) * d, y, Math.sin(a) * d), (size + 0.05 * rand()) * Math.max(1, s * 0.8)));
+      body.add(mesh(GEO.ball, paint(color), V(Math.cos(a) * d, y, Math.sin(a) * d), (size + 0.05 * rand()) * Math.max(1, s * 0.8)));
     }
   };
   const sticks = (color = "#6b4f32", n = 7, hFrac = 1) => {
     for (let i = 0; i < n; i++) {
       const a = rand() * Math.PI * 2, d = r * 0.35 * rand();
-      body.add(mesh(GEO.cyl, mat(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.045 * s + 0.02, H * hFrac * (0.75 + 0.3 * rand()), 0.045 * s + 0.02], { rot: [(rand() - 0.5) * 0.7, 0, (rand() - 0.5) * 0.7] }));
+      body.add(mesh(GEO.cyl, paint(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.045 * s + 0.02, H * hFrac * (0.75 + 0.3 * rand()), 0.045 * s + 0.02], { rot: [(rand() - 0.5) * 0.7, 0, (rand() - 0.5) * 0.7] }));
     }
   };
-  const marker = (color, opacity = 0.75) => g.add(mesh(GEO.ring, mat(color, { transparent: true, opacity, side: THREE.DoubleSide }), V(0, 0.2, 0), [r, 1, r], { shadow: false }));
+  const marker = (color, opacity = 0.75) => g.add(mesh(GEO.ring, paint(color, { transparent: true, opacity, side: THREE.DoubleSide }), V(0, 0.2, 0), [r, 1, r], { shadow: false }));
 
   switch (state) {
     case "gone": marker("#b9a57e", 0.8); break;
     case "stored":
       marker("#8a6a45", 0.8);
-      body.add(mesh(GEO.box, mat("#8a6a45"), V(0, 0, 0), [0.55, 0.4, 0.55]));
+      body.add(mesh(GEO.box, paint("#8a6a45"), V(0, 0, 0), [0.55, 0.4, 0.55]));
       break;
     case "dormant":
       if (shrub) sticks(); else blob("#7a5a3c", 0.18, 0.6);
@@ -104,7 +109,7 @@ function buildPlant(p, sp, month) {
     case "aging-bloom": foliage(); dots(look.aging, 7, 0.24); break;
     case "fruit": foliage(); dots(look.fruit, 7, 0.14); break;
     case "harvest": foliage(); if (look.fruit && !["radish", "beet"].includes(p.speciesId)) dots(look.fruit, 5, 0.14); break;
-    case "ferns": body.add(mesh(GEO.cone, mat(look.leaf, { transparent: true, opacity: 0.85 }), V(0, 0, 0), [r * 0.9, H * 1.1, r * 0.9])); break;
+    case "ferns": body.add(mesh(GEO.cone, paint(look.leaf, { transparent: true, opacity: 0.85 }), V(0, 0, 0), [r * 0.9, H * 1.1, r * 0.9])); break;
     case "seedheads": sticks("#6b4f32", 6, 0.95); dots("#3b2a1e", 5, 0.13, 1.05); break;
     case "fall-color": foliage(look.fall, 0.85); break;
     case "yellowing": foliage("#d4c05a", 0.7); break;
@@ -113,8 +118,15 @@ function buildPlant(p, sp, month) {
   }
 
   if (look.pot) {
-    g.add(mesh(GEO.cyl, mat("#b5653a"), V(0, 0, 0), [0.45, 0.6, 0.45]));
+    g.add(mesh(GEO.cyl, paint("#b5653a"), V(0, 0, 0), [0.45, 0.6, 0.45]));
     body.position.y = 0.6;
+  }
+
+  if (bloomView && blooming) {
+    const y = look.pot ? 0.65 : 0.22; // just above the bed's surface
+    const size = r * 1.45 + 0.4;
+    g.add(mesh(GEO.disc, mat(look.flower, { transparent: true, opacity: 0.5, depthWrite: false }), V(0, y, 0), size, { shadow: false }));
+    g.add(mesh(GEO.ring, mat(look.flower, { side: THREE.DoubleSide }), V(0, y + 0.02, 0), size, { shadow: false }));
   }
 
   const hitR = Math.max(1.0, r * 1.15);
@@ -125,7 +137,7 @@ function buildPlant(p, sp, month) {
   g.add(hit);
 
   g.position.copy(W(p.position.x, p.position.z, p.area?.startsWith("raised-bed") ? 1 : 0));
-  g.userData = { plantId: p.id, radius: r, height: H, hit };
+  g.userData = { plantId: p.id, radius: r, height: H, hit, blooming };
   return g;
 }
 
@@ -547,14 +559,14 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   }
 
   // ----- plants -----
-  let lastPlants = [], lastSpecies = null, lastMonth = 0;
+  let lastPlants = [], lastSpecies = null, lastMonth = 0, bloomView = false;
   function setPlants(plants, species, month) {
     lastPlants = plants; lastSpecies = species; lastMonth = month;
     plantsRoot.clear();
     groups = new Map();
     hitTargets = [];
     for (const p of plants) {
-      const g = buildPlant(p, species.get(p.speciesId), month);
+      const g = buildPlant(p, species.get(p.speciesId), month, bloomView);
       plantsRoot.add(g);
       groups.set(p.id, g);
       hitTargets.push(g.userData.hit);
@@ -572,6 +584,11 @@ export function createYard(canvas, { layout, onPick, onMove }) {
       if (col) c.material = mat(col === "fall" ? c.userData.fallColor : col);
     }
     needsRender = true;
+  }
+  function setBloom(on) {
+    if (bloomView === !!on) return;
+    bloomView = !!on;
+    setPlants(lastPlants, lastSpecies, lastMonth);
   }
   function placeRings() {
     const g = selectedId && groups.get(selectedId);
@@ -668,5 +685,5 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   }
   requestAnimationFrame(frame);
 
-  return { setPlants, setMonth, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn };
+  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn };
 }
