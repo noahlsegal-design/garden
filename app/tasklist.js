@@ -12,8 +12,8 @@ let lastWeek = "";
 let scrollPos = 0; // kept here because a hidden panel always reports 0
 const signingIn = { busy: false, error: "" };
 
-// Where check-offs are being saved, in words: on the Mac (before the app went online) or in the garden
-// account on Supabase.
+// Where check-offs are being saved, in words: on the Mac (before the app went online) or in the shared garden
+// on Supabase.
 const SAVE_NOTE = {
   mac: {
     loading: "Getting your check-offs from your Mac…",
@@ -25,6 +25,8 @@ const SAVE_NOTE = {
   cloud: {
     loading: "Getting your check-offs…",
     saved: "Check-offs are saved to your garden account, so every device you sign in on shares them.",
+    shared: "Check-offs, frost dates and plant changes are saved to your shared garden, so you both see the same on every device.",
+    "not-member": "This account isn't in the garden yet, so it can't see or save the garden's check-offs. The garden's owner can add it in Supabase (the steps are in supabase/setup.sql). Until then, check-offs stay on this device.",
     offline: "Can't reach your garden account right now, so check-offs are kept on this device until it's back. If this lasts, your Supabase project may be paused after a quiet week: sign in at supabase.com and resume it.",
     "signed-out": "Sign in so your phone and computer share one list. Until then, check-offs stay on this device.",
     setup: "Your garden account isn't ready for check-offs yet: run supabase/setup.sql in Supabase's SQL Editor. Until then they're kept on this device.",
@@ -323,6 +325,8 @@ function signInBox(notes) {
     </form>`;
 }
 
+const footNote = (o, notes) => (o.saveStatus === "saved" && o.sharedWith?.length ? notes.shared : notes[o.saveStatus] || notes.saved);
+
 // ---------- the panel ----------
 export function renderTasks(panel, o) {
   const { week } = o;
@@ -343,7 +347,7 @@ export function renderTasks(panel, o) {
   const earlierRows = showEarlier ? week.earlier : [];
 
   const notes = o.cloud ? SAVE_NOTE.cloud : SAVE_NOTE.mac;
-  const warning = ["offline", "old-server", "setup"].includes(o.saveStatus);
+  const warning = ["offline", "old-server", "setup", "not-member"].includes(o.saveStatus);
   const needsSignIn = o.cloud && o.saveStatus === "signed-out";
   panel.innerHTML = `
     <div class="listhead">
@@ -378,7 +382,7 @@ export function renderTasks(panel, o) {
       <h3>Coming up</h3>
       ${comingUp(week)}
 
-      <p class="small foot">${esc(notes[o.saveStatus] || notes.saved)} Weekly rounds start fresh every Monday.${o.cloud && o.account ? ` Signed in as <b>${esc(o.account)}</b> · <button type="button" class="linkbtn inline" data-signout>Sign out</button>` : ""}</p>
+      <p class="small foot">${esc(footNote(o, notes))} Weekly rounds start fresh every Monday.${o.cloud && o.account ? ` Signed in as <b>${esc(o.account)}</b>${o.sharedWith?.length ? `, sharing with ${o.sharedWith.map((e) => `<b>${esc(e)}</b>`).join(" and ")}` : ""} · <button type="button" class="linkbtn inline" data-signout>Sign out</button>` : ""}</p>
     </div>`;
   panel.hidden = false;
   const list = panel.querySelector(".tlist");

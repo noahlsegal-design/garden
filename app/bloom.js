@@ -15,7 +15,7 @@ const PLAY = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.
 const PAUSE = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>`;
 
 export function createBloomBar(el, { counts, onScrub, onPlay, onOff }) {
-  const most = Math.max(1, ...counts);
+  const height = (n) => `${n ? 12 + (88 * n) / Math.max(1, ...counts) : 0}%`;
   // The bars and letters sit over the slider's stops, which run from half a thumb in from each end.
   const at = (i) => `left:calc(var(--thumb) / 2 + ${i} / 11 * (100% - var(--thumb)))`;
   el.innerHTML = `
@@ -27,7 +27,7 @@ export function createBloomBar(el, { counts, onScrub, onPlay, onOff }) {
       <button type="button" class="bloomplay"></button>
       <div class="bloomtrack">
         <div class="bloombars" aria-hidden="true">${counts.map((n, i) =>
-          `<i style="${at(i)}; height:${n ? 12 + (88 * n) / most : 0}%"></i>`).join("")}</div>
+          `<i style="${at(i)}; height:${height(n)}"></i>`).join("")}</div>
         <input type="range" min="0" max="11" step="1" aria-label="Month to show blooms for">
         <div class="bloomticks" aria-hidden="true">${MONTHS.map((m, i) => `<span style="${at(i)}">${m[0]}</span>`).join("")}</div>
       </div>
@@ -39,6 +39,11 @@ export function createBloomBar(el, { counts, onScrub, onPlay, onOff }) {
   q(".bloomoff").onclick = onOff;
 
   return {
+    // After a plant is finished, brought back or changes kind.
+    setCounts(next) {
+      counts = next;
+      el.querySelectorAll(".bloombars i").forEach((b, i) => (b.style.height = height(counts[i])));
+    },
     update({ month, on, playing }) {
       const n = counts[month];
       slider.value = month;

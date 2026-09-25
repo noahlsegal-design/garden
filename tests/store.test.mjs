@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 
 const mem = new Map();
 globalThis.localStorage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
-const mac = { done: {}, frosts: {}, up: true, oldServer: false };
+const mac = { done: {}, frosts: {}, edits: {}, up: true, oldServer: false };
 globalThis.fetch = async (url, opts = {}) => {
   if (!mac.up) throw new TypeError("Failed to fetch");
   if (mac.oldServer) return { ok: false, status: opts.method === "POST" ? 501 : 404 };
@@ -16,8 +16,12 @@ globalThis.fetch = async (url, opts = {}) => {
     Object.assign(mac.done, c.set || {});
     for (const k of c.unset || []) delete mac.done[k];
     for (const [y, d] of Object.entries(c.frosts || {})) { if (d) mac.frosts[y] = d; else delete mac.frosts[y]; }
+    for (const [id, fields] of Object.entries(c.edits || {})) {
+      for (const [f, e] of Object.entries(fields)) { if (e) (mac.edits[id] ??= {})[f] = e; else delete mac.edits[id]?.[f]; }
+      if (!Object.keys(mac.edits[id] || {}).length) delete mac.edits[id];
+    }
   }
-  return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify({ done: mac.done, frosts: mac.frosts })) };
+  return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify({ done: mac.done, frosts: mac.frosts, edits: mac.edits })) };
 };
 const { createCheckStore, macBackend } = await import("../app/tasks.js");
 const plants = JSON.parse(readFileSync(new URL("../data/plants.json", import.meta.url), "utf8")).plants;
@@ -53,6 +57,19 @@ mac.up = true;
 await store.refresh();
 assert(mac.done["j|z|2026-09|pb-03"] && !mac.done["j|x|2026-09|pb-01"]);
 assert.equal(store.checks.status, "saved");
+
+// Plant changes go the same way: shown right away, waiting while the Mac is away, then saved.
+mac.up = false;
+store.change({ edits: { "pb-26": { name: { v: "Hardy geranium", at: "2026-09-25T10:00:00Z" } } } });
+await tick();
+assert.equal(store.checks.edits["pb-26"].name.v, "Hardy geranium");
+assert.equal(store.checks.status, "offline");
+mac.up = true;
+await store.refresh();
+assert.equal(mac.edits["pb-26"].name.v, "Hardy geranium");
+store.change({ edits: { "pb-26": { name: null } } });
+await tick();
+assert(!mac.edits["pb-26"] && !store.checks.edits["pb-26"], "undo clears it everywhere");
 
 // A Mac running the older app says so, and keeps changes until it's restarted.
 mac.oldServer = true;

@@ -58,7 +58,8 @@ export const TOX_INFO = {
 
 export function dogSafety(plant, sp) {
   const base = sp.dogToxic || { status: "check", detail: "No information yet.", source: null };
-  const override = plant.dogToxicOverride;
+  // The extra caution is for plants whose ID isn't confirmed, so it stops once you confirm one.
+  const override = plant.confirmedByOwner ? null : plant.dogToxicOverride;
   if (!override || TOX_RANK[override] <= TOX_RANK[base.status]) return base;
   const alts = plant.alsoPossible?.length ? ` It could also be: ${plant.alsoPossible.join("; ")}.` : "";
   return { status: override, detail: `${base.detail} This plant's ID isn't confirmed, so treat it with caution until it is.${alts}`, source: base.source };

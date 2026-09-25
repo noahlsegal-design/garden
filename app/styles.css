@@ -164,6 +164,28 @@ details[open] > summary::after{content:"–"}
 .conf{display:flex; gap:10px; align-items:baseline; margin-top:8px}
 .conf b{font-size:1.1rem}
 
+/* the card's own controls: confirm, rename, finish */
+.editbar{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.pill{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:999px; padding:6px 13px 6px 10px; font-size:.86rem; font-weight:600; min-height:40px}
+.pill svg{width:16px; height:16px; fill:none; stroke:var(--moss); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.pill:active{background:var(--chip)}
+.editnote{margin-top:10px !important}
+.changes{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:2px}
+.changes li{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:.86rem; line-height:1.4; color:var(--ink); padding:4px 0; border-bottom:1px dashed var(--line)}
+.changes li::before{content:""; flex:none; align-self:flex-start; margin-top:.5em; width:7px; height:7px; border-radius:50%; background:var(--bloom)}
+.changes li > span{flex:1}
+.changes .who{color:var(--muted)}
+.changes .linkbtn{flex:none; min-height:32px; padding:0 2px}
+.editform{margin-top:12px; padding:12px 14px; border-radius:12px; background:var(--chip); border-left:4px solid var(--moss); display:grid; gap:6px}
+.editform .stitle{margin:0; font-weight:700; font-size:1rem}
+.editform label{font-size:.85rem; font-weight:600; margin-top:4px}
+.editform input, .editform select{font:inherit; font-size:1rem; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:44px}
+.editform p.small{margin:2px 0 0}
+.formbtns{display:flex; align-items:center; gap:16px; margin-top:4px}
+.formbtns .btn{margin-top:0}
+.formbtns .btn:disabled{opacity:.55; cursor:default}
+.box .btn{margin-top:12px}
+
 /* ---------- all-plants list ---------- */
 .listpanel{position:fixed; inset:0; z-index:10; background:var(--sheet); display:flex; flex-direction:column; animation:fadein .15s ease}
 @keyframes fadein{from{opacity:0}}
@@ -189,6 +211,20 @@ details[open] > summary::after{content:"–"}
 .plist .pbadges{grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:4px}
 .plist .pbadges .badge{font-size:.7rem; padding:2px 7px}
 .empty{padding:30px 0; text-align:center; color:var(--muted)}
+
+/* "Save app edits into files" (the Mac copy) */
+.editsnote{margin:12px 0 4px; padding:12px 14px; border-radius:12px; background:var(--chip); border-left:4px solid var(--bloom)}
+.editsnote p{margin:0; font-size:.93rem; line-height:1.45}
+.saveedits .lead{margin:14px 0 4px; font-size:.95rem; line-height:1.5}
+.saveedits code{font-size:.88em}
+.editrows{list-style:none; margin:6px 0 12px; padding:0}
+.editrows > li{padding:10px 0; border-bottom:1px solid var(--line)}
+.erhead{margin:0 0 4px; font-size:.98rem}
+.editrows ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:.9rem; line-height:1.4}
+.editrows ul li{display:grid; grid-template-columns:8.2em minmax(0,1fr); gap:10px; align-items:baseline}
+.erlabel{color:var(--muted); font-size:.82rem; line-height:1.3}
+.erfrom{color:var(--muted); text-decoration:line-through}
+.saveedits .formbtns{margin:14px 0 0}
 
 /* ---------- this week (shares the panel shell with the all-plants list) ---------- */
 .tlist{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 24px)}

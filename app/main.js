@@ -2,9 +2,10 @@
 
 import { loadGarden, MONTH_NAMES, esc } from "./data.js";
 import { createYard } from "./scene.js";
-import { renderMonths, renderCard, renderList, openLightbox } from "./ui.js";
-import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd } from "./tasks.js";
+import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
+import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
 import { cloudReady, cloudBackend, account, signIn, signOut } from "./cloud.js";
+import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits } from "./edits.js";
 import { renderTasks } from "./tasklist.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 
@@ -23,6 +24,14 @@ const HINT = matchMedia("(pointer: coarse)").matches
   : "Drag to move around · Scroll to zoom · Shift-drag or right-drag to turn · Click a plant";
 const state = { month: TODAY, bloom: false, selectedId: null, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
 let garden, yard, byId, areaOrder, store, bloomBar;
+// data/plants.json as it is, before the plant changes made in the app (edits.js) go on top.
+let filePlants, fileById;
+let editsDrawn = null; // the plant changes the yard was last drawn with
+let kinds = []; // every kind of plant, for "Confirm ID": [id, name, still a placeholder for an unidentified plant]
+// This copy's plants.json is the Mac's own (the Mac copy, or a phone opening it over Wi-Fi), not the website's.
+const ON_MAC = servedByMac();
+// "Save app edits into files" writes into this Mac's files, so it's offered only in a browser on the Mac itself.
+const MAC_ITSELF = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
 let playTimer = null; // set while the bloom timeline is playing
 let hintDone = false; // the how-to-move hint goes away once you've moved the view
 
@@ -34,11 +43,19 @@ async function start() {
     return;
   }
   byId = new Map(garden.plants.map((p) => [p.id, p]));
+  filePlants = garden.plants;
+  fileById = byId;
+  kinds = [...garden.species.values()]
+    .map((s) => [s.id, s.commonName, /unconfirmed/i.test(s.commonName) || s.id.startsWith("unknown")])
+    .sort((a, b) => a[1].localeCompare(b[1]));
   areaOrder = [...garden.layout.areas.map((a) => a.id), "fenceline"];
-  // Check-offs go to the garden account on Supabase once it's set up (app/config.js), or to the Mac until then.
-  store = createCheckStore(garden.plants, cloudReady ? cloudBackend : macBackend, () => {
+  // Check-offs and plant changes go to the shared garden on Supabase once it's set up (app/config.js), or to
+  // the Mac until then.
+  store = createCheckStore(filePlants, cloudReady ? cloudBackend : macBackend, () => {
+    if (!applyEdits() && state.selectedId) showCard(); // the card's controls depend on being signed in
     if (!$("tasksPanel").hidden) drawTasks();
     updateTaskCount();
+    setTimeout(clearOldEdits);
   });
   store.refresh();
   // Coming back to the app (say, after checking things off on the other device) fetches the latest list.
@@ -57,6 +74,7 @@ async function start() {
   const growing = garden.plants.filter((p) => !p.finished);
   yard.setPlants(growing, garden.species, state.month);
   yard.setMonth(state.month);
+  editsDrawn = JSON.stringify({});
   if (has3d) $("status").hidden = true;
 
   renderMonthsBar();
@@ -74,7 +92,8 @@ async function start() {
   updateTaskCount();
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || !$("lightbox").hidden) return;
-    if (!$("viewsMenu").hidden) { showViews(false); $("viewsBtn").focus(); }
+    if (!$("savePanel").hidden) closeSaveEdits();
+    else if (!$("viewsMenu").hidden) { showViews(false); $("viewsBtn").focus(); }
     else if (!$("tasksPanel").hidden) closeTasks();
     else if (!$("listPanel").hidden) closeList();
     else if (state.selectedId) closeCard();
@@ -192,9 +211,10 @@ function selectPlant(id, { focus = false } = {}) {
 }
 function showCard() {
   const p = byId.get(state.selectedId);
+  if (!p) return closeCard();
   renderCard($("sheet"), {
     plant: p, species: garden.species.get(p.speciesId), month: state.month,
-    areaName: garden.areaNames.get(p.area) || p.area,
+    areaName: garden.areaNames.get(p.area) || p.area, edit: editControls(p),
     onClose: closeCard, onPhoto: openLightbox,
   });
 }
@@ -203,6 +223,119 @@ function closeCard() {
   yard.select(null);
   $("sheet").hidden = true;
   syncHash();
+}
+
+// ---------- plant changes made in the app ----------
+// Redraws everything that shows plants when the changes are different from last time (made here, or by
+// someone else in the garden). Says whether anything changed.
+function applyEdits() {
+  const sig = JSON.stringify(store.checks.edits);
+  if (!yard || editsDrawn == null || sig === editsDrawn) return false;
+  editsDrawn = sig;
+  garden.plants = withEdits(filePlants, store.checks.edits, garden.species, ON_MAC);
+  byId = new Map(garden.plants.map((p) => [p.id, p]));
+  const growing = garden.plants.filter((p) => !p.finished);
+  yard.setPlants(growing, garden.species, state.month);
+  bloomBar.setCounts(bloomCounts(growing, garden.species));
+  updateBloomBar();
+  if (state.selectedId) showCard();
+  if (!$("listPanel").hidden) drawList();
+  if (!$("savePanel").hidden && saving.phase === "review") drawSaveEdits();
+  return true;
+}
+
+// What the card offers: confirm, rename and finish, once you're signed in to the garden.
+function editControls(p) {
+  const file = fileById.get(p.id);
+  if (!file) return null;
+  const { status, shared } = store.checks;
+  if (!cloudReady && ["device", "old-server"].includes(status)) return null; // nowhere to save changes
+  let note = "";
+  if (cloudReady) {
+    if (!account() || status === "signed-out") note = "Sign in under This week to confirm, rename or finish plants.";
+    else if (status === "not-member") note = "This account isn't in the garden yet, so it can't change plants.";
+    else if (shared === false) note = "Changing plants here needs the new Supabase setup: run supabase/setup.sql again.";
+  }
+  return {
+    can: !note, note, kinds, today: ymd(today()),
+    changes: describeEdits(file, store.checks.edits, garden.species, ON_MAC, account()),
+    onSave: (values) => {
+      const at = new Date().toISOString();
+      const fields = Object.fromEntries(Object.entries(values).map(([f, v]) => [f, editFor(file, store.checks.edits, f, v, at)]));
+      store.change({ edits: { [p.id]: fields } });
+    },
+    onUndo: (fields) => store.change({ edits: { [p.id]: Object.fromEntries(fields.map((f) => [f, null])) } }),
+  };
+}
+
+// Online, a change saved into plants.json stays in Supabase until the website's plants.json has it too (once
+// the garden is published). Then the website clears it.
+const clearing = new Set();
+function clearOldEdits() {
+  if (ON_MAC || !cloudReady || store.checks.status !== "saved") return;
+  const edits = {};
+  for (const [id, field] of staleEdits(filePlants, store.checks.edits)) {
+    if (clearing.has(`${id}|${field}`)) continue;
+    clearing.add(`${id}|${field}`);
+    (edits[id] ??= {})[field] = null;
+  }
+  if (Object.keys(edits).length) store.change({ edits });
+}
+
+// ---------- "Save app edits into files" (the Mac copy) ----------
+const saving = { phase: "review", message: "" };
+function openSaveEdits() {
+  Object.assign(saving, { phase: "review", message: "" });
+  drawSaveEdits();
+}
+function closeSaveEdits() {
+  $("savePanel").hidden = true;
+  if (!$("listPanel").hidden) { drawList(); $("listPanel").querySelector("#saveEditsBtn, #listSearch")?.focus({ preventScroll: true }); }
+}
+function drawSaveEdits() {
+  renderSaveEdits($("savePanel"), {
+    rows: unsavedEdits(filePlants, store.checks.edits), species: garden.species, cloud: cloudReady, ...saving,
+    onSave: saveEditsIntoFiles, onClose: closeSaveEdits,
+  });
+}
+async function saveEditsIntoFiles() {
+  const rows = unsavedEdits(filePlants, store.checks.edits);
+  const toFile = {};
+  for (const r of rows) if (r.plant) (toFile[r.id] ??= {})[r.field] = r.to;
+  Object.assign(saving, { phase: "saving", message: "" });
+  drawSaveEdits();
+  let fileHad;
+  try {
+    const res = await fetch("api/save-edits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ edits: toFile }) });
+    if (res.status === 404 || res.status === 501) throw new Error("This Mac is running the app's server from before this feature. Close the garden's Terminal window, double-click Start Garden.command, and try again.");
+    if (!res.ok) throw new Error("plants.json couldn't be written, so nothing changed. Try again, and if it keeps happening, ask Claude to take a look.");
+    ({ fileHad } = await res.json());
+  } catch (err) {
+    Object.assign(saving, { phase: "error", message: err.message.startsWith("Failed") || err.name === "TypeError" ? "Couldn't reach the app's server on this Mac. Is its Terminal window still open?" : err.message });
+    return drawSaveEdits();
+  }
+  const fresh = await loadGarden();
+  filePlants = fresh.plants;
+  fileById = new Map(filePlants.map((p) => [p.id, p]));
+  // Online, each change stays in Supabase marked "saved" until the website has the new file. With no garden
+  // account, the file is all there is, so they're simply cleared.
+  const at = new Date().toISOString(), change = {};
+  let written = 0;
+  for (const r of rows) {
+    const had = fileHad?.[r.id];
+    if (had && r.field in had) {
+      written++;
+      (change[r.id] ??= {})[r.field] = cloudReady ? { v: r.to, at, saved: true, fileHad: had[r.field] ?? null } : null;
+    } else if (!r.plant) (change[r.id] ??= {})[r.field] = null;
+  }
+  editsDrawn = "";
+  store.change({ edits: change });
+  const left = rows.length - written - rows.filter((r) => !r.plant).length;
+  Object.assign(saving, {
+    phase: "done",
+    message: `${written} change${written === 1 ? " is" : "s are"} now in the file.${left ? ` ${left} couldn't be written (for example, a kind of plant that's no longer in species.json) and ${left === 1 ? "is" : "are"} still waiting.` : ""} Next, ask Claude to “publish the garden”.${cloudReady ? " Until it's published, the website keeps showing these changes from your garden account, then clears them on its own." : ""}`,
+  });
+  drawSaveEdits();
 }
 
 // ---------- list ----------
@@ -219,6 +352,7 @@ function drawList() {
   renderList($("listPanel"), {
     plants: garden.plants, species: garden.species, areaNames: garden.areaNames, areaOrder,
     month: state.month, filters: state.filters,
+    unsaved: MAC_ITSELF ? unsavedEdits(filePlants, store.checks.edits).length : 0, onSaveEdits: openSaveEdits,
     onFilters: (f) => { state.filters = f; drawList(); },
     onPick: (id) => { closeList(); selectPlant(id, { focus: true }); },
     onShowInYard: (ids) => { closeList(); setHighlight(ids, describeFilters(state.filters), filterColor(state.filters)); },
@@ -250,7 +384,7 @@ function drawTasks() {
   renderTasks($("tasksPanel"), {
     week, today: now, thisMonday: mondayOf(now), refDay: nowInWeek ? now : week.weekStart,
     site: garden.layout.site || {}, frosts: store.checks.frosts, done: store.checks.done, saveStatus: store.checks.status,
-    cloud: cloudReady, account: account(),
+    cloud: cloudReady, account: account(), sharedWith: store.checks.sharedWith,
     onSignIn: async (email, password) => {
       await signIn(email, password); // shows its own message if it doesn't work
       await store.refresh();

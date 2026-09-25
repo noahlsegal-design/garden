@@ -1,6 +1,7 @@
-// Talks to Supabase, the online database that keeps your check-offs once the app is on the internet: signing in,
-// and loading and saving check-offs and first-frost dates. It uses Supabase's plain web addresses, so no extra
-// library is needed. The tables and security rules are in supabase/setup.sql.
+// Talks to Supabase, the online database that keeps the shared garden once the app is on the internet: signing
+// in, and loading and saving check-offs, first-frost dates and plant changes. Everyone listed as a garden member
+// shares the same ones. It uses Supabase's plain web addresses, so no extra library is needed. The tables and
+// security rules are in supabase/setup.sql.
 
 import { SUPABASE_URL, SUPABASE_KEY } from "./config.js";
 
@@ -23,7 +24,8 @@ let session = cloudReady ? readSession() : null;
 export const account = () => session?.email || "";
 
 // Errors carry a status the check-off store understands: "offline" (couldn't reach Supabase), "signed-out"
-// (needs a sign-in) or "setup" (the tables or rules from setup.sql are missing).
+// (needs a sign-in), "not-member" (signed in, but not added to the garden) or "setup" (the tables or rules from
+// setup.sql are missing).
 const fail = (status, message) => Object.assign(new Error(message || status), { status });
 
 async function send(url, options) {
@@ -93,7 +95,11 @@ async function rest(path, { method = "GET", body, prefer } = {}, retried = false
     return rest(path, { method, body, prefer }, true);
   }
   if (res.status === 401) throw fail("signed-out");
-  if (res.status === 403 || res.status === 404) throw fail("setup");
+  if (res.status === 403) {
+    const err = await res.json().catch(() => ({}));
+    throw fail(/row-level security/i.test(err.message || "") ? "not-member" : "setup");
+  }
+  if (res.status === 404) throw fail("setup");
   if (!res.ok) throw fail("offline");
   return method === "GET" ? res.json() : null;
 }
@@ -102,22 +108,52 @@ const ymd = (d) => d.toISOString().slice(0, 10);
 const quoted = (keys) => `(${keys.map((k) => encodeURIComponent(`"${k.replace(/["\\]/g, "\\$&")}"`)).join(",")})`;
 const upsert = "resolution=merge-duplicates,return=minimal";
 
-async function load() {
-  const cutoff = ymd(new Date(Date.now() - KEEP_DAYS * 86400000));
-  const done = {}, frosts = {};
-  let stale = false;
+// Reads every row of a table, 1000 at a time (Supabase's most per request).
+async function all(path) {
+  const out = [];
   for (let from = 0; ; from += 1000) {
-    const rows = await rest(`checkoffs?select=key,done_on&order=key&limit=1000&offset=${from}`);
-    for (const r of rows) {
-      if (r.done_on < cutoff) stale = true;
-      else done[r.key] = r.done_on;
-    }
-    if (rows.length < 1000) break;
+    const rows = await rest(`${path}&limit=1000&offset=${from}`);
+    out.push(...rows);
+    if (rows.length < 1000) return out;
+  }
+}
+
+// Who's in the garden, or null if Supabase still has the setup from before the garden was shared (then each
+// person has their own check-offs, and plant changes aren't available until setup.sql is run again).
+async function members() {
+  try {
+    return await rest("garden_members?select=user_id,email");
+  } catch (err) {
+    if (err.status === "setup") return null;
+    throw err;
+  }
+}
+
+async function load() {
+  const people = await members();
+  if (people && !people.some((m) => m.user_id === session?.user)) throw fail("not-member");
+  const cutoff = ymd(new Date(Date.now() - KEEP_DAYS * 86400000));
+  const done = {}, frosts = {}, edits = {};
+  let stale = false;
+  for (const r of await all("checkoffs?select=key,done_on&order=key")) {
+    if (r.done_on < cutoff) stale = true;
+    else done[r.key] = r.done_on;
   }
   if (stale) rest(`checkoffs?done_on=lt.${cutoff}`, { method: "DELETE", prefer: "return=minimal" }).catch(() => {});
   for (const r of await rest("frosts?select=year,first_frost")) frosts[r.year] = r.first_frost;
-  return { done, frosts };
+  if (people) {
+    const email = new Map(people.map((m) => [m.user_id, m.email]));
+    for (const r of await all("plant_edits?select=plant_id,field,value,saved_to_file,file_had,user_id,changed_at&order=plant_id,field")) {
+      const e = { v: r.value ?? null, at: r.changed_at, by: email.get(r.user_id) || "" };
+      if (r.saved_to_file) Object.assign(e, { saved: true, fileHad: r.file_had ?? null });
+      (edits[r.plant_id] ??= {})[r.field] = e;
+    }
+  }
+  const others = (people || []).filter((m) => m.user_id !== session?.user).map((m) => m.email);
+  return { done, frosts, edits, shared: Boolean(people), sharedWith: others };
 }
+
+const eq = (v) => `eq.${encodeURIComponent(v)}`;
 
 async function save(change) {
   if (!session) throw fail("signed-out");
@@ -132,6 +168,14 @@ async function save(change) {
     if (day) await rest("frosts", { method: "POST", body: [{ user_id, year: Number(year), first_frost: day }], prefer: upsert });
     else await rest(`frosts?year=eq.${Number(year)}`, { method: "DELETE", prefer: "return=minimal" });
   }
+  const edits = [];
+  for (const [plant_id, fields] of Object.entries(change.edits || {})) {
+    for (const [field, e] of Object.entries(fields)) {
+      if (e) edits.push({ plant_id, field, value: e.v ?? null, saved_to_file: Boolean(e.saved), file_had: e.saved ? e.fileHad ?? null : null, user_id });
+      else await rest(`plant_edits?plant_id=${eq(plant_id)}&field=${eq(field)}`, { method: "DELETE", prefer: "return=minimal" });
+    }
+  }
+  if (edits.length) await rest("plant_edits", { method: "POST", body: edits, prefer: upsert });
   return null; // the store applies the change to its own copy
 }
 

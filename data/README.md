@@ -7,9 +7,11 @@ These files are the app's whole memory of the yard. They're plain text, so you c
 | `plants.json` | One entry per plant in the yard: name, where it is, ID confidence, photos, current issues | You confirm an ID, rename a plant, add an issue, or move a plant |
 | `species.json` | Care info for each *kind* of plant (all 9 peonies share one "peony" entry): month-by-month care, dog toxicity, wildlife value, cut-flower tips, sources | Care advice changes. One edit updates every plant of that kind |
 | `layout.json` | Beds, fences, shed, etc. for the 3D view, plus frost dates and zone | You measure something, or your soil-test zones need mapping |
-| `checkoffs.json` | Your This week check-offs and recorded first-frost dates. The app creates it the first time you check something off | Never. The app keeps it up to date |
+| `checkoffs.json` | Only when no garden account is connected: your This week check-offs, recorded first-frost dates and plant changes. The app creates it the first time you check something off | Never. The app keeps it up to date |
 
 ## Common edits
+
+Confirming an ID, renaming and marking a plant finished can all be done on the plant's card in the app instead. Those changes are saved in Supabase on top of this file, and **All plants → Save app edits into files** (on the Mac copy) writes them in here. If a detail is changed both here and in the app, the app's version wins until that step.
 
 **Confirm a plant's ID** (in `plants.json`): find it by its `label` (for example `"#26"`), then change `"name"`, set `"idConfidence": 100` and `"confirmedByOwner": true`. If it turns out to be a different kind of plant, change `"speciesId"` to one of the `id` values in `species.json`.
 

@@ -220,10 +220,11 @@ export function frostStatus(site, day, frosts = {}) {
   return null;
 }
 
-// ---------- remembering check-offs ----------
-// Check-offs are saved in one shared place so every device sees the same list: your garden account on
-// Supabase once the app is online (cloud.js), or data/checkoffs.json on the Mac before that (serve.py).
-// A change made while that place can't be reached waits in this browser and goes through the next time it can.
+// ---------- remembering check-offs and plant changes ----------
+// Check-offs, recorded frosts and plant changes (edits.js) are saved in one shared place so every device, and
+// everyone in the garden, sees the same: the garden on Supabase once the app is online (cloud.js), or
+// data/checkoffs.json on the Mac before that (serve.py). A change made while that place can't be reached
+// waits in this browser and goes through the next time it can.
 const API = "api/checkoffs";
 const OLD_KEY = "garden.tasks.v1"; // where check-offs lived before they were shared
 const WAITING_KEY = "garden.tasks.waiting";
@@ -239,7 +240,8 @@ function writeLocal(key, value) {
   } catch { /* private browsing: nothing to do */ }
 }
 
-// A change is { set: {key: date}, unset: [keys], frosts: {year: date or null} }.
+// A change is { set: {key: date}, unset: [keys], frosts: {year: date or null},
+// edits: {plantId: {field: edit, or null to clear that change}} }.
 function applyChange(checks, change) {
   Object.assign(checks.done, change.set || {});
   for (const k of change.unset || []) delete checks.done[k];
@@ -247,19 +249,34 @@ function applyChange(checks, change) {
     if (date) checks.frosts[year] = date;
     else delete checks.frosts[year];
   }
+  for (const [id, fields] of Object.entries(change.edits || {})) {
+    const mine = { ...(checks.edits[id] || {}) };
+    for (const [field, e] of Object.entries(fields)) {
+      if (e) mine[field] = e;
+      else delete mine[field];
+    }
+    if (Object.keys(mine).length) checks.edits[id] = mine;
+    else delete checks.edits[id];
+  }
   return checks;
 }
 function combine(a, b) {
-  const out = { set: { ...(a?.set || {}) }, unset: [...(a?.unset || [])], frosts: { ...(a?.frosts || {}), ...(b.frosts || {}) } };
+  const out = { set: { ...(a?.set || {}) }, unset: [...(a?.unset || [])], frosts: { ...(a?.frosts || {}), ...(b.frosts || {}) }, edits: { ...(a?.edits || {}) } };
   for (const [k, v] of Object.entries(b.set || {})) { out.set[k] = v; out.unset = out.unset.filter((u) => u !== k); }
   for (const k of b.unset || []) { delete out.set[k]; if (!out.unset.includes(k)) out.unset.push(k); }
+  for (const [id, fields] of Object.entries(b.edits || {})) out.edits[id] = { ...(out.edits[id] || {}), ...fields };
   return out;
 }
-const isEmpty = (c) => !c || (!Object.keys(c.set || {}).length && !(c.unset || []).length && !Object.keys(c.frosts || {}).length);
-const copyOf = (state) => ({ done: { ...(state?.done || {}) }, frosts: { ...(state?.frosts || {}) } });
+const isEmpty = (c) => !c || (!Object.keys(c.set || {}).length && !(c.unset || []).length && !Object.keys(c.frosts || {}).length && !Object.keys(c.edits || {}).length);
+// `shared` is false when Supabase still has the setup from before the garden was shared, and `sharedWith`
+// lists everyone else in the garden.
+const copyOf = (state) => ({
+  done: { ...(state?.done || {}) }, frosts: { ...(state?.frosts || {}) }, edits: { ...(state?.edits || {}) },
+  shared: state?.shared ?? null, sharedWith: state?.sharedWith || [],
+});
 
 // True when the app is being served by the Mac itself (serve.py) rather than from the internet.
-function servedByMac() {
+export function servedByMac() {
   const host = globalThis.location?.hostname || "localhost";
   return host === "localhost" || host.endsWith(".local") || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
 }
@@ -295,12 +312,12 @@ function splitOldJobChecks(done, plants) {
   return out;
 }
 
-// The shared list of check-offs, kept in step with a backend (the Mac or Supabase). Each backend has
-// load() → { done, frosts } and save(change) → the new list, or null to apply the change to the last copy.
-// `status` is "loading", "saved", or why saving isn't possible right now: "offline", "signed-out",
-// "old-server" or "setup".
+// The shared check-offs and plant changes, kept in step with a backend (the Mac or Supabase). Each backend has
+// load() → { done, frosts, edits } and save(change) → the new state, or null to apply the change to the last
+// copy. `status` is "loading", "saved", or why saving isn't possible right now: "offline", "signed-out",
+// "not-member", "old-server" or "setup".
 export function createCheckStore(plants, backend, onUpdate) {
-  const checks = { done: {}, frosts: {}, status: "loading" };
+  const checks = { done: {}, frosts: {}, edits: {}, status: "loading" };
   let saved = copyOf(readLocal(COPY_KEY));
   let waiting = readLocal(WAITING_KEY);
   const old = readLocal(OLD_KEY);
