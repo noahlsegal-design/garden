@@ -1,0 +1,3455 @@
+{
+  "_about": "Care info for each KIND of plant, shared by every plant of that kind in plants.json. Edit text here and it changes for every matching plant. Months use Jan..Dec. 'seasonal' says what the plant looks like each month (drives the 3D view). 'care' entries show on the plant card and become tasks in This week during the months listed. Optional task fields (repeat, tip, after, afterDays, before) are explained in data/README.md.",
+  "_asOf": "2026-09-24",
+  "zone": "7a",
+  "species": [
+    {
+      "id": "peony",
+      "commonName": "Peony (herbaceous)",
+      "scientificName": "Paeonia lactiflora",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: toxic to dogs (paeonol). Vomiting, diarrhea, depression.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/peony"
+      },
+      "wildlife": "Single and semi-double flowers feed bees. Ants on the buds are harmless and don't need treatment.",
+      "cutFlower": {
+        "when": "Cut at the soft-bud (\"marshmallow\") stage: the bud shows color and feels soft in the center when you squeeze it gently.",
+        "how": "Cut in the cool morning and leave at least 3 leaves on each stem so the plant can recover. Put the stems straight into water. Buds can be dry-wrapped and kept in the fridge for a week or more and opened later.",
+        "source": "https://yardandgarden.extension.iastate.edu/faq/how-can-i-best-harvest-and-preserve-my-peony-flowers-cut-flowers",
+        "confidence": 85,
+        "confidenceWhy": "The harvest stage comes from Iowa State Extension. The fridge-storage tip is common florist practice that I didn't confirm on that page."
+      },
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "emerging",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "fall-color",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prep",
+          "text": "Put up a grow-through ring or hoop before the red shoots reach about 6 inches. It's much harder to add supports later."
+        },
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Give about 1 inch of water a week when it's dry. Water at the base, not on the leaves, which helps keep leaf blotch and mildew down."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "feed",
+          "text": "Spread a thin layer of compost around the plant, not on top of the crown. Skip high-nitrogen fertilizer, which gives floppy stems and fewer flowers."
+        },
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "harvest",
+          "text": "Cut-flower window: soft-bud stage (see Cut flowers)."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Deadhead spent flowers down to a leaf. Leave the foliage standing: it feeds the roots for next year's blooms."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "pest",
+          "text": "Check for leaf blotch (purple-brown spots and blotches) and powdery mildew (white coating). Neither usually kills the plant. The fix is the fall cleanup below."
+        },
+        {
+          "months": [
+            "Sep"
+          ],
+          "type": "divide",
+          "text": "September is the time to divide or move peonies. Replant so the pink buds (\"eyes\") sit no more than about 2 inches below the soil. Planting too deep is the #1 reason peonies stop flowering."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "After frost, cut every stem to the ground. Remove and bag the leaves and the mulch right under the plant. Don't compost them, because the leaf blotch fungus overwinters on that debris.",
+          "after": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286081",
+        "https://bygl.osu.edu/node/1182",
+        "https://hyg.ipm.illinois.edu/article.php?id=1314",
+        "https://homegarden.cahnr.uconn.edu/factsheets/powdery-mildew-on-ornamentals/"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "The fall cleanup and disease steps come from Ohio State, Illinois and UConn. Planting depth and division timing come from Missouri Botanical Garden and are standard, well-agreed advice.",
+      "notes": null
+    },
+    {
+      "id": "dahlia",
+      "commonName": "Dahlia",
+      "scientificName": "Dahlia hybrids",
+      "kind": "tuber",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: mildly toxic to dogs. Mild stomach upset and skin irritation.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/dahlia"
+      },
+      "wildlife": "Single and open-centered dahlias feed bees and butterflies late into fall. Fully double forms offer little pollen.",
+      "cutFlower": {
+        "when": "Cut when the flower is about 3/4 to fully open. Dahlia buds do NOT keep opening after they're cut.",
+        "how": "Cut long stems in the cool early morning or evening, just above a pair of side buds, so the plant keeps branching. Put stems straight into water. Many growers dip the cut ends in hot water (about 160–180°F) for about a minute to help vase life. Expect about 3–5 days in the vase. More cutting means more flowers.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=264590",
+        "confidence": 65,
+        "confidenceWhy": "Growers widely agree on cutting at the open stage. I couldn't find a university page that states it, so the details come from commercial growers."
+      },
+      "seasonal": {
+        "Jan": "stored",
+        "Feb": "stored",
+        "Mar": "stored",
+        "Apr": "stored",
+        "May": "emerging",
+        "Jun": "emerging",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "frost-blackened",
+        "Nov": "stored",
+        "Dec": "stored"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "prep",
+          "text": "Optional: pot up tubers indoors in mid-April, about 4 weeks before the safe planting date (mid-May), for earlier flowers."
+        },
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Plant tubers after the last frost, once the soil feels warm (late May–early June), 4–6 inches deep with the eye facing up. Set stakes now so you don't spear tubers later. Don't water until sprouts appear, which prevents rot.",
+          "after": "safePlantingDate"
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Pinch out the center tip when plants are about 12 inches tall with 3–4 sets of leaves. You get bushier plants and more, longer cutting stems."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Water deeply 1–2 times a week in dry spells. Mulch keeps roots cool."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "feed",
+          "text": "Use a low-nitrogen, higher-potassium feed (for example a tomato-type organic fertilizer) every few weeks. Too much nitrogen gives weak stems.",
+          "repeat": "monthly"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "pest",
+          "text": "Watch for thrips (streaky, distorted petals), earwigs and slugs (ragged holes), spider mites in heat, and powdery mildew in late summer. Organic first: hand-pick, trap earwigs in rolled newspaper, and hose mites off the undersides of leaves."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Cut-flower window: cut often (see Cut flowers). Deadhead anything you don't cut."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Dig tubers 1–2 weeks after frost blackens the leaves. Cut stems to about 4–6 inches, label each clump (variety or color), let them dry a few days, and store below 50°F but above freezing in slightly damp vermiculite, wood shavings or sand.",
+          "after": "firstFallFrost",
+          "afterDays": 7
+        },
+        {
+          "months": [
+            "Dec",
+            "Jan",
+            "Feb",
+            "Mar"
+          ],
+          "type": "winter",
+          "text": "Check stored tubers every month or so. Toss soft or rotting ones. Lightly mist any that are badly shriveled.",
+          "repeat": "monthly"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=264590",
+        "https://extension.unh.edu/blog/2019/10/when-should-i-dig-dahlia-tubers-how-should-i-store-them"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "Digging and storage come from UNH Extension and hardiness from Missouri Botanical Garden. Pinching and feeding are standard grower practice rather than from those pages.",
+      "notes": "Not winter-hardy in Zone 7a. Tubers must come out of the ground each fall."
+    },
+    {
+      "id": "foxglove",
+      "commonName": "Foxglove",
+      "scientificName": "Digitalis purpurea",
+      "kind": "biennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: TOXIC to dogs (cardiac glycosides). Can cause heart arrhythmia, vomiting, diarrhea, weakness and heart failure. All parts are poisonous. If your dog chews it, call your vet or ASPCA Poison Control (888-426-4435) right away.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/foxglove"
+      },
+      "wildlife": "Bumblebees love it. Deer and rabbits avoid it.",
+      "seasonal": {
+        "Jan": "rosette",
+        "Feb": "rosette",
+        "Mar": "rosette",
+        "Apr": "rosette",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "seedheads",
+        "Aug": "rosette",
+        "Sep": "rosette",
+        "Oct": "rosette",
+        "Nov": "rosette",
+        "Dec": "rosette"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prep",
+          "text": "First-year plants are low rosettes. Second-year plants send up flower spikes. Wear gloves when handling any part of the plant.",
+          "tip": true
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Keep evenly moist in dry spells. It tolerates part shade."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "After flowering, leave 1–2 spikes to drop seed if you want more plants. Otherwise cut spikes off, which also cuts down on toxic seedlings where the dog roams."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Leave the rosettes green over winter. Don't bury the crowns under heavy mulch, or they'll rot.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286969",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/foxglove"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "Toxicity is from ASPCA and growth habit from Missouri Botanical Garden. The care is simple and well established.",
+      "notes": "Biennial: each plant flowers once, in its second year, then usually dies. It keeps coming back only by reseeding.",
+      "cutFlower": null
+    },
+    {
+      "id": "straw-foxglove",
+      "commonName": "Yellow / straw foxglove",
+      "scientificName": "Digitalis grandiflora or D. lutea",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "Not listed by ASPCA by name. Missouri Botanical Garden says Digitalis leaves are highly toxic if eaten, so treat this exactly like common foxglove.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=287003"
+      },
+      "wildlife": "Bumblebees.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "seedheads",
+        "Sep": "seedheads",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "prune",
+          "text": "Cut spent spikes to the leaves. That often brings a second, smaller flush of flowers and stops heavy self-seeding."
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells. It's happy in part shade."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "divide",
+          "text": "Divide crowded clumps in spring. Wear gloves."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=287003"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "Missouri Botanical Garden covers D. grandiflora. D. lutea has no university care page, but it's grown the same way.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "hellebore",
+      "commonName": "Hellebore / Lenten rose",
+      "scientificName": "Helleborus × hybridus",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: TOXIC to dogs (bufadienolides, glycosides, protoanemonin). Drooling, abdominal pain, diarrhea, depression. NC State rates H. × hybridus severity medium.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lenten-rose"
+      },
+      "wildlife": "One of the first flowers of the year, and it feeds early bumblebee queens.",
+      "seasonal": {
+        "Jan": "evergreen",
+        "Feb": "bloom",
+        "Mar": "bloom",
+        "Apr": "bloom",
+        "May": "evergreen",
+        "Jun": "evergreen",
+        "Jul": "evergreen",
+        "Aug": "evergreen",
+        "Sep": "evergreen",
+        "Oct": "evergreen",
+        "Nov": "evergreen",
+        "Dec": "evergreen"
+      },
+      "care": [
+        {
+          "months": [
+            "Feb",
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "As new flower buds push up, cut last year's tattered leaves off at the base. You'll see the flowers better, and it removes leaf-spot disease."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in long dry spells. Once established it handles dry shade fairly well."
+        },
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "prep",
+          "text": "Seedlings pop up around the plant. Pot up the ones you want and pull the rest (wear gloves)."
+        },
+        {
+          "months": [
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Evergreen, so leave it standing. A light mulch is fine.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286233",
+        "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lenten-rose"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "The care comes straight from Missouri Botanical Garden and toxicity from ASPCA and NC State.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "bleeding-heart-fernleaf",
+      "commonName": "Fern-leaf bleeding heart",
+      "scientificName": "Dicentra eximia",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "Not listed by ASPCA. NC State: contains isoquinoline alkaloids. Large amounts can cause trembling, staggering, vomiting and convulsions. Rated low severity.",
+        "source": "https://plants.ces.ncsu.edu/plants/dicentra-eximia/"
+      },
+      "wildlife": "Native to the eastern US. Hummingbirds and bumblebees visit the flowers.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "foliage",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Keep the soil evenly moist. Unlike old-fashioned bleeding heart, it keeps blooming all summer in part shade if it doesn't dry out."
+        },
+        {
+          "months": [
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Shear lightly if it gets tired-looking, and it'll push fresh leaves."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Cut back the yellowed foliage after frost.",
+          "after": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=284861",
+        "https://plants.ces.ncsu.edu/plants/dicentra-eximia/"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "The care comes from Missouri Botanical Garden. My ID of #53 is only moderate, so its card also says it depends on confirming the ID.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "coneflower",
+      "commonName": "Purple coneflower",
+      "scientificName": "Echinacea purpurea",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Butterflies and bees in summer. In fall and winter goldfinches eat the seeds, so leave the seed heads standing.",
+      "cutFlower": {
+        "when": "Cut when the petals have just opened out and the center cone is still firm.",
+        "how": "Cut in the morning and put stems straight into water. Dried seed cones are also nice in arrangements. Leave plenty for the birds.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277422",
+        "confidence": 60,
+        "confidenceWhy": "This is common cut-flower practice. The source page doesn't give a harvest stage."
+      },
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "seedheads",
+        "Oct": "seedheads",
+        "Nov": "seedheads",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Cut last year's stems down in early spring, not in fall. The seed heads feed birds all winter."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Drought tolerant once established. Water only in long dry spells."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "prune",
+          "text": "Deadheading some flowers extends the bloom, but stop by late August and leave the rest to go to seed for the birds.",
+          "repeat": "weekly"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Watch for Japanese beetles (hand-pick them into soapy water). Pull and discard any plant with green, twisted flowers (aster yellows), because it can't be cured and it spreads."
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "divide",
+          "text": "Divide crowded clumps every 4 years or so, in spring."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277422",
+        "https://www.uvm.edu/extension/news/leave-seed-heads-be"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "From Missouri Botanical Garden and UVM Extension (leave seed heads for birds).",
+      "notes": null
+    },
+    {
+      "id": "gaillardia",
+      "commonName": "Blanket flower",
+      "scientificName": "Gaillardia × grandiflora",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": "https://plants.ces.ncsu.edu/plants/gaillardia-x-grandiflora/"
+      },
+      "wildlife": "Butterflies and bees. Finches eat the seeds.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "bloom",
+        "Nov": "seedheads",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prune",
+          "text": "Deadhead to keep it flowering until frost.",
+          "repeat": "weekly",
+          "before": "firstFallFrost"
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Keep it on the dry side. It likes lean soil and dies young in wet or rich soil. Don't fertilize.",
+          "tip": true
+        },
+        {
+          "months": [
+            "Aug"
+          ],
+          "type": "prune",
+          "text": "Cutting it back hard in late summer can help this short-lived plant live longer. It's worth trying if it gets leggy."
+        },
+        {
+          "months": [
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Winter wet is the main killer. Make sure water doesn't sit around the crown, and don't pile mulch on it.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://plants.ces.ncsu.edu/plants/gaillardia-x-grandiflora/"
+      ],
+      "confidence": 65,
+      "confidenceWhy": "Sources disagree on cold-hardiness: NC State says zones 7–10, but Missouri Botanical Garden's hybrids say 3–10. It survives in 7a if the soil drains well. The cut-back tip is common practice, not from the cited page.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "columbine",
+      "commonName": "Columbine",
+      "scientificName": "Aquilegia (species uncertain)",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Hummingbirds and long-tongued bees. The native red-and-yellow A. canadensis is especially good.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "After flowering, leave a few seed pods if you want seedlings. Leafminers make pale squiggly trails in the leaves, and cutting damaged foliage back gets you a fresh flush."
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Moderate water. It's short-lived (3–4 years) but reseeds itself."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286069"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "Missouri Botanical Garden (A. canadensis). Care is similar across columbines.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "heuchera",
+      "commonName": "Coral bells",
+      "scientificName": "Heuchera (hybrid)",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/coral-bells"
+      },
+      "wildlife": "Hummingbirds and bees visit the flower spikes.",
+      "seasonal": {
+        "Jan": "evergreen",
+        "Feb": "evergreen",
+        "Mar": "evergreen",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "evergreen",
+        "Dec": "evergreen"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prep",
+          "text": "Frost heave pushes coral bells up out of the ground. In early spring, press any lifted crowns back down and top up with mulch or compost. Trim winter-damaged leaves."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells. It prefers part shade and well-drained soil."
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "divide",
+          "text": "Every 3–4 years, when the crown gets woody and bare in the middle, dig it up and replant the leafy pieces a little deeper."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286888",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/coral-bells"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "From Missouri Botanical Garden (H. sanguinea page) and ASPCA. Hybrid coral bells are grown the same way.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "iris",
+      "commonName": "Iris (bearded or Siberian)",
+      "scientificName": "Iris",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: toxic to dogs (pentacyclic terpenoids). Drooling, vomiting, lethargy, diarrhea. The rhizomes (roots) are the most toxic part.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/iris"
+      },
+      "wildlife": "Bumblebees.",
+      "cutFlower": {
+        "when": "Cut when the first bud is showing color but not yet open.",
+        "how": "Put straight into water. Each stem opens its buds one after another.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281085",
+        "confidence": 60,
+        "confidenceWhy": "Standard florist practice. The source page doesn't cover cutting."
+      },
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "bare",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "divide",
+          "text": "Every 3–4 years, divide crowded clumps in mid-to-late summer. Replant bearded iris rhizomes with the top showing at the soil surface. Don't bury them."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Cut leaves to about 6 inches and clear away dead leaves. This removes iris borer eggs, the main iris pest in New England."
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "pest",
+          "text": "Look for notched leaf edges or wet streaks in the leaves (iris borer). Squash the caterpillars in the leaf."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281085",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/iris"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "The care follows Missouri Botanical Garden's bearded iris page. I'm not sure whether #51 is bearded or Siberian iris, and Siberian iris doesn't need the \"rhizomes at the surface\" step.",
+      "notes": null
+    },
+    {
+      "id": "great-blue-lobelia",
+      "commonName": "Great blue lobelia",
+      "scientificName": "Lobelia siphilitica",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "ASPCA lists the related cardinal flower (L. cardinalis) as toxic. NC State says L. siphilitica contains lobeline: vomiting, diarrhea, drooling and, in large amounts, convulsions. Treat it as toxic.",
+        "source": "https://plants.ces.ncsu.edu/plants/lobelia-siphilitica/"
+      },
+      "wildlife": "Native. A late-summer favorite of bumblebees.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "dormant",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "seedheads",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Likes moist soil. Water whenever the top inch is dry. It suffers quickly in drought."
+        },
+        {
+          "months": [
+            "Oct"
+          ],
+          "type": "prune",
+          "text": "Short-lived, so let some seed drop to keep it going. Pull extra seedlings in spring.",
+          "tip": true
+        },
+        {
+          "months": [
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Keep mulch light over the crown. It rots under heavy, wet mulch.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=278860",
+        "https://plants.ces.ncsu.edu/plants/lobelia-siphilitica/"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "From Missouri Botanical Garden and NC State.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "penstemon-husker-red",
+      "commonName": "Beardtongue 'Husker Red'",
+      "scientificName": "Penstemon digitalis 'Husker Red'",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Native. Hummingbirds and bees. Seed capsules add winter interest.",
+      "cutFlower": {
+        "when": "Cut when about a third of the flowers on the spike are open.",
+        "how": "Put straight into water.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=251883",
+        "confidence": 55,
+        "confidenceWhy": "General cut-flower practice for spike flowers, not from a source page."
+      },
+      "seasonal": {
+        "Jan": "evergreen",
+        "Feb": "evergreen",
+        "Mar": "evergreen",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "seedheads",
+        "Aug": "seedheads",
+        "Sep": "seedheads",
+        "Oct": "seedheads",
+        "Nov": "evergreen",
+        "Dec": "evergreen"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "After bloom, either leave the red-brown seed stalks for winter interest or cut them to the basal leaves."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Drought tolerant once established. It needs well-drained soil and doesn't like wet feet."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "divide",
+          "text": "Divide every few years in spring if the center dies out."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=251883"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "From Missouri Botanical Garden, and the tag in your photo confirms the variety.",
+      "notes": null
+    },
+    {
+      "id": "salvia-may-night",
+      "commonName": "Salvia 'May Night' type",
+      "scientificName": "Salvia × sylvestris",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "This salvia is not on ASPCA's list. ASPCA does list garden sage and scarlet sage as non-toxic.",
+        "source": null
+      },
+      "wildlife": "Bees and butterflies.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "When the first flush fades, shear the plant back by about half and it will often rebloom."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Drought tolerant, needs good drainage."
+        },
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Cut last year's stems to the new basal growth."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=250510"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Missouri Botanical Garden 'May Night' page. My ID of #16 is moderate: it could also be catmint, which is grown almost the same way.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "geum",
+      "commonName": "Geum (avens)",
+      "scientificName": "Geum hybrid",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list.",
+        "source": null
+      },
+      "wildlife": "Bees.",
+      "seasonal": {
+        "Jan": "evergreen",
+        "Feb": "evergreen",
+        "Mar": "evergreen",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "evergreen"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Deadhead to encourage more flowers.",
+          "repeat": "weekly"
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells. It wants moist but well-drained soil and dislikes winter wet."
+        },
+        {
+          "months": [
+            "Apr",
+            "Sep"
+          ],
+          "type": "divide",
+          "text": "Divide every 2–3 years to keep it vigorous."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286349"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "Missouri Botanical Garden rates geum zones 5–7, so it's fine in 7a. My photo ID is good but not certain.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "ladys-mantle",
+      "commonName": "Lady's mantle",
+      "scientificName": "Alchemilla mollis",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Small pollinators. Dewdrops on the leaves are very photogenic.",
+      "cutFlower": {
+        "when": "Cut when most of the tiny chartreuse flowers are open.",
+        "how": "A classic filler that also dries well.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286570",
+        "confidence": 55,
+        "confidenceWhy": "General practice, not from the source page."
+      },
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "prune",
+          "text": "Deadhead before seeds form, because it self-sows heavily. Cut ragged foliage back in midsummer for a fresh flush."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells, especially if it gets afternoon sun."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286570"
+      ],
+      "confidence": 60,
+      "confidenceWhy": "The care comes from Missouri Botanical Garden, but my ID of #32 is only about 55%. It could also be green coral bells.",
+      "notes": null
+    },
+    {
+      "id": "bee-balm-or-phlox",
+      "commonName": "Bee balm or garden phlox (unconfirmed)",
+      "scientificName": "Monarda didyma / Phlox paniculata",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Neither is on ASPCA's list, and NC State lists no toxicity for either.",
+        "source": null
+      },
+      "wildlife": "Both are excellent for hummingbirds, bees and butterflies.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "prune",
+          "text": "Thin out a third of the stems in spring for better airflow. It's the best organic defense against powdery mildew."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Keep evenly moist. Drought stress makes mildew worse."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "After frost, cut to the ground and remove infected leaves (don't compost). That reduces mildew next year.",
+          "after": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281403",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=285435",
+        "https://homegarden.cahnr.uconn.edu/factsheets/powdery-mildew-on-ornamentals/"
+      ],
+      "confidence": 60,
+      "confidenceWhy": "The mildew advice (UConn) applies to both plants. The rest depends on which one it turns out to be.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "baptisia-or-rose",
+      "commonName": "Baptisia or young rose (unconfirmed)",
+      "scientificName": "Baptisia australis / Rosa",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "check",
+        "detail": "Rose: ASPCA non-toxic. Baptisia: not on ASPCA's list, but NC State notes nausea and vomiting if eaten in quantity (low severity).",
+        "source": "https://plants.ces.ncsu.edu/plants/baptisia-australis/"
+      },
+      "wildlife": "Baptisia is a host plant for several butterflies. Rose hips feed birds.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "bare",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prep",
+          "text": "Wait to confirm the ID before doing any pruning. Baptisia should never be moved (deep taproot). A rose would be pruned in early spring.",
+          "tip": true
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells while it's young."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=280580",
+        "https://plants.ces.ncsu.edu/plants/rosa/"
+      ],
+      "confidence": 40,
+      "confidenceWhy": "The care depends on the final ID.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "ninebark-or-currant",
+      "commonName": "Ninebark or currant shrub (unconfirmed)",
+      "scientificName": "Physocarpus opulifolius / Ribes",
+      "kind": "shrub",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Neither is on ASPCA's list. NC State lists no toxicity for ninebark.",
+        "source": null
+      },
+      "wildlife": "Ninebark (native) flowers feed pollinators and its seeds feed birds. Currant berries are eaten by birds.",
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "leafing",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "fall-color",
+        "Nov": "fall-color",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Both flower on last year's wood. Prune right after flowering, not in early spring."
+        },
+        {
+          "months": [
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "In late winter, remove only dead or crossing branches, and up to a third of the oldest stems at ground level to renew the shrub."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water deeply in dry spells for the first couple of years."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=286432",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=255947"
+      ],
+      "confidence": 55,
+      "confidenceWhy": "Pruning timing is the same for both candidates. The rest depends on the ID.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "jacobs-ladder",
+      "commonName": "Jacob's ladder",
+      "scientificName": "Polemonium",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list. (ASPCA's \"Jacob's ladder\" entry is a different plant.)",
+        "source": null
+      },
+      "wildlife": "Bees.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "Cut flower stems back after bloom to keep the foliage tidy."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Likes part shade and evenly moist soil, and scorches in hot dry sun."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=285421"
+      ],
+      "confidence": 55,
+      "confidenceWhy": "My ID of #49 is only about 45%, so this care is provisional.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "hardy-geranium",
+      "commonName": "Hardy geranium (cranesbill)",
+      "scientificName": "Geranium (perennial species)",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Hardy geranium is not on ASPCA's list. Note: ASPCA's toxic \"Geranium\" page is the annual Pelargonium, a different plant.",
+        "source": null
+      },
+      "wildlife": "Bees.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "bloom",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "foliage",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul"
+          ],
+          "type": "prune",
+          "text": "If it flops after flowering, shear it back to fresh basal leaves and many types will rebloom."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Moderate water. Fairly drought tolerant once established."
+        },
+        {
+          "months": [
+            "Apr",
+            "Sep"
+          ],
+          "type": "divide",
+          "text": "Divide in spring or early fall if crowded."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=280851"
+      ],
+      "confidence": 55,
+      "confidenceWhy": "The care is standard, but the two plants it's used for (#1, #26) are unconfirmed.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "rose-campion-or-lambs-ear",
+      "commonName": "Rose campion or lamb's ear (unconfirmed)",
+      "scientificName": "Silene coronaria / Stachys byzantina",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Neither is on ASPCA's list, and NC State lists no toxicity for either.",
+        "source": null
+      },
+      "wildlife": "Bees (lamb's ear is a favorite of wool carder bees).",
+      "seasonal": {
+        "Jan": "evergreen",
+        "Feb": "evergreen",
+        "Mar": "evergreen",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "evergreen",
+        "Dec": "evergreen"
+      },
+      "care": [
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "prune",
+          "text": "Rose campion is short-lived and reseeds, so leave some seed. For lamb's ear, remove mushy or rotting leaves after wet spells."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Both want dry, well-drained soil. Don't overwater.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279038",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281603"
+      ],
+      "confidence": 40,
+      "confidenceWhy": "The care is similar for both, but the ID isn't confirmed.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "sneezeweed-or-heliopsis",
+      "commonName": "Sneezeweed or false sunflower (unconfirmed)",
+      "scientificName": "Helenium autumnale / Heliopsis helianthoides",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "Sneezeweed: NC State lists sesquiterpene lactones (drooling, vomiting, convulsions only in large amounts; medium severity). False sunflower: no toxicity listed.",
+        "source": "https://plants.ces.ncsu.edu/plants/helenium-autumnale/"
+      },
+      "wildlife": "Both are native. Late-season pollinators, and finches take the seeds.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "seedheads",
+        "Nov": "seedheads",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun"
+          ],
+          "type": "prune",
+          "text": "Pinch the stems back by a third in early June for a shorter, sturdier plant."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Sneezeweed wants moist soil, and false sunflower tolerates dry."
+        },
+        {
+          "months": [
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Leave the seed heads standing over winter as food for birds.",
+          "tip": true
+        },
+        {
+          "months": [
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "Cut last year's stems down in early spring."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277198",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277204"
+      ],
+      "confidence": 40,
+      "confidenceWhy": "The care depends on the final ID.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "ornamental-grass",
+      "commonName": "Ornamental grass or sedge (unconfirmed)",
+      "scientificName": "unknown",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "check",
+        "detail": "It depends on the ID. Most ornamental grasses aren't listed as toxic.",
+        "source": null
+      },
+      "wildlife": "Standing winter clumps give birds cover and seed.",
+      "seasonal": {
+        "Jan": "dormant-tan",
+        "Feb": "dormant-tan",
+        "Mar": "dormant-tan",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "dormant-tan",
+        "Dec": "dormant-tan"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Cut the old foliage down to a few inches in early spring, before new green shoots get tall. Leave it standing all winter."
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "divide",
+          "text": "Divide in spring if the center dies out."
+        }
+      ],
+      "sources": [],
+      "confidence": 40,
+      "confidenceWhy": "General grass care. It could also be a daylily or a weedy grass.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "aster-or-fleabane",
+      "commonName": "Aster or fleabane (unconfirmed)",
+      "scientificName": "Symphyotrichum / Erigeron",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "check",
+        "detail": "Fleabane (Erigeron speciosus) is on ASPCA's TOXIC list. True asters are not listed. Treat as toxic until the ID is known.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/fleabane"
+      },
+      "wildlife": "Late-season pollinator food. Seeds feed birds.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "seedheads",
+        "Nov": "seedheads",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Leave the stems for winter seed and cut them down in early spring."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells."
+        }
+      ],
+      "sources": [
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/fleabane"
+      ],
+      "confidence": 30,
+      "confidenceWhy": "The ID is uncertain.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "iris-or-daylily",
+      "commonName": "Iris or daylily (unconfirmed)",
+      "scientificName": "Iris / Hemerocallis",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "check",
+        "detail": "Iris is TOXIC to dogs (ASPCA). Daylily is non-toxic to dogs (but very toxic to cats).",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/iris"
+      },
+      "wildlife": "Pollinators.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Clear away the dried leaves in fall. If it's an iris, that removes borer eggs."
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul"
+          ],
+          "type": "prep",
+          "text": "Watch it flower next summer to confirm the ID."
+        }
+      ],
+      "sources": [
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/iris",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/day-lilies-many-varieties"
+      ],
+      "confidence": 30,
+      "confidenceWhy": "I can't tell from dried leaves.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "unknown-perennial",
+      "commonName": "Unknown plant",
+      "scientificName": "unknown",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "check",
+        "detail": "Unknown. Keep the dog away from it until it's identified.",
+        "source": null
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul"
+          ],
+          "type": "prep",
+          "text": "Take a close-up photo when it's in leaf or flower next season so we can identify it. Don't pull it until then, unless it's clearly a weed."
+        }
+      ],
+      "sources": [],
+      "confidence": 20,
+      "confidenceWhy": "Unidentified.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "weeds",
+      "commonName": "Weeds / open spot",
+      "scientificName": "mixed",
+      "kind": "weed",
+      "dogToxic": {
+        "status": "check",
+        "detail": "It depends on what's growing there. Common chickweed isn't on ASPCA's list.",
+        "source": null
+      },
+      "wildlife": "An open spot. Could be a place for a new planting.",
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "bare",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prep",
+          "text": "Pull weeds after a rain, when roots slide out easily, and before they set seed.",
+          "repeat": "weekly"
+        },
+        {
+          "months": [
+            "Sep",
+            "Oct"
+          ],
+          "type": "prep",
+          "text": "Fall is a good time to plant a perennial here (September is ideal for many)."
+        }
+      ],
+      "sources": [
+        "https://plants.ces.ncsu.edu/plants/stellaria-media/"
+      ],
+      "confidence": 50,
+      "confidenceWhy": "Basic weed advice.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "wild-fenceline",
+      "commonName": "Wild growth beyond the fence: CHECK BEFORE TOUCHING",
+      "scientificName": "mixed: possibly Toxicodendron radicans, Convallaria majalis, Acer negundo, Parthenocissus",
+      "kind": "wild",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "Possible lily of the valley is TOXIC to dogs (cardenolides: vomiting, irregular heartbeat, seizures). Possible poison ivy is non-toxic to dogs, BUT its urushiol oil rubs off the dog's coat onto people.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lily-valley"
+      },
+      "wildlife": "Wild edge habitat for birds.",
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "bare",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "type": "pest",
+          "text": "Don't touch bare-handed. Poison ivy has 3 leaflets (\"leaves of three\"). The 5-leaflet vine in your photo is most likely Virginia creeper, which is harmless. Wear gloves and long sleeves, and wash tools and clothes afterward.",
+          "tip": true
+        },
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "pest",
+          "text": "Check whether the strap-leaved plants are lily of the valley (white bell flowers in May). If they are, keep the dog out.",
+          "repeat": "once"
+        }
+      ],
+      "sources": [
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/poison-ivy",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lily-valley",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=275935"
+      ],
+      "confidence": 40,
+      "confidenceWhy": "Seen only through the chain-link, so the ID is uncertain.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "wild-asters-goldenrod",
+      "commonName": "White wood aster & goldenrod (wild)",
+      "scientificName": "Eurybia divaricata / Solidago",
+      "kind": "wild",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Neither is on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Top-tier late pollinator food (goldenrod doesn't cause hay fever; ragweed does). Seeds feed birds all winter.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "bloom",
+        "Nov": "seedheads",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Leave standing over winter. Cut back or thin in early spring if they're spreading where you don't want them."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=290710",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277473"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "From your note, visible in the fence-line photos.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "balloon-flower",
+      "commonName": "Balloon flower 'Sentimental Blue'",
+      "scientificName": "Platycodon grandiflorus 'Sentimental Blue'",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Bees.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "dormant",
+        "May": "dormant",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "foliage",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "prep",
+          "text": "One of the LAST perennials to come up in spring (often late May). Mark the spot so you don't dig it up by accident."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prune",
+          "text": "Deadhead individual flowers to keep it blooming.",
+          "repeat": "weekly"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Moderate water, needs good drainage."
+        },
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "type": "divide",
+          "text": "Don't divide or move it. It has a deep taproot and resents disturbance.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=278881"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "The tag in your photo confirms the variety, and the care is from Missouri Botanical Garden.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "blueberry",
+      "commonName": "Highbush blueberry",
+      "scientificName": "Vaccinium corymbosum",
+      "kind": "shrub",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity. The berries are commonly fed to dogs as treats.",
+        "source": null
+      },
+      "wildlife": "Spring flowers feed bumblebees. Birds (catbirds, robins) love the berries, and red fall color.",
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "bloom",
+        "May": "bloom",
+        "Jun": "fruit",
+        "Jul": "fruit",
+        "Aug": "fruit",
+        "Sep": "foliage",
+        "Oct": "fall-color",
+        "Nov": "fall-color",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "Prune in late winter. For young plants, just remove damaged wood. From about year 4, remove 1–2 of the oldest canes at ground level each year."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "feed",
+          "text": "Feed with an acid-forming fertilizer labeled for blueberries or azaleas (organic options exist). Blueberries need soil pH 4.5–5.2."
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "prep",
+          "text": "Keep 2–4 inches of pine bark or pine-needle mulch over the roots, which are shallow."
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "About 1 inch of water a week. The shallow roots dry out fast."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "harvest",
+          "text": "Net the bushes when berries start turning blue if you want the crop, or share it with the birds.",
+          "repeat": "once"
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Yellow leaves with green veins (interveinal chlorosis) has two common causes. If it starts on the OLDER, lower leaves (and often turns red), it's usually magnesium deficiency. If it starts on the NEWEST leaves at the shoot tips, it's usually iron that the plant can't take up because the soil pH is too high. Test the soil at the plant before adding anything."
+        }
+      ],
+      "sources": [
+        "https://www.umass.edu/agriculture-food-environment/fruit/ne-small-fruit-management-guide/highbush-blueberries",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279992",
+        "https://blogs.cornell.edu/berrytool/berry-pests/blueberry-nutrient-deficiencies/",
+        "https://www.canr.msu.edu/resources/managing_the_nutrition_of_highbush_blueberries_e2011",
+        "https://www.umass.edu/agriculture-food-environment/soil-plant-nutrient-testing-laboratory/fact-sheets/interpreting-your-soil-test-results",
+        "https://www.umass.edu/agriculture-food-environment/soil-plant-nutrient-testing-laboratory/fact-sheets/soil-lead-fact-sheet"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "From the UMass/New England small fruit guide.",
+      "notes": "Soil: your blueberries sit on the edge of soil Zones A and B. Zone B tested pH 4.9, which is in the blueberry range, but it was also low in calcium and magnesium, high in aluminum and slightly high in lead. Low pH makes aluminum and lead more available to plants, and UMass says pH 6.5–7 minimizes lead uptake. Don't grow other food crops in Zone B until the metals follow-up test is done.",
+      "cutFlower": null
+    },
+    {
+      "id": "raspberry-fall",
+      "commonName": "Raspberry (fall-bearing)",
+      "scientificName": "Rubus idaeus (fall-bearing type)",
+      "kind": "shrub",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list, and NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Flowers feed bees and birds eat the fruit.",
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "foliage",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "fruit",
+        "Nov": "fall-color",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "Simplest method for fall-bearers: cut ALL canes to the ground in late winter. You get one big crop in late summer and fall."
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "type": "harvest",
+          "text": "Pick every 2–3 days while fruiting. Berries are ripe when they slip off easily."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "About 1 inch a week, and more while fruiting."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "feed",
+          "text": "Compost around the base in spring."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=261671"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "The mow-to-ground method is standard for fall-bearing raspberries. The source page is Missouri Botanical Garden's 'Heritage' raspberry.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "panicle-hydrangea",
+      "commonName": "Panicle hydrangea",
+      "scientificName": "Hydrangea paniculata ('Limelight' / 'Little Lime')",
+      "kind": "shrub",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: toxic to dogs (cyanogenic glycoside). Vomiting, depression, diarrhea.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/hydrangea"
+      },
+      "wildlife": "Pollinators visit the fertile florets. The dry flower heads look great in frost and snow.",
+      "cutFlower": {
+        "when": "For fresh cuts, when most florets on the panicle are open. For drying, wait until the heads feel papery and are aging toward pink (late summer–fall).",
+        "how": "Cut in the morning, strip most of the leaves and put straight into water. To dry, hang the heads upside down or stand them in a little water and let it evaporate.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=259054",
+        "confidence": 60,
+        "confidenceWhy": "Common florist practice, not from the source page."
+      },
+      "seasonal": {
+        "Jan": "bare-flowerheads",
+        "Feb": "bare-flowerheads",
+        "Mar": "bare-flowerheads",
+        "Apr": "leafing",
+        "May": "leafing",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "aging-bloom",
+        "Nov": "aging-bloom",
+        "Dec": "bare-flowerheads"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "prune",
+          "text": "Flowers on NEW wood, so prune in late winter or early spring: cut back by about a third to a strong pair of buds and remove weak stems. You won't lose flowers."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water deeply in dry spells, especially in the first few years."
+        },
+        {
+          "months": [
+            "Nov",
+            "Dec",
+            "Jan",
+            "Feb"
+          ],
+          "type": "winter",
+          "text": "Leave the dry flower heads on over winter for interest, and remove them at spring pruning.",
+          "tip": true
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=259054",
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=273280",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/hydrangea"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "From Missouri Botanical Garden and ASPCA.",
+      "notes": null
+    },
+    {
+      "id": "hosta",
+      "commonName": "Hosta (variegated)",
+      "scientificName": "Hosta",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: toxic to dogs (saponins). Vomiting, diarrhea, depression.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/hosta"
+      },
+      "wildlife": "Hummingbirds and bumblebees visit the flower spikes.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "emerging",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "foliage",
+        "Oct": "yellowing",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "pest",
+          "text": "Slugs make holes in the leaves. Organic fixes: beer traps or iron phosphate bait (safe around pets and wildlife)."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water in dry spells. The leaf edges scorch when they're dry."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Remove the collapsed leaves after frost. That removes slug eggs.",
+          "after": "firstFallFrost"
+        },
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "divide",
+          "text": "Divide in spring as the shoots emerge."
+        }
+      ],
+      "sources": [
+        "https://plants.ces.ncsu.edu/plants/hosta/",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/hosta"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "From NC State and ASPCA.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "lilac",
+      "commonName": "Lilac",
+      "scientificName": "Syringa vulgaris",
+      "kind": "shrub",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Common lilac is not on ASPCA's list (their \"Persian lilac\" is an unrelated tree). NC State lists no toxicity.",
+        "source": null
+      },
+      "wildlife": "Spring nectar for swallowtails and bees. Dense cover for nesting birds.",
+      "cutFlower": {
+        "when": "Cut when about half the florets on the cluster are open.",
+        "how": "Cut in the morning, split or slit the woody stem end, strip most of the leaves and put into cool water.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=282932",
+        "confidence": 55,
+        "confidenceWhy": "Common florist practice, not from the source page."
+      },
+      "seasonal": {
+        "Jan": "bare",
+        "Feb": "bare",
+        "Mar": "bare",
+        "Apr": "leafing",
+        "May": "bloom",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "bare",
+        "Dec": "bare"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "prune",
+          "text": "Prune ONLY right after flowering. Next year's buds form over summer, so pruning later removes them."
+        },
+        {
+          "months": [
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "In late winter, remove root suckers and any dead wood."
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep"
+          ],
+          "type": "pest",
+          "text": "Powdery mildew on the leaves in late summer is common and mostly cosmetic."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=282932"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "The care is well established. The ID is from heart-shaped leaves in IMG_4557, so I'm about 75% sure.",
+      "notes": null
+    },
+    {
+      "id": "cosmos",
+      "commonName": "Cosmos",
+      "scientificName": "Cosmos bipinnatus",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list.",
+        "source": null
+      },
+      "wildlife": "Bees and butterflies. Goldfinches eat the seeds in fall.",
+      "cutFlower": {
+        "when": "Cut when the petals are just opening from the bud (\"cracked\" bud).",
+        "how": "Cut often, which makes more flowers. Put into water right away.",
+        "source": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277181",
+        "confidence": 55,
+        "confidenceWhy": "Common cut-flower practice, not from the source page."
+      },
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "bloom",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May"
+          ],
+          "type": "plant",
+          "text": "Sow seed directly after the last frost. It often self-sows from last year."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "type": "prune",
+          "text": "Cut or deadhead often. Leave some late seed heads for goldfinches.",
+          "repeat": "weekly",
+          "before": "firstFallFrost"
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Frost kills it. Pull the plants, or leave some standing for birds and self-sowing.",
+          "after": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=277181"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Missouri Botanical Garden. I didn't get a clear photo of the cosmos, so its position is from your notes.",
+      "notes": null
+    },
+    {
+      "id": "brussels-sprouts",
+      "commonName": "Brussels sprouts (in pots)",
+      "scientificName": "Brassica oleracea Gemmifera Group",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list.",
+        "source": null
+      },
+      "wildlife": "Cabbage white butterflies lay eggs on it.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "harvest",
+        "Nov": "harvest",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Sep"
+          ],
+          "type": "prune",
+          "text": "Optional: pinch out the top growing tip about 4–6 weeks before you want to harvest, so the plant puts energy into the sprouts."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "harvest",
+          "text": "Harvest from the bottom up when sprouts are firm and about 1 inch across. They taste sweeter after a few frosts."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "pest",
+          "text": "Watch for green caterpillars (cabbage worms). Hand-pick them, or use Bt, an organic spray that affects only caterpillars."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Pots dry out fast, so water whenever the top inch is dry."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=269744"
+      ],
+      "confidence": 60,
+      "confidenceWhy": "The ID is about 70%. The care is standard.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "honeydew",
+      "commonName": "Honeydew melon",
+      "scientificName": "Cucumis melo (Inodorus group)",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/honeydew-melon"
+      },
+      "wildlife": "Bees pollinate the flowers.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "plant",
+          "text": "Honeydew needs a long, warm season. Start seeds indoors in late April, or buy transplants. Plant out in early June when the soil is warm."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "water",
+          "text": "Water deeply and steadily until the fruit is full size, then ease off, which gives sweeter melons."
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Unlike cantaloupe, honeydew doesn't slip off the vine. It's ripe when the rind turns creamy yellow, feels slightly waxy, and the blossom end gives a little."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Watch for striped cucumber beetles and powdery mildew."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279561",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/honeydew-melon"
+      ],
+      "confidence": 65,
+      "confidenceWhy": "The ripeness signs are standard grower practice. Honeydew is a stretch for New England's season, so expect variable results.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "cucumber",
+      "commonName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/cucumber"
+      },
+      "wildlife": "Bees pollinate the flowers.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "fruit",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Sow seed or plant transplants after about May 15, once the soil is warm. Give them a trellis.",
+          "after": "safePlantingDate"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Pick every day or two while they're young and firm. Oversized cucumbers slow the plant down."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Striped cucumber beetles spread bacterial wilt. Hand-pick them early, or cover young plants with row cover until they flower."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Water evenly, because dry spells make bitter fruit."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279567",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/cucumber"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard vegetable care.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "zucchini",
+      "commonName": "Zucchini",
+      "scientificName": "Cucurbita pepo",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/zucchini-squash"
+      },
+      "wildlife": "Squash bees and bumblebees work the big flowers early in the morning.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "fruit",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Sow seed after about May 15, in warm soil.",
+          "after": "safePlantingDate"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Pick at 6–8 inches long, and check every day."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Squash vine borer: if a healthy plant suddenly wilts and there's sawdust-like frass at the base of the stem, that's the borer. Row cover until flowering helps. Also watch for squash bugs and powdery mildew."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279566",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/zucchini-squash"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard vegetable care.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "squash",
+      "commonName": "Squash (type not recorded)",
+      "scientificName": "Cucurbita",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA lists zucchini, acorn, butternut and Hubbard squash as non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/butternut-squash"
+      },
+      "wildlife": "Squash bees and bumblebees.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "fruit",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Sow seed after about May 15, in warm soil.",
+          "after": "safePlantingDate"
+        },
+        {
+          "months": [
+            "Sep",
+            "Oct"
+          ],
+          "type": "harvest",
+          "text": "Winter squash: harvest when the rind is hard enough that a fingernail won't dent it, and before a hard frost. Leave 1–2 inches of stem, and cure in a warm spot for about 10 days before storing. Summer squash: pick young, like zucchini.",
+          "before": "hardFreeze"
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul",
+            "Aug"
+          ],
+          "type": "pest",
+          "text": "Watch for squash vine borer, squash bugs and powdery mildew."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=279566",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/butternut-squash"
+      ],
+      "confidence": 60,
+      "confidenceWhy": "I don't know if this is a summer or winter squash, so both harvest methods are listed.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "peas",
+      "commonName": "Peas",
+      "scientificName": "Pisum sativum",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Garden peas are not on ASPCA's list. Peas themselves are a common dog food ingredient. Don't confuse them with ornamental sweet pea (Lathyrus), which is a different plant.",
+        "source": null
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "seedling",
+        "May": "foliage",
+        "Jun": "fruit",
+        "Jul": "gone",
+        "Aug": "gone",
+        "Sep": "gone",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Mar",
+            "Apr"
+          ],
+          "type": "plant",
+          "text": "A cool-season crop. Sow as early as the soil can be worked (late March to mid-April). Give them a trellis."
+        },
+        {
+          "months": [
+            "Jun"
+          ],
+          "type": "harvest",
+          "text": "Pick often. Snap peas are ready when the pods are plump, and shelling peas when the pods are full and still bright green."
+        },
+        {
+          "months": [
+            "Jul"
+          ],
+          "type": "prep",
+          "text": "Pull the vines once heat ends the harvest. You can leave the roots in the soil, where they add nitrogen."
+        },
+        {
+          "months": [
+            "Aug"
+          ],
+          "type": "plant",
+          "text": "Optional: sow a fall crop in early August."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=280471"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard cool-season vegetable care.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "radish",
+      "commonName": "Radish",
+      "scientificName": "Raphanus sativus",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list. NC State notes only mild skin irritation for people handling it.",
+        "source": null
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "seedling",
+        "May": "harvest",
+        "Jun": "gone",
+        "Jul": "gone",
+        "Aug": "seedling",
+        "Sep": "harvest",
+        "Oct": "harvest",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "plant",
+          "text": "Sow every 2 weeks in spring for a steady supply. It's ready in about 4 weeks.",
+          "repeat": "monthly"
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep"
+          ],
+          "type": "plant",
+          "text": "Sow again in late August for a fall crop."
+        },
+        {
+          "months": [
+            "May",
+            "Jun",
+            "Sep",
+            "Oct"
+          ],
+          "type": "harvest",
+          "text": "Pull them while they're small. Radishes go woody and hot in summer heat."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=278044"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard cool-season vegetable care.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "eggplant",
+      "commonName": "Eggplant",
+      "scientificName": "Solanum melongena",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "Not on ASPCA's list. NC State: the leaves, stems and roots contain solanine (vomiting, irregular heart rhythm; rated high severity). Treat the plant as toxic.",
+        "source": "https://plants.ces.ncsu.edu/plants/solanum-melongena/"
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Plant out in early June. Eggplant sulks in cold soil and cool nights."
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Pick while the skin is still glossy. Dull skin means it's overripe and seedy."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "pest",
+          "text": "Flea beetles make tiny holes in the leaves. Row cover protects young plants."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=287158",
+        "https://plants.ces.ncsu.edu/plants/solanum-melongena/"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard vegetable care. Toxicity is from NC State.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "beet",
+      "commonName": "Beets",
+      "scientificName": "Beta vulgaris",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/beets"
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "seedling",
+        "May": "seedling",
+        "Jun": "foliage",
+        "Jul": "harvest",
+        "Aug": "harvest",
+        "Sep": "harvest",
+        "Oct": "harvest",
+        "Nov": "harvest",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May"
+          ],
+          "type": "plant",
+          "text": "Sow in mid-April through May. Each \"seed\" is a cluster that sprouts several plants, so thin to 3–4 inches apart and eat the thinnings as greens."
+        },
+        {
+          "months": [
+            "Jul"
+          ],
+          "type": "plant",
+          "text": "Sow again in July for a fall crop."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov"
+          ],
+          "type": "harvest",
+          "text": "Pull when the roots are 1½–3 inches across. They tolerate light frost."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=a668",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/beets"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "Standard vegetable care.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "asparagus",
+      "commonName": "Asparagus",
+      "scientificName": "Asparagus officinalis",
+      "kind": "perennial",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "Garden asparagus is not on ASPCA's list, but ASPCA lists the related asparagus fern as toxic. NC State: the red berries can cause stomach upset (low severity). Keep the dog away from the berries.",
+        "source": "https://plants.ces.ncsu.edu/plants/asparagus-officinalis/"
+      },
+      "wildlife": "Birds eat the red berries on female plants.",
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "harvest",
+        "May": "harvest",
+        "Jun": "harvest",
+        "Jul": "ferns",
+        "Aug": "ferns",
+        "Sep": "ferns",
+        "Oct": "yellowing",
+        "Nov": "yellowing",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr",
+            "May",
+            "Jun"
+          ],
+          "type": "harvest",
+          "text": "Snap or cut spears at 6–8 inches tall. Don't harvest in year 1, harvest about 2 weeks in year 2, then 6–8 weeks from year 3 on. Stop when spears get pencil-thin."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prep",
+          "text": "Let the ferny fronds grow all summer, because they feed next year's crowns. Weed carefully, since the roots are shallow.",
+          "tip": true
+        },
+        {
+          "months": [
+            "Nov",
+            "Mar"
+          ],
+          "type": "prune",
+          "text": "Cut the dead brown ferns to the ground in late fall or early spring. Removing them in fall reduces asparagus beetle eggs."
+        },
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "feed",
+          "text": "Top-dress with compost each spring."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=282227",
+        "https://plants.ces.ncsu.edu/plants/asparagus-officinalis/"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "Standard perennial vegetable care. Asparagus stays in the same spot for 15+ years, so don't dig in that bed.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "dill",
+      "commonName": "Dill",
+      "scientificName": "Anethum graveolens",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs (can irritate skin after long contact).",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/dill"
+      },
+      "wildlife": "Host plant for black swallowtail caterpillars (green, black and yellow striped), so leave some for them. Flowers feed small beneficial wasps.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "foliage",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "seedheads",
+        "Oct": "seedheads",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May"
+          ],
+          "type": "plant",
+          "text": "Sow seed directly (it doesn't like being transplanted). It self-sows readily."
+        },
+        {
+          "months": [
+            "Jun",
+            "Jul"
+          ],
+          "type": "harvest",
+          "text": "Snip leaves before the plant flowers. Let some go to seed for dill seed and next year's plants."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=275980",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/dill"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "From Missouri Botanical Garden and ASPCA.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "basil",
+      "commonName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/basil"
+      },
+      "wildlife": "Bees love the flowers if you let a few bloom.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "gone",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "gone",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Plant out once nights stay above about 50°F (early June). Basil blackens with cold."
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "prune",
+          "text": "Pinch the tips and flower buds regularly for bushier plants and better leaves.",
+          "repeat": "weekly",
+          "before": "firstFallFrost"
+        },
+        {
+          "months": [
+            "Sep"
+          ],
+          "type": "harvest",
+          "text": "Harvest everything before the first frost, or when nights drop into the 40s.",
+          "repeat": "once",
+          "before": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=281408",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/basil"
+      ],
+      "confidence": 80,
+      "confidenceWhy": "From Missouri Botanical Garden and ASPCA.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "loofah",
+      "commonName": "Loofah (luffa gourd)",
+      "scientificName": "Luffa aegyptiaca",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "not-listed",
+        "detail": "Not on ASPCA's list.",
+        "source": null
+      },
+      "wildlife": "The big yellow flowers attract bees.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "seedling",
+        "Jul": "foliage",
+        "Aug": "bloom",
+        "Sep": "fruit",
+        "Oct": "fruit",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "plant",
+          "text": "Start seeds indoors in April. It needs a long frost-free season (4+ months). Plant out after about May 15."
+        },
+        {
+          "months": [
+            "Sep",
+            "Oct"
+          ],
+          "type": "harvest",
+          "text": "Harvest for sponges when the skin turns yellow-brown, feels dry and light, and the seeds rattle. Pick all gourds before a hard frost.",
+          "before": "hardFreeze"
+        },
+        {
+          "months": [
+            "Jul",
+            "Aug",
+            "Sep"
+          ],
+          "type": "water",
+          "text": "Water deeply in dry spells."
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=364305"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "From Missouri Botanical Garden.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "tomato",
+      "commonName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "toxic",
+        "detail": "ASPCA: the green plant (leaves and stems) is toxic to dogs (solanine). Drooling, severe stomach upset, weakness. Ripe fruit is OK.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/tomato-plant"
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "foliage",
+        "Jul": "fruit",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "frost-blackened",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Pull the spent vines and bag any with spotted or blighted leaves (don't compost those). Rotate tomatoes to a different bed section next year."
+        },
+        {
+          "months": [
+            "May"
+          ],
+          "type": "plant",
+          "text": "Plant out after the last frost (around mid-to-late May).",
+          "after": "safePlantingDate"
+        }
+      ],
+      "sources": [
+        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=454685",
+        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/tomato-plant"
+      ],
+      "confidence": 70,
+      "confidenceWhy": "Standard care. Which bed sections they're in is unknown.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "nasturtium",
+      "commonName": "Nasturtium",
+      "scientificName": "Tropaeolum majus",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "non-toxic",
+        "detail": "ASPCA: non-toxic to dogs.",
+        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/nasturtium"
+      },
+      "wildlife": "Hummingbirds. It also works as a trap crop for aphids.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "bloom",
+        "Jul": "bloom",
+        "Aug": "bloom",
+        "Sep": "bloom",
+        "Oct": "bloom",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "May"
+          ],
+          "type": "plant",
+          "text": "Sow seed directly after the last frost. Lean soil gives more flowers. The leaves and flowers are edible."
+        }
+      ],
+      "sources": [
+        "https://plants.ces.ncsu.edu/plants/tropaeolum-majus/"
+      ],
+      "confidence": 85,
+      "confidenceWhy": "Seen blooming in IMG_4549.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "ground-cherry",
+      "commonName": "Ground cherry",
+      "scientificName": "Physalis (ground cherry)",
+      "kind": "annual",
+      "dogToxic": {
+        "status": "caution",
+        "detail": "Not on ASPCA's list. NC State: every part except the ripe fruit contains solanine (rated high severity). Treat the plant as toxic and keep the dog away from it.",
+        "source": "https://plants.ces.ncsu.edu/plants/physalis/"
+      },
+      "wildlife": "Bees visit the small flowers.",
+      "seasonal": {
+        "Jan": "gone",
+        "Feb": "gone",
+        "Mar": "gone",
+        "Apr": "gone",
+        "May": "seedling",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "fruit",
+        "Sep": "fruit",
+        "Oct": "fruit",
+        "Nov": "gone",
+        "Dec": "gone"
+      },
+      "care": [
+        {
+          "months": [
+            "Apr"
+          ],
+          "type": "plant",
+          "text": "Start seeds indoors about 6–8 weeks before the safe planting date (mid-May)."
+        },
+        {
+          "months": [
+            "May",
+            "Jun"
+          ],
+          "type": "plant",
+          "text": "Plant out after about May 15, once nights stay warm.",
+          "after": "safePlantingDate"
+        },
+        {
+          "months": [
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "type": "harvest",
+          "text": "The fruit is ripe when the papery husk turns tan and the fruit drops to the ground. Only eat ripe, golden fruit, because unripe green fruit contains solanine."
+        },
+        {
+          "months": [
+            "Oct",
+            "Nov"
+          ],
+          "type": "winter",
+          "text": "Clear fallen fruit after frost, or it will reseed heavily next year.",
+          "after": "firstFallFrost"
+        }
+      ],
+      "sources": [
+        "https://plants.ces.ncsu.edu/plants/physalis/"
+      ],
+      "confidence": 75,
+      "confidenceWhy": "You confirmed the plant. The care and toxicity come from NC State.",
+      "cutFlower": null,
+      "notes": null
+    },
+    {
+      "id": "unknown-pot",
+      "commonName": "Potted plant at the trellis base",
+      "scientificName": "unknown",
+      "kind": "container",
+      "dogToxic": {
+        "status": "check",
+        "detail": "Unknown.",
+        "source": null
+      },
+      "wildlife": null,
+      "seasonal": {
+        "Jan": "dormant",
+        "Feb": "dormant",
+        "Mar": "dormant",
+        "Apr": "dormant",
+        "May": "foliage",
+        "Jun": "foliage",
+        "Jul": "foliage",
+        "Aug": "foliage",
+        "Sep": "foliage",
+        "Oct": "foliage",
+        "Nov": "dormant",
+        "Dec": "dormant"
+      },
+      "care": [
+        {
+          "months": [
+            "Sep",
+            "Oct"
+          ],
+          "type": "prep",
+          "text": "Tell me what it is, and whether it comes indoors for winter."
+        }
+      ],
+      "sources": [],
+      "confidence": 10,
+      "confidenceWhy": "Not identified.",
+      "cutFlower": null,
+      "notes": null
+    }
+  ]
+}

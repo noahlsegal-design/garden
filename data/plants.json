@@ -1,0 +1,2054 @@
+{
+  "_about": "One entry per plant in the yard. 'speciesId' links to species.json for care info. 'position' is in feet (see layout.json). idConfidence is 0-100, and anything under 50 shows an 'unconfirmed' badge. Set confirmedByOwner to true once you've confirmed a plant. Add \"finished\": \"YYYY-MM-DD\" when a plant is done (like a crop at the end of its season): it leaves the 3D yard and This week from that date.",
+  "_asOf": "2026-09-24",
+  "plants": [
+    {
+      "id": "pb-01",
+      "label": "#1",
+      "area": "perennial-bed",
+      "name": "Hardy geranium (maybe delphinium)",
+      "speciesId": "hardy-geranium",
+      "idConfidence": 50,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Delphinium: TOXIC to dogs (ASPCA, larkspur)"
+      ],
+      "photos": [
+        "Source/photos/IMG_4560.JPG"
+      ],
+      "position": {
+        "x": -21.8,
+        "z": 37.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "In a wire cage. Deeply cut, hand-shaped leaves fit either one.",
+      "dogToxicOverride": "check",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-02",
+      "label": "#2",
+      "area": "perennial-bed",
+      "name": "Geum (avens)",
+      "speciesId": "geum",
+      "idConfidence": 75,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4561.JPG"
+      ],
+      "position": {
+        "x": -22.0,
+        "z": 37.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Rosette with a big rounded end leaflet and small side leaflets, typical of geum.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-03",
+      "label": "#3",
+      "area": "perennial-bed",
+      "name": "Mostly weeds (maybe a lost planting)",
+      "speciesId": "weeds",
+      "idConfidence": 70,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4562.JPG"
+      ],
+      "position": {
+        "x": -21.6,
+        "z": 38.1
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Grass and small weeds. An open spot.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-04",
+      "label": "#4",
+      "area": "perennial-bed",
+      "name": "Fuzzy gray-green rosette (rose campion?)",
+      "speciesId": "rose-campion-or-lambs-ear",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Lamb's ear"
+      ],
+      "photos": [
+        "Source/photos/IMG_4563.JPG"
+      ],
+      "position": {
+        "x": -23.5,
+        "z": 38.7
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Looks like the same plant as #28. The leaves are soft gray-green but not white-woolly, so I lean rose campion over lamb's ear.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-05",
+      "label": "#5",
+      "area": "perennial-bed",
+      "name": "Peony",
+      "speciesId": "peony",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4564.JPG"
+      ],
+      "position": {
+        "x": -21.4,
+        "z": 39.2
+      },
+      "size": 1.0,
+      "issues": [
+        "Leaf blotch"
+      ],
+      "notes": "Has a tag on a green stake behind it.",
+      "needsAttention": true
+    },
+    {
+      "id": "pb-06",
+      "label": "#6",
+      "area": "perennial-bed",
+      "name": "Dried strap leaves (iris or daylily?)",
+      "speciesId": "iris-or-daylily",
+      "idConfidence": 30,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Iris",
+        "Daylily"
+      ],
+      "photos": [
+        "Source/photos/IMG_4565.JPG"
+      ],
+      "position": {
+        "x": -23.4,
+        "z": 39.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "At the base of the birdhouse post.",
+      "dogToxicOverride": "check",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-06b",
+      "label": "#6b",
+      "area": "perennial-bed",
+      "name": "Young dahlia? (tagged, staked)",
+      "speciesId": "dahlia",
+      "idConfidence": 65,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4566.JPG"
+      ],
+      "position": {
+        "x": -22.2,
+        "z": 40.1
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "NOT in the original catalog. The handoff says there's no IMG_4566, but there is. Tall single stem, divided toothed leaves, green stake and a white tag I can't read. Please read the tag.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-07",
+      "label": "#7",
+      "area": "perennial-bed",
+      "name": "Young peony",
+      "speciesId": "peony",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4567.JPG"
+      ],
+      "position": {
+        "x": -21.1,
+        "z": 40.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-08",
+      "label": "#8",
+      "area": "perennial-bed",
+      "name": "Spent fluffy flowers (aster or fleabane?)",
+      "speciesId": "aster-or-fleabane",
+      "idConfidence": 30,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Aster",
+        "Fleabane (TOXIC to dogs, ASPCA)"
+      ],
+      "photos": [
+        "Source/photos/IMG_4568.JPG"
+      ],
+      "position": {
+        "x": -23.4,
+        "z": 40.9
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "dogToxicOverride": "check",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-09",
+      "label": "#9",
+      "area": "perennial-bed",
+      "name": "Dahlia (tagged)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4569.JPG"
+      ],
+      "position": {
+        "x": -24.7,
+        "z": 41.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Tag partly readable: \"FIVEFORK FA…\" and \"Ed K?hn\". Probably a grower name plus the variety. Please read it in person.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-10",
+      "label": "#10",
+      "area": "perennial-bed",
+      "name": "Peony, dying back",
+      "speciesId": "peony",
+      "idConfidence": 50,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Something else that has died back"
+      ],
+      "photos": [
+        "Source/photos/IMG_4570.JPG"
+      ],
+      "position": {
+        "x": -22.8,
+        "z": 42.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Mostly collapsed brown foliage, so it's hard to confirm.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-11",
+      "label": "#11",
+      "area": "perennial-bed",
+      "name": "Ornamental grass or sedge",
+      "speciesId": "ornamental-grass",
+      "idConfidence": 50,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Daylily (if the leaves are wider in person)"
+      ],
+      "photos": [
+        "Source/photos/IMG_4571.JPG"
+      ],
+      "position": {
+        "x": -24.7,
+        "z": 42.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-12",
+      "label": "#12",
+      "area": "perennial-bed",
+      "name": "Dahlia (seed-grown)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4572.JPG"
+      ],
+      "position": {
+        "x": -22.6,
+        "z": 43.2
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-13",
+      "label": "#13",
+      "area": "perennial-bed",
+      "name": "Beardtongue 'Husker Red'",
+      "speciesId": "penstemon-husker-red",
+      "idConfidence": 95,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4573.JPG"
+      ],
+      "position": {
+        "x": -18.2,
+        "z": 43.7
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Tag visible. Red-brown seed capsules now.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-14",
+      "label": "#14",
+      "area": "perennial-bed",
+      "name": "Dahlia, tall with purple stems",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4574.JPG"
+      ],
+      "position": {
+        "x": -19.3,
+        "z": 44.3
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Staked.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-15",
+      "label": "#15",
+      "area": "perennial-bed",
+      "name": "Baptisia or young rose",
+      "speciesId": "baptisia-or-rose",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Baptisia",
+        "Rose"
+      ],
+      "photos": [
+        "Source/photos/IMG_4575.JPG"
+      ],
+      "position": {
+        "x": -20.2,
+        "z": 44.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "dogToxicOverride": "check",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-16",
+      "label": "#16",
+      "area": "perennial-bed",
+      "name": "Salvia, 'May Night' type",
+      "speciesId": "salvia-may-night",
+      "idConfidence": 65,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Catmint"
+      ],
+      "photos": [
+        "Source/photos/IMG_4576.JPG"
+      ],
+      "position": {
+        "x": -22.1,
+        "z": 45.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Bushy, yellowing leaves with one violet-blue flower left.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-17",
+      "label": "#17",
+      "area": "perennial-bed",
+      "name": "Dahlia (seed-grown)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4577.JPG"
+      ],
+      "position": {
+        "x": -17.3,
+        "z": 46.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-18",
+      "label": "#18",
+      "area": "perennial-bed",
+      "name": "Dahlia (seed-grown)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4578.JPG"
+      ],
+      "position": {
+        "x": -18.4,
+        "z": 46.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Young plant at the stone edge.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-19",
+      "label": "#19",
+      "area": "perennial-bed",
+      "name": "Coneflower",
+      "speciesId": "coneflower",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4579.JPG"
+      ],
+      "position": {
+        "x": -19.8,
+        "z": 47.1
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Seed heads now, so leave them for goldfinches.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-20",
+      "label": "#20",
+      "area": "perennial-bed",
+      "name": "Peony",
+      "speciesId": "peony",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4580.JPG"
+      ],
+      "position": {
+        "x": -23.4,
+        "z": 47.7
+      },
+      "size": 1.0,
+      "issues": [
+        "Leaf blotch"
+      ],
+      "notes": null,
+      "needsAttention": true
+    },
+    {
+      "id": "pb-21",
+      "label": "#21",
+      "area": "perennial-bed",
+      "name": "Great blue lobelia",
+      "speciesId": "great-blue-lobelia",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4581.JPG"
+      ],
+      "position": {
+        "x": -24.7,
+        "z": 48.2
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Blooming now. Native.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-22",
+      "label": "#22",
+      "area": "perennial-bed",
+      "name": "Small-leaved sprawler (likely a weed)",
+      "speciesId": "weeds",
+      "idConfidence": 45,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Chickweed-type weed",
+        "Candytuft",
+        "Thyme"
+      ],
+      "photos": [
+        "Source/photos/IMG_4582.JPG"
+      ],
+      "position": {
+        "x": -21.5,
+        "z": 48.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Tiny leaves and tiny white flowers. Looks more like a chickweed-type weed than candytuft or thyme.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-23",
+      "label": "#23",
+      "area": "perennial-bed",
+      "name": "Peony",
+      "speciesId": "peony",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4583.JPG"
+      ],
+      "position": {
+        "x": -19.4,
+        "z": 49.3
+      },
+      "size": 1.0,
+      "issues": [
+        "Powdery mildew"
+      ],
+      "notes": null,
+      "needsAttention": true
+    },
+    {
+      "id": "pb-24",
+      "label": "#24",
+      "area": "perennial-bed",
+      "name": "Young dahlia",
+      "speciesId": "dahlia",
+      "idConfidence": 55,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4584.JPG"
+      ],
+      "position": {
+        "x": -23.4,
+        "z": 49.9
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "In a cage.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-25",
+      "label": "#25",
+      "area": "perennial-bed",
+      "name": "Dahlia, purple stems",
+      "speciesId": "dahlia",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4585.JPG"
+      ],
+      "position": {
+        "x": -24.7,
+        "z": 50.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Staked. A big blue-green hosta is visible just behind it (added as its own plant).",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-26",
+      "label": "#26",
+      "area": "perennial-bed",
+      "name": "Unknown 3-lobed leaves (hardy geranium or Japanese anemone?)",
+      "speciesId": "hardy-geranium",
+      "idConfidence": 35,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Japanese anemone (mildly toxic: protoanemonin, NC State)"
+      ],
+      "photos": [
+        "Source/photos/IMG_4586.JPG"
+      ],
+      "position": {
+        "x": -21.1,
+        "z": 51.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Tag present. The picture on it shows violet-purple flowers, which fits hardy geranium better than anemone, but I can't read the text. Please read it.",
+      "dogToxicOverride": "check",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-27",
+      "label": "#27",
+      "area": "perennial-bed",
+      "name": "Peony",
+      "speciesId": "peony",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4587.JPG"
+      ],
+      "position": {
+        "x": -19.0,
+        "z": 51.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Star-shaped seed pods.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-28",
+      "label": "#28",
+      "area": "perennial-bed",
+      "name": "Gray-green rosette (same as #4)",
+      "speciesId": "rose-campion-or-lambs-ear",
+      "idConfidence": 35,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Lamb's ear"
+      ],
+      "photos": [
+        "Source/photos/IMG_4588.JPG"
+      ],
+      "position": {
+        "x": -20.9,
+        "z": 52.1
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-29",
+      "label": "#29",
+      "area": "perennial-bed",
+      "name": "Geum",
+      "speciesId": "geum",
+      "idConfidence": 65,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4589.JPG"
+      ],
+      "position": {
+        "x": -14.9,
+        "z": 52.7
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Same leaf shape as #2.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-30",
+      "label": "#30",
+      "area": "perennial-bed",
+      "name": "Columbine",
+      "speciesId": "columbine",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4590.JPG"
+      ],
+      "position": {
+        "x": -20.7,
+        "z": 53.3
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Seed pods.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-31",
+      "label": "#31",
+      "area": "perennial-bed",
+      "name": "Blanket flower (gaillardia)",
+      "speciesId": "gaillardia",
+      "idConfidence": 95,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4591.JPG"
+      ],
+      "position": {
+        "x": -18.6,
+        "z": 53.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Blooming.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-32",
+      "label": "#32",
+      "area": "perennial-bed",
+      "name": "Lady's mantle or green coral bells",
+      "speciesId": "ladys-mantle",
+      "idConfidence": 55,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Green coral bells"
+      ],
+      "photos": [
+        "Source/photos/IMG_4592.JPG"
+      ],
+      "position": {
+        "x": -15.6,
+        "z": 54.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-33",
+      "label": "#33",
+      "area": "perennial-bed",
+      "name": "Coneflower",
+      "speciesId": "coneflower",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4593.JPG"
+      ],
+      "position": {
+        "x": -18.4,
+        "z": 54.9
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Seed heads now. Foxglove leaves at the edge of the photo.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-34",
+      "label": "#34",
+      "area": "perennial-bed",
+      "name": "Peony",
+      "speciesId": "peony",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4594.JPG"
+      ],
+      "position": {
+        "x": -24.5,
+        "z": 58.5
+      },
+      "size": 1.0,
+      "issues": [
+        "Heavy powdery mildew"
+      ],
+      "notes": "By the white fence.",
+      "needsAttention": true
+    },
+    {
+      "id": "pb-35",
+      "label": "#35",
+      "area": "perennial-bed",
+      "name": "Ninebark or currant shrub",
+      "speciesId": "ninebark-or-currant",
+      "idConfidence": 55,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Ninebark",
+        "Currant"
+      ],
+      "photos": [
+        "Source/photos/IMG_4595.JPG"
+      ],
+      "position": {
+        "x": -24.5,
+        "z": 62
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Where the white fence ends. Wild white asters just beyond it.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-36",
+      "label": "#36",
+      "area": "perennial-bed",
+      "name": "Foxglove, first-year rosette",
+      "speciesId": "foxglove",
+      "idConfidence": 75,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4596.JPG"
+      ],
+      "position": {
+        "x": -21,
+        "z": 56.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-37",
+      "label": "#37",
+      "area": "perennial-bed",
+      "name": "Columbine",
+      "speciesId": "columbine",
+      "idConfidence": 70,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4597.JPG"
+      ],
+      "position": {
+        "x": -19,
+        "z": 56.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Finely cut leaves with pale spent flowers.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-38",
+      "label": "#38",
+      "area": "perennial-bed",
+      "name": "Grass clump (ornamental or weed)",
+      "speciesId": "ornamental-grass",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Weedy grass"
+      ],
+      "photos": [
+        "Source/photos/IMG_4598.JPG"
+      ],
+      "position": {
+        "x": -17,
+        "z": 56.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Next to the red glass globe.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-39",
+      "label": "#39",
+      "area": "perennial-bed",
+      "name": "Coral bells, purple ruffled",
+      "speciesId": "heuchera",
+      "idConfidence": 90,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4599.JPG"
+      ],
+      "position": {
+        "x": -15,
+        "z": 56.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-40",
+      "label": "#40",
+      "area": "perennial-bed",
+      "name": "Foxglove rosette",
+      "speciesId": "foxglove",
+      "idConfidence": 70,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4600.JPG"
+      ],
+      "position": {
+        "x": -13.3,
+        "z": 56.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-41",
+      "label": "#41",
+      "area": "perennial-bed",
+      "name": "Yellow/straw foxglove (probably)",
+      "speciesId": "straw-foxglove",
+      "idConfidence": 50,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Other Digitalis",
+        "Another tall-spiked perennial"
+      ],
+      "photos": [
+        "Source/photos/IMG_4601.JPG"
+      ],
+      "position": {
+        "x": -22,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Smooth, glossy lance-shaped leaves under a tall seed spike. I think it's a yellow foxglove (Digitalis grandiflora or D. lutea), so it's treated as toxic.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-42",
+      "label": "#42",
+      "area": "perennial-bed",
+      "name": "Foxglove, flowered",
+      "speciesId": "foxglove",
+      "idConfidence": 80,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4602.JPG"
+      ],
+      "position": {
+        "x": -20,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Spent spike with one late pink flower.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-43",
+      "label": "#43",
+      "area": "perennial-bed",
+      "name": "Columbine",
+      "speciesId": "columbine",
+      "idConfidence": 80,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4603.JPG"
+      ],
+      "position": {
+        "x": -18,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-44",
+      "label": "#44",
+      "area": "perennial-bed",
+      "name": "Hellebore (Lenten rose)",
+      "speciesId": "hellebore",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4604.JPG"
+      ],
+      "position": {
+        "x": -16,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-45",
+      "label": "#45",
+      "area": "perennial-bed",
+      "name": "Bee balm or garden phlox",
+      "speciesId": "bee-balm-or-phlox",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Bee balm",
+        "Garden phlox"
+      ],
+      "photos": [
+        "Source/photos/IMG_4605.JPG"
+      ],
+      "position": {
+        "x": -14,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [
+        "Powdery mildew"
+      ],
+      "notes": null,
+      "needsAttention": true
+    },
+    {
+      "id": "pb-46",
+      "label": "#46",
+      "area": "perennial-bed",
+      "name": "Hellebore",
+      "speciesId": "hellebore",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4606.JPG"
+      ],
+      "position": {
+        "x": -12.5,
+        "z": 59
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-47",
+      "label": "#47",
+      "area": "perennial-bed",
+      "name": "Sneezeweed or false sunflower?",
+      "speciesId": "sneezeweed-or-heliopsis",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Sneezeweed",
+        "False sunflower"
+      ],
+      "photos": [
+        "Source/photos/IMG_4607.JPG"
+      ],
+      "position": {
+        "x": -22.5,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Single stem with lance-shaped leaves and a bud on top.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-48",
+      "label": "#48",
+      "area": "perennial-bed",
+      "name": "Coral bells, silver veins with red edges",
+      "speciesId": "heuchera",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4608.JPG"
+      ],
+      "position": {
+        "x": -20.5,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-49",
+      "label": "#49",
+      "area": "perennial-bed",
+      "name": "Jacob's ladder?",
+      "speciesId": "jacobs-ladder",
+      "idConfidence": 45,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4609.JPG"
+      ],
+      "position": {
+        "x": -18.5,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Small ladder-like leaflets. I couldn't see clear variegation in the photo.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-50",
+      "label": "#50",
+      "area": "perennial-bed",
+      "name": "Coral bells, pink/purple speckled",
+      "speciesId": "heuchera",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4610.JPG"
+      ],
+      "position": {
+        "x": -16.5,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "pb-51",
+      "label": "#51",
+      "area": "perennial-bed",
+      "name": "Iris",
+      "speciesId": "iris",
+      "idConfidence": 80,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4611.JPG"
+      ],
+      "position": {
+        "x": -14.5,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Sword-shaped leaves. Bearded or Siberian?",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-52",
+      "label": "#52",
+      "area": "perennial-bed",
+      "name": "Thin sprawling stems, unknown",
+      "speciesId": "unknown-perennial",
+      "idConfidence": 30,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4612.JPG"
+      ],
+      "position": {
+        "x": -12.8,
+        "z": 61.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Next to the blue glass globe.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-53",
+      "label": "#53",
+      "area": "perennial-bed",
+      "name": "Fern-leaf bleeding heart",
+      "speciesId": "bleeding-heart-fernleaf",
+      "idConfidence": 60,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4613.JPG"
+      ],
+      "position": {
+        "x": -11.6,
+        "z": 62.2
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Finely divided blue-green leaves.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-54",
+      "label": "#54",
+      "area": "perennial-bed",
+      "name": "Dead stalk, unknown",
+      "speciesId": "unknown-perennial",
+      "idConfidence": 20,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4614.JPG"
+      ],
+      "position": {
+        "x": -17.5,
+        "z": 62.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Dead stalk on a bamboo stake at the chain-link, next to a tree trunk.",
+      "needsAttention": false
+    },
+    {
+      "id": "pb-55",
+      "label": "#55",
+      "area": "fenceline",
+      "name": "Beyond the chain-link: CHECK BEFORE TOUCHING",
+      "speciesId": "wild-fenceline",
+      "idConfidence": 40,
+      "confirmedByOwner": false,
+      "alsoPossible": [
+        "Poison ivy",
+        "Lily of the valley (TOXIC to dogs)",
+        "Box elder seedlings",
+        "Virginia creeper (harmless)"
+      ],
+      "photos": [
+        "Source/photos/IMG_4615.JPG"
+      ],
+      "position": {
+        "x": -17,
+        "z": 65.5
+      },
+      "size": 1.0,
+      "issues": [
+        "Possible poison ivy: don't touch bare-handed"
+      ],
+      "notes": "Outside the bed. The 5-leaflet vine is most likely Virginia creeper. Some 3-leaflet seedlings could be box elder or poison ivy.",
+      "needsAttention": true
+    },
+    {
+      "id": "pb-hosta",
+      "label": "Hosta",
+      "area": "perennial-bed",
+      "name": "Hosta (blue-green)",
+      "speciesId": "hosta",
+      "idConfidence": 80,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4585.JPG"
+      ],
+      "position": {
+        "x": -22,
+        "z": 52.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "NOT in the original catalog. Seen behind dahlia #25 in IMG_4585. The position is a guess.",
+      "needsAttention": false
+    },
+    {
+      "id": "wild-asters",
+      "label": "Wild asters",
+      "area": "fenceline",
+      "name": "White wood aster & goldenrod (wild)",
+      "speciesId": "wild-asters-goldenrod",
+      "idConfidence": 70,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4595.JPG",
+        "Source/photos/IMG_4601.JPG"
+      ],
+      "position": {
+        "x": -8,
+        "z": 64.5
+      },
+      "size": 2.5,
+      "issues": [],
+      "notes": "Along the chain-link. Good for late pollinators, so leave them.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlias",
+      "label": "Dahlia clump",
+      "area": "island-bed",
+      "name": "Dahlia clump (many colors)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -6.8,
+        "z": 21.7
+      },
+      "size": 3,
+      "issues": [],
+      "notes": "Big caged clump: orange, red, coral, pink and burgundy.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-blueberry-1",
+      "label": "Blueberry 1",
+      "area": "island-bed",
+      "name": "Blueberry #1",
+      "speciesId": "blueberry",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4558.JPG"
+      ],
+      "position": {
+        "x": -3.1,
+        "z": 20.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "In a chicken-wire cage. Tag present. Looks healthy. On the edge of soil Zones A and B (Zone B tested pH 4.9).",
+      "needsAttention": false
+    },
+    {
+      "id": "is-blueberry-2",
+      "label": "Blueberry 2",
+      "area": "island-bed",
+      "name": "Blueberry #2",
+      "speciesId": "blueberry",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4559.JPG"
+      ],
+      "position": {
+        "x": 0.2,
+        "z": 20.6
+      },
+      "size": 1.0,
+      "issues": [
+        "Yellow leaves with green veins (interveinal chlorosis). Zone B is acidic enough for blueberries but tested LOW in magnesium, and magnesium deficiency causes exactly this pattern, starting on older leaves. If this plant sits in Zone A instead, soil pH may be too high. A soil test right at this plant will tell. Don't add anything until then."
+      ],
+      "notes": "In a chicken-wire cage. On the edge of soil Zones A and B (Zone B tested pH 4.9).",
+      "needsAttention": true
+    },
+    {
+      "id": "is-lilac",
+      "label": "Lilac",
+      "area": "island-bed",
+      "name": "Lilac (large shrub by the shed)",
+      "speciesId": "lilac",
+      "idConfidence": 75,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4553.JPG",
+        "Source/photos/IMG_4557.JPG"
+      ],
+      "position": {
+        "x": -2.6,
+        "z": 25.2
+      },
+      "size": 3,
+      "issues": [],
+      "notes": "Heart-shaped leaves in IMG_4557 point to lilac. A leaf close-up would confirm it.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-coneflower",
+      "label": "Coneflower",
+      "area": "island-bed",
+      "name": "Coneflower (tagged, double pink/red)",
+      "speciesId": "coneflower",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4557.JPG"
+      ],
+      "position": {
+        "x": -1.2,
+        "z": 22.9
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Has a \"Northern Grown\" tag with a double pink-red echinacea photo. I can't read the variety.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-hosta",
+      "label": "Hosta",
+      "area": "island-bed",
+      "name": "Variegated hosta",
+      "speciesId": "hosta",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4553.JPG",
+        "Source/photos/IMG_4554.JPG"
+      ],
+      "position": {
+        "x": 2.5,
+        "z": 24.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "is-hydrangea-limelight",
+      "label": "Hydrangea (large)",
+      "area": "island-bed",
+      "name": "Panicle hydrangea (likely 'Limelight')",
+      "speciesId": "panicle-hydrangea",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4553.JPG",
+        "Source/photos/IMG_4554.JPG"
+      ],
+      "position": {
+        "x": 5.2,
+        "z": 25.6
+      },
+      "size": 3,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "is-hydrangea-littlelime",
+      "label": "Hydrangea (small)",
+      "area": "island-bed",
+      "name": "Panicle hydrangea (likely 'Little Lime')",
+      "speciesId": "panicle-hydrangea",
+      "idConfidence": 80,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4554.JPG",
+        "Source/photos/IMG_4555.JPG"
+      ],
+      "position": {
+        "x": 8.5,
+        "z": 25.2
+      },
+      "size": 2,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "is-brussels",
+      "label": "Brussels sprouts",
+      "area": "island-bed",
+      "name": "Brussels sprouts (4 black pots + 1 terracotta)",
+      "speciesId": "brussels-sprouts",
+      "idConfidence": 70,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4554.JPG"
+      ],
+      "position": {
+        "x": 3.8,
+        "z": 20.2
+      },
+      "size": 2,
+      "issues": [],
+      "notes": "Blue-green brassicas in nursery pots.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-balloon-flower",
+      "label": "Balloon flower",
+      "area": "island-bed",
+      "name": "Balloon flower 'Sentimental Blue'",
+      "speciesId": "balloon-flower",
+      "idConfidence": 95,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4556.JPG"
+      ],
+      "position": {
+        "x": 8.0,
+        "z": 19.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "NOT in the original catalog. The tag reads \"Sentimental Blue Balloon Flower, Platycodon grandiflorus\". Blooming now.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-cosmos",
+      "label": "Cosmos",
+      "area": "island-bed",
+      "name": "Cosmos (tall, pink)",
+      "speciesId": "cosmos",
+      "idConfidence": 75,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -5.4,
+        "z": 24.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "From your notes. It didn't show clearly in the photos I have, so the position is a guess.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-raspberries",
+      "label": "Raspberries",
+      "area": "island-bed",
+      "name": "Raspberries (fall-bearing)",
+      "speciesId": "raspberry-fall",
+      "idConfidence": 85,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4555.JPG"
+      ],
+      "position": {
+        "x": 11.2,
+        "z": 23.3
+      },
+      "size": 2.5,
+      "issues": [],
+      "notes": "Still fruiting in late September.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-1",
+      "label": "Dahlia 1",
+      "area": "dahlia-strip",
+      "name": "Dahlia 1 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 2.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-2",
+      "label": "Dahlia 2",
+      "area": "dahlia-strip",
+      "name": "Dahlia 2 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 3.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-3",
+      "label": "Dahlia 3",
+      "area": "dahlia-strip",
+      "name": "Dahlia 3 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 5.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-4",
+      "label": "Dahlia 4",
+      "area": "dahlia-strip",
+      "name": "Dahlia 4 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 6.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-5",
+      "label": "Dahlia 5",
+      "area": "dahlia-strip",
+      "name": "Dahlia 5 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 8.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-6",
+      "label": "Dahlia 6",
+      "area": "dahlia-strip",
+      "name": "Dahlia 6 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 9.5
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "ds-7",
+      "label": "Dahlia 7",
+      "area": "dahlia-strip",
+      "name": "Dahlia 7 (strip)",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4547.JPG"
+      ],
+      "position": {
+        "x": -23.3,
+        "z": 11.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "needsAttention": false
+    },
+    {
+      "id": "tr-pot",
+      "label": "Pot at trellis",
+      "area": "trellis",
+      "name": "Potted plant at the trellis base",
+      "speciesId": "unknown-pot",
+      "idConfidence": 10,
+      "confirmedByOwner": false,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4548.JPG"
+      ],
+      "position": {
+        "x": -25,
+        "z": 12.8
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb1-luffa",
+      "label": "Bed 1: Luffa (loofah)",
+      "area": "raised-bed-1",
+      "name": "Luffa (loofah) (raised bed 1)",
+      "speciesId": "loofah",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4548.JPG"
+      ],
+      "position": {
+        "x": -24.3,
+        "z": 16.6
+      },
+      "size": 2,
+      "issues": [],
+      "notes": "Grows up the black arch trellis at the front of bed 1.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb1-honeydew",
+      "label": "Bed 1: Honeydew melon",
+      "area": "raised-bed-1",
+      "name": "Honeydew melon (raised bed 1)",
+      "speciesId": "honeydew",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -22.3,
+        "z": 17.9
+      },
+      "size": 1.5,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb1-cucumber",
+      "label": "Bed 1: Cucumbers",
+      "area": "raised-bed-1",
+      "name": "Cucumbers (raised bed 1)",
+      "finished": "2026-09-24",
+      "speciesId": "cucumber",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 19.2
+      },
+      "size": 1.2,
+      "issues": [],
+      "notes": "Finished for the 2026 season.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb2-ground-cherry",
+      "label": "Bed 2: Ground cherries",
+      "area": "raised-bed-2",
+      "name": "Ground cherries (raised bed 2)",
+      "speciesId": "ground-cherry",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -24.3,
+        "z": 20.4
+      },
+      "size": 1.5,
+      "issues": [],
+      "notes": "The bushy light-green plant in IMG_4549.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb2-nasturtium",
+      "label": "Bed 2: Nasturtiums",
+      "area": "raised-bed-2",
+      "name": "Nasturtiums (raised bed 2)",
+      "speciesId": "nasturtium",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -22.3,
+        "z": 21.7
+      },
+      "size": 1,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb2-zucchini",
+      "label": "Bed 2: Zucchini",
+      "area": "raised-bed-2",
+      "name": "Zucchini (raised bed 2)",
+      "speciesId": "zucchini",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 23.0
+      },
+      "size": 1.5,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb3-squash",
+      "label": "Bed 3: Squash",
+      "area": "raised-bed-3",
+      "name": "Squash (raised bed 3)",
+      "finished": "2026-09-24",
+      "speciesId": "squash",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 24.2
+      },
+      "size": 1.5,
+      "issues": [],
+      "notes": "Summer or winter squash? Tell me and I'll narrow the care. Finished for the 2026 season.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb3-peas",
+      "label": "Bed 3: Peas",
+      "area": "raised-bed-3",
+      "name": "Peas (raised bed 3)",
+      "speciesId": "peas",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -22.3,
+        "z": 25.1
+      },
+      "size": 1,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb3-radish",
+      "label": "Bed 3: Radishes",
+      "area": "raised-bed-3",
+      "name": "Radishes (raised bed 3)",
+      "speciesId": "radish",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 25.9
+      },
+      "size": 0.8,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb3-nasturtium",
+      "label": "Bed 3: Nasturtiums",
+      "area": "raised-bed-3",
+      "name": "Nasturtiums (raised bed 3)",
+      "speciesId": "nasturtium",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -22.3,
+        "z": 26.8
+      },
+      "size": 1,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb4-eggplant",
+      "label": "Bed 4: Eggplant",
+      "area": "raised-bed-4",
+      "name": "Eggplant (raised bed 4)",
+      "speciesId": "eggplant",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 28.0
+      },
+      "size": 1.2,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb4-tomatoes",
+      "label": "Bed 4: Tomatoes",
+      "area": "raised-bed-4",
+      "name": "Tomatoes (raised bed 4)",
+      "speciesId": "tomato",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -22.3,
+        "z": 29.3
+      },
+      "size": 1.8,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb4-beets",
+      "label": "Bed 4: Beets",
+      "area": "raised-bed-4",
+      "name": "Beets (raised bed 4)",
+      "speciesId": "beet",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 30.6
+      },
+      "size": 0.8,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb5-asparagus",
+      "label": "Bed 5: Asparagus",
+      "area": "raised-bed-5",
+      "name": "Asparagus (raised bed 5)",
+      "speciesId": "asparagus",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -24.3,
+        "z": 31.8
+      },
+      "size": 1.5,
+      "issues": [],
+      "notes": "The feathery ferns at the birdhouse end of the beds. Asparagus is permanent, so plan around it.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb5-nasturtium",
+      "label": "Bed 5: Nasturtiums",
+      "area": "raised-bed-5",
+      "name": "Nasturtiums (raised bed 5)",
+      "speciesId": "nasturtium",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4549.JPG"
+      ],
+      "position": {
+        "x": -22.3,
+        "z": 32.7
+      },
+      "size": 1,
+      "issues": [],
+      "notes": "Orange nasturtium blooming in IMG_4549.",
+      "needsAttention": false
+    },
+    {
+      "id": "rb5-dill",
+      "label": "Bed 5: Dill",
+      "area": "raised-bed-5",
+      "name": "Dill (raised bed 5)",
+      "speciesId": "dill",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -24.3,
+        "z": 33.5
+      },
+      "size": 1,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    },
+    {
+      "id": "rb5-basil",
+      "label": "Bed 5: Basil",
+      "area": "raised-bed-5",
+      "name": "Basil (raised bed 5)",
+      "speciesId": "basil",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [],
+      "position": {
+        "x": -22.3,
+        "z": 34.4
+      },
+      "size": 0.8,
+      "issues": [],
+      "notes": null,
+      "needsAttention": false
+    }
+  ]
+}

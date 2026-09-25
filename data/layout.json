@@ -1,0 +1,336 @@
+{
+  "_about": "Yard shapes for the 3D view. Units are FEET. Two distances are measured (deck to shed ≈ 27.5 ft; left fence ≈ 63 ft 8 in). Everything else is estimated from photos. x runs left(-) to right(+) as seen from the deck. z is the distance out from the deck edge toward the back treeline. Change any number here to move or resize something.",
+  "_asOf": "2026-09-24",
+  "site": {
+    "location": "Salem, MA area",
+    "usdaZone": "7a",
+    "usdaZoneSource": "2023 USDA Plant Hardiness Zone Map (the newest; built from 1991–2020 data), looked up for Salem, MA via phzmapi.org, which serves the USDA map data. Double-check by typing your ZIP code at https://planthardiness.ars.usda.gov/",
+    "frostSource": "NOAA 1991–2020 climate normals (the same period as the 2023 zone map). Nearest stations: Marblehead (USC00194502, ~2 mi) and Beverly (USC00190593, ~5 mi). Retrieved from https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-annualseasonal-1991-2020",
+    "frostConfidence": 80,
+    "frostConfidenceWhy": "These are official NOAA 1991–2020 averages from two stations within about 5 miles, so the typical dates are solid. Any one year can be a week or two off: there's a 1-in-10 chance of frost by Oct 1–5.",
+    "lastSpringFrost": "04-30",
+    "lastSpringFrostNote": "Typical (50/50) last 32°F night: Apr 25 at Marblehead, May 4 at Beverly.",
+    "safePlantingDate": "05-15",
+    "safePlantingDateNote": "90% chance the last 32°F night is already past: May 13 at Marblehead, May 17 at Beverly. Use this for dahlias, tomatoes, basil and other tender plants.",
+    "firstFallFrost": "10-15",
+    "firstFallFrostNote": "Typical (50/50) first 32°F night: Oct 20 at Marblehead, Oct 12 at Beverly.",
+    "earlyFrostWatch": "10-01",
+    "earlyFrostWatchNote": "10% chance of a 32°F night by Oct 1 (Beverly) or Oct 5 (Marblehead). Start watching the forecast from here.",
+    "hardFreeze": "10-25",
+    "hardFreezeNote": "Typical first 28°F hard freeze: Oct 25 (Beverly) to Oct 31 (Marblehead). The app uses Oct 25, the earlier of the two.",
+    "measured": {
+      "deckToShedFt": 27.5,
+      "leftFenceFt": 63.67,
+      "leftFenceNote": "On a slight incline, so the flat distance is a bit shorter."
+    },
+    "soil": [
+      {
+        "zone": "A",
+        "results": "Not recorded yet.",
+        "where": "Not mapped yet."
+      },
+      {
+        "zone": "B",
+        "results": "pH about 4.9 (very acidic). Low calcium and magnesium, elevated aluminum, slightly elevated lead. UMass recommended a metals follow-up test before growing food crops.",
+        "where": "Not mapped yet. The blueberries are on the edge of Zones A and B."
+      }
+    ]
+  },
+  "bounds": {
+    "xMin": -30,
+    "xMax": 30,
+    "zMin": -12,
+    "zMax": 78
+  },
+  "areas": [
+    {
+      "id": "deck",
+      "name": "Deck",
+      "shape": "rect",
+      "x": -9,
+      "z": -10,
+      "width": 18,
+      "depth": 10,
+      "notes": "Railing planters and pots. Not catalogued yet."
+    },
+    {
+      "id": "dahlia-strip",
+      "name": "Dahlia strip",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 1,
+      "width": 4.5,
+      "depth": 11,
+      "notes": "Along the white fence in front of the house wall, circled in chicken wire."
+    },
+    {
+      "id": "trellis",
+      "name": "Loofah arch trellis",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 12,
+      "width": 4,
+      "depth": 4
+    },
+    {
+      "id": "raised-bed-1",
+      "name": "Raised bed 1",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 16.0,
+      "width": 4.5,
+      "depth": 3.8,
+      "notes": "Wooden bed with chicken wire and a wire trellis. Bed 1 is nearest the deck, bed 5 is by the birdhouse."
+    },
+    {
+      "id": "raised-bed-2",
+      "name": "Raised bed 2",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 19.8,
+      "width": 4.5,
+      "depth": 3.8,
+      "notes": "Wooden bed with chicken wire and a wire trellis. Bed 1 is nearest the deck, bed 5 is by the birdhouse."
+    },
+    {
+      "id": "raised-bed-3",
+      "name": "Raised bed 3",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 23.6,
+      "width": 4.5,
+      "depth": 3.8,
+      "notes": "Wooden bed with chicken wire and a wire trellis. Bed 1 is nearest the deck, bed 5 is by the birdhouse."
+    },
+    {
+      "id": "raised-bed-4",
+      "name": "Raised bed 4",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 27.4,
+      "width": 4.5,
+      "depth": 3.8,
+      "notes": "Wooden bed with chicken wire and a wire trellis. Bed 1 is nearest the deck, bed 5 is by the birdhouse."
+    },
+    {
+      "id": "raised-bed-5",
+      "name": "Raised bed 5",
+      "shape": "rect",
+      "x": -25.5,
+      "z": 31.2,
+      "width": 4.5,
+      "depth": 3.8,
+      "notes": "Wooden bed with chicken wire and a wire trellis. Bed 1 is nearest the deck, bed 5 is by the birdhouse."
+    },
+    {
+      "id": "perennial-bed",
+      "name": "Perennial bed",
+      "shape": "polygon",
+      "points": [
+        [
+          -26,
+          36
+        ],
+        [
+          -26,
+          63
+        ],
+        [
+          -11,
+          63
+        ],
+        [
+          -12,
+          57
+        ],
+        [
+          -16,
+          46
+        ],
+        [
+          -20,
+          36
+        ]
+      ],
+      "edge": "stone",
+      "notes": "Stone-edged and mulched. Narrow at the birdhouse and widens into the back corner where the white fence meets the chain-link."
+    },
+    {
+      "id": "island-bed",
+      "name": "Shed island bed",
+      "shape": "ellipse",
+      "cx": 2,
+      "cz": 22.5,
+      "rx": 12,
+      "rz": 5,
+      "edge": "stone",
+      "notes": "Round/oval stone-edged bed in front of the shed."
+    },
+    {
+      "id": "lawn",
+      "name": "Lawn",
+      "shape": "rect",
+      "x": -21,
+      "z": 0,
+      "width": 49,
+      "depth": 63
+    }
+  ],
+  "structures": [
+    {
+      "id": "house-wall",
+      "name": "House wall (beyond the left fence)",
+      "type": "wall",
+      "x": -30,
+      "z": -4,
+      "width": 4,
+      "depth": 18,
+      "height": 12,
+      "color": "#9aa3a8"
+    },
+    {
+      "id": "fence-left",
+      "name": "White vinyl fence",
+      "type": "fence",
+      "from": [
+        -26,
+        0
+      ],
+      "to": [
+        -26,
+        63
+      ],
+      "height": 6,
+      "color": "#f4f4f0",
+      "notes": "Measured about 63 ft 8 in, on a slight incline."
+    },
+    {
+      "id": "fence-back",
+      "name": "Chain-link fence",
+      "type": "fence",
+      "from": [
+        -26,
+        63
+      ],
+      "to": [
+        28,
+        63
+      ],
+      "height": 5,
+      "color": "#8c9296",
+      "seeThrough": true,
+      "notes": "Assumed to run straight across at the end of the white fence. How far behind the shed it really is hasn't been measured."
+    },
+    {
+      "id": "arch-trellis",
+      "name": "Black arch trellis",
+      "type": "trellis",
+      "x": -24,
+      "z": 14,
+      "width": 5,
+      "height": 7,
+      "color": "#1d1d1d"
+    },
+    {
+      "id": "birdhouse",
+      "name": "Birdhouse on wooden post",
+      "type": "post",
+      "x": -25,
+      "z": 35.5,
+      "height": 8,
+      "color": "#b98b55"
+    },
+    {
+      "id": "feeder-rock",
+      "name": "Flat rock, shepherd's hook & bird feeder",
+      "type": "rock",
+      "x": -14,
+      "z": 14,
+      "radius": 1.5,
+      "hook": true
+    },
+    {
+      "id": "shed",
+      "name": "Old shed",
+      "type": "building",
+      "x": -5,
+      "z": 27.5,
+      "width": 14,
+      "depth": 8,
+      "height": 8,
+      "color": "#2f5a3e",
+      "frontColor": "#6f8f93",
+      "notes": "Front is about 27.5 ft from the deck (measured). Side walls are dark green and the front is blue-gray with metal wheel decor and a clock. There's an insect hotel on the side wall facing the perennial bed."
+    },
+    {
+      "id": "stump",
+      "name": "Tree stump (mulched)",
+      "type": "stump",
+      "x": 11.5,
+      "z": 34,
+      "radius": 1.5
+    },
+    {
+      "id": "raspberry-trellis",
+      "name": "White raspberry trellis",
+      "type": "trellis",
+      "x": 12,
+      "z": 24.5,
+      "width": 4,
+      "height": 6,
+      "color": "#f4f4f0"
+    },
+    {
+      "id": "evergreen",
+      "name": "Large evergreen (landmark only)",
+      "type": "shrub",
+      "x": 16,
+      "z": 3,
+      "radius": 5,
+      "height": 7,
+      "color": "#2e4a2c",
+      "notes": "Shown only so the 3D yard looks right. It has no plant card, as you asked."
+    },
+    {
+      "id": "neighbor-building",
+      "name": "Neighbor's building (yard edge)",
+      "type": "building",
+      "x": 26,
+      "z": 20,
+      "width": 14,
+      "depth": 16,
+      "height": 12,
+      "color": "#e7dcc5",
+      "notOurs": true
+    },
+    {
+      "id": "trees-behind-shed",
+      "name": "Trees behind the shed",
+      "type": "trees",
+      "from": [
+        -8,
+        44
+      ],
+      "to": [
+        28,
+        44
+      ],
+      "depth": 19,
+      "notes": "Rough placement. The photos show big trees close behind the shed."
+    },
+    {
+      "id": "treeline",
+      "name": "Treeline beyond the chain-link",
+      "type": "trees",
+      "from": [
+        -30,
+        64
+      ],
+      "to": [
+        30,
+        64
+      ],
+      "depth": 14
+    }
+  ]
+}

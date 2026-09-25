@@ -1,0 +1,18 @@
+# These stay on this Mac and are never uploaded to GitHub.
+
+# Original photos and videos: very large, and the originals still carry location data.
+# (The app uses the small copies in photos/, which have no location data.)
+Source/
+
+# Your brief for Claude, which has personal details.
+HANDOFF.md
+
+# Claude's settings for this folder.
+.claude/
+
+# Check-offs saved on the Mac. Online, they're saved in Supabase instead.
+data/checkoffs.json
+
+# Mac and Python clutter.
+.DS_Store
+__pycache__/
