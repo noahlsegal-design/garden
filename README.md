@@ -63,6 +63,8 @@ Check-offs are saved to your garden account on Supabase, so every device you sig
 | `serve.py` | The tiny web server that `Start Garden.command` runs. It makes browsers check for updated files so you never get a stale version. With no garden account connected, it saves check-offs on the Mac |
 | `supabase/setup.sql` | The one-time setup for your garden account: where check-offs are stored, and the rules that keep them private |
 | `.gitignore` | The list of what stays on this Mac and is never uploaded |
+| `tests/` | Automatic checks Claude runs after changes (`node tests/tasks.test.mjs`, and the same for `store` and `cloud`) |
+| `NEXT-STEPS.md` | Your plan and ready-to-paste prompts for future Claude sessions. Stays on this Mac |
 
 After editing a file in `data/`, refresh your Mac copy to see it. The online copy updates once it's published.
 

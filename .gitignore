@@ -4,8 +4,9 @@
 # (The app uses the small copies in photos/, which have no location data.)
 Source/
 
-# Your brief for Claude, which has personal details.
+# Your brief for Claude, which has personal details, and your plan and prompts for future sessions.
 HANDOFF.md
+NEXT-STEPS.md
 
 # Claude's settings for this folder.
 .claude/
