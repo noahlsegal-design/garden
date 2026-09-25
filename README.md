@@ -21,7 +21,7 @@ The online copy comes from this folder: it's uploaded to GitHub, which publishes
 
 ### Costs and privacy
 
-GitHub and Supabase are both free at this size. The website is public like any web page: anyone with the link can see the yard and plants, but only you can sign in and check things off. Your original photos and videos, and `HANDOFF.md`, stay on this Mac and are never uploaded (the list is in `.gitignore`).
+GitHub and Supabase are both free at this size. The website is public like any web page: anyone with the link can see the yard and plants, but only you can sign in and check things off. Your original photos and videos, and `NEXT-STEPS.md`, stay on this Mac and are never uploaded (the list is in `.gitignore`).
 
 Supabase puts free projects to sleep after about a week of little use, and emails you first. If the app says it can't reach your garden account, sign in at supabase.com and click **Resume project**. Nothing is lost, and check-offs wait on your phone in the meantime.
 
