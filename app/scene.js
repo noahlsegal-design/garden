@@ -56,6 +56,7 @@ const SKY = "#dde8ec";
 function buildPlant(p, sp, month, bloomView = false) {
   const g = new THREE.Group();
   const look = lookFor(p);
+  const shrub = look.shrub || sp?.kind === "shrub";
   const s = widthScale(p, sp);
   const r = plantRadius(p, sp);
   const H = plantHeight(p, sp);
