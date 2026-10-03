@@ -100,3 +100,14 @@ export function lookFor(plant) {
   }
   return look;
 }
+
+// How far a plant spreads from its middle, in feet, as the 3D yard draws it. "size" in plants.json scales it.
+export function plantRadius(plant, sp) {
+  const shrub = lookFor(plant).shrub || sp?.kind === "shrub";
+  return (shrub ? 1.1 : 0.75) * (plant.size || 1);
+}
+// "about 3 ft across", to the nearest half foot.
+export function acrossText(plant, sp) {
+  const ft = Math.max(0.5, Math.round(plantRadius(plant, sp) * 4) / 2);
+  return `about ${ft} ft across`;
+}

@@ -1,13 +1,14 @@
 // The 3D yard: builds the beds, fences, shed and trees from data/layout.json, draws every plant
-// the way it looks in the chosen month, and reports taps on plants.
+// the way it looks in the chosen month, and reports taps on plants. In Edit mode it also lets you drag a
+// plant to a new spot and tap the ground to place a new one.
 //
 // Data coordinates are in feet: x = left(-)/right(+) as seen from the deck, z = distance out from the deck.
 // three.js looks the other way round, so the helper W() mirrors x to keep "left" on the left of the screen.
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { stateFor } from "./data.js";
-import { lookFor } from "./look.js";
+import { stateFor, areaAt } from "./data.js";
+import { lookFor, plantRadius } from "./look.js";
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const W = (x, z, y = 0) => V(-x, y, z);
@@ -56,8 +57,7 @@ function buildPlant(p, sp, month, bloomView = false) {
   const g = new THREE.Group();
   const look = lookFor(p);
   const s = p.size || 1;
-  const shrub = look.shrub || sp.kind === "shrub";
-  const r = (shrub ? 1.1 : 0.75) * s;
+  const r = plantRadius(p, sp);
   const H = Math.max(0.3, r * 1.2 * look.h);
   const rand = rng(hashStr(p.id));
   const state = stateFor(sp, month);
@@ -136,10 +136,13 @@ function buildPlant(p, sp, month, bloomView = false) {
   hit.userData.plantId = p.id;
   g.add(hit);
 
-  g.position.copy(W(p.position.x, p.position.z, p.area?.startsWith("raised-bed") ? 1 : 0));
+  g.position.copy(W(p.position.x, p.position.z, groundHeight(p.area)));
   g.userData = { plantId: p.id, radius: r, height: H, hit, blooming };
   return g;
 }
+
+// How high a bed's surface is: plants in the raised beds sit on the soil, and pots on the deck sit on the boards.
+const groundHeight = (area) => (area?.startsWith("raised-bed") ? 1 : area === "deck" ? 2 : 0);
 
 // ---------- the yard ----------
 function perimeterStones(points, group, skip) {
@@ -333,7 +336,7 @@ const PLACES = [
 const GROUND = new THREE.Plane(V(0, 1, 0), 0);
 
 // ---------- public ----------
-export function createYard(canvas, { layout, onPick, onMove }) {
+export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -612,6 +615,17 @@ export function createYard(canvas, { layout, onPick, onMove }) {
     }
     needsRender = true;
   }
+  // Redraws one plant, say while its size is being adjusted, without rebuilding the whole yard.
+  function updatePlant(p) {
+    const old = groups.get(p.id);
+    if (old) { plantsRoot.remove(old); hitTargets = hitTargets.filter((h) => h !== old.userData.hit); }
+    const g = buildPlant(p, lastSpecies.get(p.speciesId), lastMonth, bloomView);
+    plantsRoot.add(g);
+    groups.set(p.id, g);
+    hitTargets.push(g.userData.hit);
+    placeRings();
+    redrawShadows();
+  }
   function select(id) { selectedId = id; placeRings(); }
   function setHighlight(h) { highlight = h; placeRings(); }
 
@@ -681,6 +695,85 @@ export function createYard(canvas, { layout, onPick, onMove }) {
     needsRender = true;
   }
 
+  // ----- Edit mode: dragging a plant, and tapping where a new one goes -----
+  // While Edit mode is on, a finger (or the mouse) pressed on a plant carries it instead of sliding the map,
+  // and onDrop reports where it was let go, in yard feet. Pressing on open ground still slides the map, and a
+  // second finger puts the plant back and turns or zooms the view as usual. While placing, a tap on the ground
+  // reports that spot through onPlace.
+  let editing = false, placing = false, drag = null;
+  const pressed = new Set(); // every pointer down on the yard right now
+  const groundAt = (x, y, height = 0) => screenRay(x, y).ray.intersectPlane(new THREE.Plane(UP, -height), V(0, 0, 0));
+  const tenth = (v) => Math.round(v * 10) / 10;
+  function putBack(d) {
+    d.g.position.copy(d.from);
+    placeRings();
+    redrawShadows();
+  }
+  canvas.addEventListener("pointerdown", (e) => {
+    // This runs before the map controls see the press (it listens first), so it can keep them out of a drag.
+    const others = pressed.size;
+    pressed.add(e.pointerId);
+    if (drag) { putBack(drag); drag = null; return; } // a second finger: back to moving the view
+    if (!editing || placing || others || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const hit = screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false)[0];
+    const g = hit && groups.get(hit.object.userData.plantId);
+    const spot = g && groundAt(e.clientX, e.clientY, g.position.y);
+    if (!spot) return;
+    controls.enabled = false; // until every finger is up
+    anim = null;
+    drag = { id: g.userData.plantId, g, pointerId: e.pointerId, x0: e.clientX, y0: e.clientY, from: g.position.clone(), offset: g.position.clone().sub(spot), moved: false };
+    try { canvas.setPointerCapture(e.pointerId); } catch { /* the pointer already went away */ }
+  }, { capture: true });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drag) {
+      if (editing && e.pointerType === "mouse" && !pressed.size) {
+        canvas.style.cursor = placing ? "crosshair" : screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false).length ? "grab" : "";
+      }
+      return;
+    }
+    if (e.pointerId !== drag.pointerId) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) <= 8) return;
+    drag.moved = true;
+    const spot = groundAt(e.clientX, e.clientY, drag.from.y);
+    if (!spot) return;
+    spot.add(drag.offset);
+    // Stay inside the yard (three.js x runs the other way from yard feet).
+    spot.x = THREE.MathUtils.clamp(spot.x, -b.xMax, -b.xMin);
+    spot.z = THREE.MathUtils.clamp(spot.z, b.zMin, b.zMax);
+    const area = areaAt(layout, -spot.x, spot.z);
+    drag.g.position.set(spot.x, groundHeight(area) + 0.5, spot.z); // lifted a little while it's carried
+    if (selectedId === drag.id) selRing.position.set(spot.x, drag.g.position.y + 0.22, spot.z);
+    if (e.pointerType === "mouse") canvas.style.cursor = "grabbing";
+    redrawShadows();
+    needsRender = true;
+  });
+  const letGo = (e) => {
+    pressed.delete(e.pointerId);
+    if (drag && e.pointerId === drag.pointerId) {
+      const d = drag;
+      drag = null;
+      if (d.moved && e.type === "pointerup") {
+        const x = tenth(-d.g.position.x), z = tenth(d.g.position.z);
+        d.g.position.y = groundHeight(areaAt(layout, x, z));
+        onDrop?.(d.id, { x, z });
+      } else if (d.moved) putBack(d);
+      if (e.pointerType === "mouse") canvas.style.cursor = "grab";
+    }
+    if (!pressed.size) controls.enabled = true;
+  };
+  canvas.addEventListener("pointerup", letGo, { capture: true });
+  canvas.addEventListener("pointercancel", letGo, { capture: true });
+  function setEditing(on) {
+    editing = !!on;
+    if (!editing) placing = false;
+    if (drag) { putBack(drag); drag = null; }
+    canvas.style.cursor = "";
+  }
+  function setPlacing(on) {
+    placing = !!on && editing;
+    canvas.style.cursor = placing ? "crosshair" : "";
+  }
+
   // ----- tapping -----
   // A quick tap or click picks a plant, and a double-tap or double-click zooms in on that spot. Anything done
   // with two fingers is a gesture, not a tap.
@@ -703,7 +796,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
     const d = lift(e);
     const now = performance.now();
     if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8 || now - d.t > 600) return;
-    const touchDouble = e.pointerType !== "mouse" && lastTap && now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
+    const touchDouble = !placing && e.pointerType !== "mouse" && lastTap && now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
     if (touchDouble) {
       lastTap = null;
       zoomAt(e.clientX, e.clientY, 0.5);
@@ -711,6 +804,11 @@ export function createYard(canvas, { layout, onPick, onMove }) {
       return;
     }
     lastTap = { x: e.clientX, y: e.clientY, t: now };
+    if (placing) {
+      const spot = groundAt(e.clientX, e.clientY);
+      if (spot) onPlace?.({ x: tenth(-spot.x), z: tenth(spot.z) });
+      return;
+    }
     const hit = screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false)[0];
     onPick(hit ? hit.object.userData.plantId : null);
   });
@@ -759,5 +857,5 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   }
   requestAnimationFrame(frame);
 
-  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn };
+  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn, updatePlant, setEditing, setPlacing };
 }

@@ -36,6 +36,7 @@
       <span class="hint" id="hintText"></span>
     </div>
     <div class="mapbtns">
+      <button type="button" class="mapbtn" id="editBtn" aria-pressed="false" aria-controls="editBar" hidden>Edit</button>
       <button type="button" class="mapbtn" id="viewsBtn" aria-expanded="false" aria-controls="viewsMenu">Views</button>
       <button type="button" class="mapbtn" id="resetBtn">Reset view</button>
     </div>
@@ -49,6 +50,7 @@
     <button type="button" id="turnRightBtn" aria-label="Turn right" title="Turn right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 9.5A8 8 0 1 0 19 15"/><path d="M20 4.5v5h-5"/></svg></button>
   </div>
   <div class="bloombar" id="bloomBar" role="group" aria-label="Bloom timeline"></div>
+  <div class="edittray" id="editBar" role="group" aria-label="Edit the yard" hidden></div>
   <section class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetTitle" hidden></section>
   <div class="overlay" id="status" role="status">Loading your garden…</div>
 </main>

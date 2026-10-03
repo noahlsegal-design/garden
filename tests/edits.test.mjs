@@ -1,13 +1,15 @@
 // Checks the plant changes made in the app (app/edits.js) against the real garden data: how they layer on top of
 // data/plants.json, what "Save app edits into files" would write, when the website clears saved ones, and that
-// This week follows a plant that's finished or changes kind.
+// This week follows a plant that's finished or changes kind. Also Edit mode's changes: adding a plant (a new
+// dahlia gets its own box in This week), moving, resizing and removing one.
 // Run from the project folder: node tests/edits.test.mjs
 
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
-import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce } from "../app/edits.js";
+import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce, newPlant, newPlantId, basePlant, spotText } from "../app/edits.js";
 import { buildWeek, mondayOf, parseYmd } from "../app/tasks.js";
-import { dogSafety } from "../app/data.js";
+import { dogSafety, areaAt } from "../app/data.js";
+import { plantRadius, acrossText } from "../app/look.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
 const species = new Map(read("species.json").species.map((s) => [s.id, s]));
@@ -29,7 +31,7 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   const edits = {
     [unsure.id]: { name: { v: "Confirmed thing", at }, confirmedByOwner: { v: true, at }, idConfidence: { v: 100, at }, speciesId: { v: other.speciesId, at } },
     [finished.id]: { finished: { v: null, at } },
-    [dahlias[0].id]: { finished: { v: "2026-09-25", at }, speciesId: { v: "no-such-kind", at }, position: { v: { x: 0, z: 0 }, at } },
+    [dahlias[0].id]: { finished: { v: "2026-09-25", at }, speciesId: { v: "no-such-kind", at }, notes: { v: "Changed", at }, position: { v: { x: "far" }, at }, size: { v: null, at } },
     "not-a-plant": { name: { v: "Ghost", at } },
   };
   const out = new Map(withEdits(plants, edits, species, false).map((p) => [p.id, p]));
@@ -40,7 +42,9 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   assert(!("finished" in out.get(finished.id)), "an empty value takes the detail away");
   assert.equal(out.get(dahlias[0].id).finished, "2026-09-25");
   assert.equal(out.get(dahlias[0].id).speciesId, "dahlia", "a kind that isn't in species.json is ignored");
-  assert.deepEqual(out.get(dahlias[0].id).position, dahlias[0].position, "details the app can't change yet are ignored");
+  assert.equal(out.get(dahlias[0].id).notes, dahlias[0].notes, "details the app can't change yet are ignored");
+  assert.deepEqual(out.get(dahlias[0].id).position, dahlias[0].position, "a spot that makes no sense is ignored");
+  assert.equal(out.get(dahlias[0].id).size, dahlias[0].size, "a plant's size can't be taken away");
   assert(!out.has("not-a-plant"), "a change to a plant that isn't in the file doesn't add one");
   assert.equal(out.size, plants.length);
   assert.equal(out.get(other.id), byId.get(other.id), "plants with no changes are left as they are");
@@ -123,6 +127,100 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   assert(!after.plants.some((p) => p.id === dahlias[0].id));
   const moved = withEdits(plants, { [dahlias[1].id]: { speciesId: { v: other.speciesId, at } } }, species, false);
   assert(!digging(weekOf(moved)).plants.some((p) => p.id === dahlias[1].id), "changing a plant's kind moves its jobs");
+}
+
+// ---------- which bed a spot is in ----------
+{
+  const inBed = (id) => plants.find((p) => p.area === id && !p.finished);
+  for (const area of ["dahlia-strip", "perennial-bed", "island-bed", "raised-bed-2"]) {
+    const p = inBed(area);
+    assert.equal(areaAt(layout, p.position.x, p.position.z), area, `${p.id} is in ${area}`);
+  }
+  assert.equal(areaAt(layout, 5, 40), "lawn");
+  assert.equal(areaAt(layout, 0, 64.5), "fenceline", "past the lawn's far edge is the back chain-link");
+  assert.equal(areaAt(layout, 0, -5), "deck");
+  assert.equal(areaAt(layout, 200, 40), null, "outside the yard");
+}
+
+// ---------- Edit mode: add, move, resize, remove ----------
+{
+  const id = newPlantId("dahlia", Date.parse(at));
+  assert.match(id, /^dahlia-[a-z0-9]+$/);
+  assert.notEqual(id, newPlantId("dahlia", Date.parse(at)), "two plants added in the same moment still get different IDs");
+  const added = newPlant({ id, name: "Café au Lait", speciesId: "dahlia", area: "dahlia-strip", position: { x: -23.34, z: 3.06 } });
+  assert.deepEqual(Object.keys(added), Object.keys(dahlias[0]).filter((k) => k in added), "a new plant's details are in the same order as the others");
+  assert.deepEqual(added.position, { x: -23.3, z: 3.1 }, "spots are kept to a tenth of a foot");
+  assert.equal(added.confirmedByOwner, true);
+  assert.equal(newPlant({ id: "x", name: "?", speciesId: "unknown-perennial", area: "lawn", position: { x: 0, z: 0 }, unsure: true }).confirmedByOwner, false, "a placeholder kind leaves the ID unconfirmed");
+
+  const edits = {
+    [id]: { added: { v: added, at }, name: { v: "Café au Lait Royal", at } },
+    [dahlias[1].id]: { position: { v: { x: 4, z: 22 }, at }, area: { v: "island-bed", at }, size: { v: 1.5, at } },
+    [dahlias[2].id]: { removed: { v: "2026-10-03", at } },
+  };
+  const list = withEdits(plants, edits, species, false);
+  const out = new Map(list.map((p) => [p.id, p]));
+  assert.equal(list.length, plants.length + 1, "the new plant is added to the list");
+  assert.equal(list.at(-1).id, id, "after the plants in the file");
+  assert.equal(out.get(id).name, "Café au Lait Royal", "later changes go on top of a new plant");
+  assert.equal(out.get(id).label, "Café au Lait Royal", "a new plant's label follows its name");
+  assert.deepEqual(out.get(dahlias[1].id).position, { x: 4, z: 22 });
+  assert.equal(out.get(dahlias[1].id).area, "island-bed");
+  assert.equal(out.get(dahlias[1].id).size, 1.5);
+  assert.equal(out.get(dahlias[2].id).removed, "2026-10-03", "a removed plant is still listed, so it can be put back");
+  assert.equal(basePlant(plants, edits, species, false, id).name, "Café au Lait", "a new plant's changes are measured against how it was added");
+  assert.equal(basePlant(plants, edits, species, false, dahlias[1].id), byId.get(dahlias[1].id));
+  assert.equal(withEdits(plants, { "x-1": { added: { v: { ...added, speciesId: "no-such-kind" }, at } } }, species, false).length, plants.length, "a new plant of an unknown kind isn't shown");
+
+  // Moving into another bed, resizing and removing, on the card.
+  const lines = describeEdits(byId.get(dahlias[1].id), edits, species, false, "", new Map([["island-bed", "Shed island bed"]]));
+  assert.deepEqual(lines.map((l) => l.text), ["Moved to Shed island bed", "Resized"]);
+  assert.deepEqual(lines[0].fields.sort(), ["area", "position"], "undoing a move puts back both the spot and the bed");
+  assert.deepEqual(describeEdits(byId.get(dahlias[2].id), edits, species, false, "").map((l) => l.text), ["Removed from the yard"]);
+  const newLines = describeEdits(basePlant(plants, edits, species, false, id), edits, species, false, "");
+  assert.deepEqual(newLines.map((l) => [l.text, l.fields.length]), [["Added in the app", 0], [`Renamed from “Café au Lait”`, 1]], "adding has no Undo on the card");
+  assert.equal(editFor(byId.get(dahlias[1].id), edits, "size", byId.get(dahlias[1].id).size, at), null, "sizing it back clears the change");
+
+  // This week: the new dahlia gets its own box, and the removed one drops out.
+  const weekOf = (l) => buildWeek({ species, plants: l, layout }, { weekStart: mondayOf(parseYmd("2026-10-19")), areaOrder: [] });
+  const digging = (w) => [...w.jobs, ...w.soon].find((j) => j.sp.id === "dahlia" && j.care.type === "winter");
+  const before = digging(weekOf(plants)), after = digging(weekOf(list));
+  assert.equal(after.plants.length, before.plants.length, "one dahlia added and one removed");
+  assert(after.plantKeys.includes(`${after.key}|${id}`), "the new dahlia has its own box");
+  assert(!after.plants.some((p) => p.id === dahlias[2].id), "the removed dahlia has none");
+
+  // "Save app edits into files": a new plant is one row with its later changes folded in.
+  const rows = unsavedEdits(plants, edits, species);
+  const addRow = rows.find((r) => r.id === id);
+  assert.equal(addRow.field, "added");
+  assert.equal(addRow.to.name, "Café au Lait Royal");
+  assert.equal(addRow.dropped, false);
+  assert.equal(rows.filter((r) => r.id === id).length, 1);
+  assert.deepEqual(rows.filter((r) => r.id === dahlias[1].id).map((r) => r.field).sort(), ["area", "position", "size"]);
+  const moveRow = rows.find((r) => r.field === "position");
+  assert.deepEqual(fieldText(moveRow, species).slice(1), [spotText(dahlias[1].position), "4 ft right, 22 ft out"]);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "area"), species, new Map([["island-bed", "Shed island bed"]])).slice(2), ["Shed island bed"]);
+  assert.equal(fieldText(rows.find((r) => r.field === "size"), species)[2], acrossText({ ...dahlias[1], size: 1.5 }, species.get("dahlia")));
+  assert.equal(fieldText(rows.find((r) => r.field === "removed"), species)[2], "Oct 3, 2026");
+  const gone = unsavedEdits(plants, { [id]: { added: { v: added, at }, removed: { v: "2026-10-03", at } } }, species);
+  assert.equal(gone[0].dropped, true, "added and removed again: nothing to write");
+
+  // Saved into the Mac's file: the website keeps showing the new plant until it's published, then clears it.
+  const saved = { [id]: { added: { v: addRow.to, at, saved: true, fileHad: null } } };
+  assert.equal(withEdits(plants, saved, species, false).at(-1).id, id, "the website shows it until it's published");
+  assert.equal(withEdits(plants, saved, species, true).length, plants.length, "the Mac's file has it, so it isn't added twice");
+  assert.deepEqual(staleEdits(plants, saved), [], "not published yet: keep it");
+  assert.deepEqual(staleEdits([...plants, addRow.to], saved), [[id, "added"]], "published: clear it");
+  assert.deepEqual(unsavedEdits(plants, saved, species), [], "a saved new plant isn't offered for saving again");
+}
+
+// ---------- sizes ----------
+{
+  const shrub = plants.find((p) => species.get(p.speciesId)?.kind === "shrub");
+  const small = dahlias[0];
+  assert(plantRadius({ ...small, size: 2 }, species.get(small.speciesId)) === 2 * plantRadius({ ...small, size: 1 }, species.get(small.speciesId)));
+  if (shrub) assert(plantRadius({ ...shrub, size: 1 }, species.get(shrub.speciesId)) > plantRadius({ ...small, size: 1 }, species.get(small.speciesId)), "shrubs are drawn wider");
+  assert.equal(acrossText({ ...small, size: 1 }, species.get("dahlia")), "about 1.5 ft across");
 }
 
 console.log("edits: all checks passed");

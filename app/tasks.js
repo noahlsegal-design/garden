@@ -111,11 +111,12 @@ export function buildWeek(garden, { weekStart, frosts = {}, done = {}, areaOrder
   const horizonEnd = addDays(weekEnd, HORIZON);
   const areaRank = (p) => { const i = areaOrder.indexOf(p.area); return i < 0 ? 99 : i; };
 
-  // Plants marked "finished" (for example, crops done for the season) drop out from that week on.
+  // Plants marked "finished" (for example, crops done for the season) drop out from that week on, and plants
+  // removed from the yard drop out altogether.
   const lastDay = ymd(weekEnd);
   const plantsBySpecies = new Map();
   for (const p of garden.plants) {
-    if (p.finished && p.finished <= lastDay) continue;
+    if (p.removed || (p.finished && p.finished <= lastDay)) continue;
     if (!plantsBySpecies.has(p.speciesId)) plantsBySpecies.set(p.speciesId, []);
     plantsBySpecies.get(p.speciesId).push(p);
   }

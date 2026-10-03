@@ -229,6 +229,16 @@ assert(!sb.checkoffs.some((r) => r.key === "w|revoked|2026-09-21"));
 assert(!row("pb-26", "name"), "undo clears the change");
 assert.equal(row("rb1-cucumber", "finished").user_id, "U2");
 
+// In Edit mode, the partner adds a dahlia, then drags it a little.
+const { newPlant } = await import("../app/edits.js");
+const dahlia = newPlant({ id: "dahlia-mgtest01", name: "Café au Lait", speciesId: "dahlia", area: "dahlia-strip", position: { x: -23.3, z: 3.1 } });
+store.change({ edits: { [dahlia.id]: { added: { v: dahlia, at } } } });
+await tick();
+store.change({ edits: { [dahlia.id]: { position: { v: { x: -23, z: 4 }, at } } } });
+await tick();
+assert.deepEqual(row(dahlia.id, "added").value, dahlia, "the whole new plant is one change");
+assert.deepEqual(row(dahlia.id, "position").value, { x: -23, z: 4 });
+
 // Back to Noah: everything the partner did is there.
 await signInAs("noah@example.com", "right-pw", store);
 assert.equal(store.checks.status, "saved");
@@ -237,6 +247,9 @@ assert(store.checks.done["w|partner-early|2026-09-21"]);
 assert.equal(store.checks.frosts[2026], "2026-10-09");
 assert.equal(store.checks.edits["rb1-cucumber"].finished.by, "partner@example.com");
 assert.equal(store.checks.edits["pb-26"].name, undefined);
+assert.deepEqual(store.checks.edits[dahlia.id].added.v, dahlia, "and the dahlia they added");
+assert.equal(store.checks.edits[dahlia.id].added.by, "partner@example.com");
+assert.deepEqual(store.checks.edits[dahlia.id].position.v, { x: -23, z: 4 });
 
 // "Save app edits into files" marks changes saved, with what the file had before; loading keeps both.
 store.change({ edits: { "pb-26": { confirmedByOwner: { v: true, at, saved: true, fileHad: false } } } });

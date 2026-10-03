@@ -19,9 +19,11 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 CHECKOFFS = os.path.join(ROOT, "data", "checkoffs.json")
 PLANTS = os.path.join(ROOT, "data", "plants.json")
 SPECIES = os.path.join(ROOT, "data", "species.json")
+LAYOUT = os.path.join(ROOT, "data", "layout.json")
 LOCK = threading.Lock()  # one change at a time, even if the phone and computer save together
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 FIELD = re.compile(r"[A-Za-z]{1,40}")
+PLANT_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,99}")
 ABOUT = "Your This week check-offs, recorded first-frost dates and plant changes made in the app. The app keeps this file up to date, so there's no need to edit it."
 
 
@@ -82,19 +84,60 @@ def apply(state, change):
 
 
 # ---------- "Save app edits into files" ----------
-# The details the app can change, and what a good value looks like. None takes the detail away.
-def good_value(field, value, kinds):
+def is_number(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v == v and abs(v) != float("inf")
+
+
+# The details the app can change, and what a good value looks like. Returns the value tidied up for the file
+# (None takes the detail away), or BAD.
+BAD = object()
+
+
+def clean(field, value, kinds, areas):
+    if isinstance(value, str):
+        value = value.strip()
     if field == "name":
-        return isinstance(value, str) and 0 < len(value.strip()) <= 120
+        return value if isinstance(value, str) and 0 < len(value) <= 120 else BAD
     if field == "speciesId":
-        return value in kinds
+        return value if value in kinds else BAD
     if field == "confirmedByOwner":
-        return isinstance(value, bool)
+        return value if isinstance(value, bool) else BAD
     if field == "idConfidence":
-        return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100
-    if field == "finished":
-        return value is None or (isinstance(value, str) and DATE.fullmatch(value) is not None)
-    return False
+        return value if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100 else BAD
+    if field in ("finished", "removed"):  # a date, or None to bring the plant back
+        return value if value is None or (isinstance(value, str) and DATE.fullmatch(value)) else BAD
+    if field == "position":  # feet across and out from the deck, to a tenth of a foot
+        if isinstance(value, dict) and set(value) == {"x", "z"} and all(is_number(value[k]) and abs(value[k]) <= 200 for k in value):
+            return {"x": round(value["x"], 1), "z": round(value["z"], 1)}
+        return BAD
+    if field == "size":
+        return round(value, 2) if is_number(value) and 0.2 <= value <= 6 else BAD
+    if field == "area":
+        return value if value in areas else BAD
+    return BAD
+
+
+# A plant added in the app, laid out like the others in plants.json, or None if something about it is wrong.
+NEW_PLANT_ORDER = ["id", "label", "area", "name", "speciesId", "idConfidence", "confirmedByOwner", "alsoPossible", "photos", "position", "size", "issues", "notes", "needsAttention"]
+
+
+def new_plant(plant_id, value, kinds, areas):
+    if not (isinstance(value, dict) and PLANT_ID.fullmatch(plant_id)):
+        return None
+    plant = {"id": plant_id}
+    for field in ("area", "name", "speciesId", "idConfidence", "confirmedByOwner", "position", "size"):
+        tidy = clean(field, value.get(field), kinds, areas)
+        if tidy is BAD or tidy is None:
+            return None
+        plant[field] = tidy
+    label = value.get("label") if isinstance(value.get("label"), str) and value.get("label").strip() else plant["name"]
+    plant.update({"label": label.strip()[:120], "alsoPossible": [], "photos": [], "issues": [], "notes": None, "needsAttention": False})
+    out = {k: plant[k] for k in NEW_PLANT_ORDER}
+    for field in ("finished", "removed"):
+        tidy = clean(field, value.get(field), kinds, areas)
+        if tidy is not BAD and tidy is not None:
+            set_detail(out, field, tidy)
+    return out
 
 
 def set_detail(plant, field, value):
@@ -112,23 +155,35 @@ def set_detail(plant, field, value):
         plant.setdefault(field, value)
 
 
-# Writes {plantId: {field: value}} into plants.json and says what each detail was before.
+# Writes {plantId: {field: value}} into plants.json and says what each detail was before. A plant added in the
+# app comes as {plantId: {"added": the whole plant}} and goes in after the last plant in the same bed.
 def save_edits(edits):
     with open(PLANTS, encoding="utf-8") as f:
         data = json.load(f)
     with open(SPECIES, encoding="utf-8") as f:
         kinds = {s["id"] for s in json.load(f)["species"]}
+    with open(LAYOUT, encoding="utf-8") as f:
+        areas = {a["id"] for a in json.load(f)["areas"]} | {"fenceline"}
     by_id = {p["id"]: p for p in data["plants"]}
     had, skipped = {}, []
     for plant_id, fields in edits.items():
+        if isinstance(fields, dict) and "added" in fields:
+            plant = None if plant_id in by_id else new_plant(plant_id, fields["added"], kinds, areas)
+            if plant is None:
+                skipped.append(f"{plant_id} added")
+                continue
+            same_bed = [i for i, p in enumerate(data["plants"]) if p.get("area") == plant["area"]]
+            data["plants"].insert(same_bed[-1] + 1 if same_bed else len(data["plants"]), plant)
+            by_id[plant_id] = plant
+            had[plant_id] = {"added": None}
+            continue
         plant = by_id.get(plant_id)
         if plant is None or not isinstance(fields, dict):
             skipped.append(plant_id)
             continue
         for field, value in fields.items():
-            if isinstance(value, str):
-                value = value.strip()
-            if not good_value(field, value, kinds):
+            value = clean(field, value, kinds, areas)
+            if value is BAD:
                 skipped.append(f"{plant_id} {field}")
                 continue
             had.setdefault(plant_id, {})[field] = plant.get(field)

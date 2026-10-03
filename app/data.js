@@ -42,6 +42,30 @@ export async function loadGarden() {
   return { plants, species, layout, areaNames };
 }
 
+// ---------- where a spot is ----------
+// The bed (an area in layout.json) a spot in the yard falls in, in yard feet. Past the lawn's far edge is the
+// back chain-link. Elsewhere is the lawn, or null outside the yard.
+export function areaAt(layout, x, z) {
+  const inside = (a) => {
+    if (a.shape === "rect") return x >= a.x && x <= a.x + a.width && z >= a.z && z <= a.z + a.depth;
+    if (a.shape === "ellipse") return ((x - a.cx) / a.rx) ** 2 + ((z - a.cz) / a.rz) ** 2 <= 1;
+    if (a.shape === "polygon") {
+      let hit = false;
+      for (let i = 0, j = a.points.length - 1; i < a.points.length; j = i++) {
+        const [xi, zi] = a.points[i], [xj, zj] = a.points[j];
+        if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) hit = !hit;
+      }
+      return hit;
+    }
+    return false;
+  };
+  const bed = layout.areas.find((a) => a.id !== "lawn" && inside(a));
+  if (bed) return bed.id;
+  const lawn = layout.areas.find((a) => a.id === "lawn");
+  if (lawn && z > lawn.z + lawn.depth - 1 && x >= lawn.x && x <= lawn.x + lawn.width) return "fenceline";
+  return lawn && inside(lawn) ? "lawn" : null;
+}
+
 // ---------- ID confidence ----------
 export const isUnconfirmed = (p) => !p.confirmedByOwner && p.idConfidence < 50;
 

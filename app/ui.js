@@ -1,11 +1,13 @@
-// Everything on screen that isn't the 3D yard: month buttons, the plant card (with its confirm, rename and
-// finish controls), the all-plants list, "Save app edits into files", and the photo viewer.
+// Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): month buttons, the plant card
+// (with its confirm, rename and finish controls), the all-plants list, "Save app edits into files", and the
+// photo viewer.
 
 import {
   MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, isDogRisk, TOX_INFO,
   stateText, careFor, restOfYear, CARE_TYPES, sourceName, photoUrl, thumbUrl, esc,
 } from "./data.js";
-import { dateText, fieldText } from "./edits.js";
+import { dateText, fieldText, spotText } from "./edits.js";
+import { acrossText } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -40,6 +42,8 @@ const taskLi = (c) => `<li><span class="tag">${esc(CARE_TYPES[c.type] || c.type)
 // ---------- plant card ----------
 // A plant marked "finished" (say, a crop done for the season) is off the yard and out of This week.
 const finishedText = (p) => ["Finished for the season", `Marked finished on ${dateText(p.finished)}, so it's off the 3D yard and out of This week.`];
+// A removed plant is hidden the same way, but kept, so it can be put back.
+const removedText = (p) => ["Removed from the yard", `Removed on ${dateText(p.removed)}. It's hidden from the 3D yard and This week, not erased.`];
 
 // The card's own controls: confirm the ID, rename, finish for the season. Only one form is open at a time,
 // and it stays open (with what's typed in it) when the card redraws.
@@ -53,7 +57,7 @@ function editHtml(p, edit) {
   if (!edit.can) return edit.note ? `<p class="small editnote">${esc(edit.note)}</p>` : "";
   const changes = edit.changes.length ? `<ul class="changes" aria-label="Changed in the app">${edit.changes.map((c) => `
     <li><span>${esc(c.text)}${c.who ? ` <span class="who">· ${esc(c.who)}</span>` : ""}</span>
-      <button type="button" class="linkbtn inline" data-undo="${esc(c.fields.join(" "))}">Undo</button></li>`).join("")}</ul>` : "";
+      ${c.fields.length ? `<button type="button" class="linkbtn inline" data-undo="${esc(c.fields.join(" "))}">Undo</button>` : ""}</li>`).join("")}</ul>` : "";
   const form = editing?.id === p.id ? editing.form : null;
   const buttons = (label) => `<div class="formbtns"><button class="btn" type="submit">${label}</button><button class="linkbtn" type="button" data-edit="cancel">Cancel</button></div>`;
   const nameInput = `<label for="editName">Name</label><input id="editName" name="name" value="${esc(p.name)}" maxlength="120" required autocomplete="off" enterkeyhint="done">`;
@@ -74,7 +78,7 @@ function editHtml(p, edit) {
     <div class="editbar">
       ${p.confirmedByOwner ? "" : `<button type="button" class="pill" data-edit="confirm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Confirm ID</button>`}
       <button type="button" class="pill" data-edit="rename"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Rename</button>
-      ${p.finished ? "" : `<button type="button" class="pill" data-edit="finish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c0-4 3-6 7-6 0 4-3 6-7 6zM12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5z"/></svg>Finished for the season</button>`}
+      ${p.finished || p.removed ? "" : `<button type="button" class="pill" data-edit="finish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c0-4 3-6 7-6 0 4-3 6-7 6zM12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5z"/></svg>Finished for the season</button>`}
     </div>${changes}`;
 }
 
@@ -86,8 +90,9 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
   const focusId = same && sheet.contains(document.activeElement) ? document.activeElement.id : null;
   const scroll = same ? sheet.scrollTop : 0;
   lastCardId = p.id;
-  const [statusLabel, statusSentence] = p.finished ? finishedText(p) : stateText(sp, month);
-  const now = p.finished ? [] : careFor(sp, month);
+  const away = p.removed || p.finished; // not in the yard right now
+  const [statusLabel, statusSentence] = p.removed ? removedText(p) : p.finished ? finishedText(p) : stateText(sp, month);
+  const now = away ? [] : careFor(sp, month);
   const later = restOfYear(sp, month);
   const dog = dogSafety(p, sp);
   const dogCls = dog.status === "toxic" ? "dog-toxic" : ["caution", "check"].includes(dog.status) ? "dog-caution" : "";
@@ -114,8 +119,9 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
       <div class="status">${esc(statusLabel)}</div>
       <p>${esc(statusSentence)}</p>
       ${p.issues?.length ? `<ul class="issues">${p.issues.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}
-      ${now.length ? `<ul class="tasks">${now.map(taskLi).join("")}</ul>` : p.finished ? "" : `<p class="small">No care needed this month.</p>`}
-      ${p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
+      ${now.length ? `<ul class="tasks">${now.map(taskLi).join("")}</ul>` : away ? "" : `<p class="small">No care needed this month.</p>`}
+      ${p.removed && edit?.can ? `<button type="button" class="btn" data-edit="restore">Put it back in the yard</button>`
+        : p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
     </div>
 
     ${unsure ? `<p class="small" style="margin-top:10px">Care shown is for the best guess. It depends on confirming the ID${p.alsoPossible?.length ? `. It could also be: ${esc(p.alsoPossible.join("; "))}` : ""}.</p>` : ""}
@@ -147,7 +153,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
       <p><b>ID:</b> ${p.confirmedByOwner ? "Confirmed." : `${p.idConfidence}% sure from photos.`}${p.alsoPossible?.length && !p.confirmedByOwner ? ` Also possible: ${esc(p.alsoPossible.join("; "))}.` : ""}</p>
       ${p.notes ? `<p>${esc(p.notes)}</p>` : ""}
       ${sp.notes ? `<p>${esc(sp.notes)}</p>` : ""}
-      <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code></p>
+      <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code> · ${esc(acrossText(p, sp))}</p>
     </details>
 
     <details>
@@ -183,6 +189,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     else if (what === "cancel") { editing = null; redraw(".editbar .pill"); }
     else if (what === "finish") edit.onSave({ finished: edit.today });
     else if (what === "unfinish") edit.onSave({ finished: null });
+    else if (what === "restore") edit.onSave({ removed: null });
   }));
   sheet.querySelectorAll("[data-undo]").forEach((b) => (b.onclick = () => edit.onUndo(b.dataset.undo.split(" "))));
   const form = sheet.querySelector("[data-form]");
@@ -201,17 +208,19 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
 // ---------- "Save app edits into files" (the Mac copy) ----------
 // Shows each change made in the app that isn't in data/plants.json yet, then writes them in.
 // `phase` is "review", "saving", "done" or "error".
-export function renderSaveEdits(panel, { rows, species, phase, message, cloud, onSave, onClose }) {
+export function renderSaveEdits(panel, { rows, species, areaNames, phase, message, cloud, onSave, onClose }) {
   const byPlant = new Map();
   for (const r of rows) {
     if (!byPlant.has(r.id)) byPlant.set(r.id, []);
     byPlant.get(r.id).push(r);
   }
   const heading = (id, list) => {
-    const p = list[0].plant;
+    const p = list[0].plant, added = list[0].field === "added" ? list[0] : null;
+    if (added?.dropped) return `<b>${esc(added.to.name)}</b> <span class="small">was added and removed again in the app, so there's nothing to write and it's just cleared</span>`;
+    if (added) return `<b>${esc(added.to.name)}</b> <span class="small">New plant</span>`;
     if (!p) return `<b>${esc(id)}</b> <span class="small">isn't in plants.json any more, so this is just cleared</span>`;
     const newName = list.find((r) => r.field === "name")?.to;
-    return `<b>${esc(newName || p.name)}</b> <span class="small">${esc(p.label)}</span>`;
+    return `<b>${esc(newName || p.name)}</b>${p.label !== (newName || p.name) ? ` <span class="small">${esc(p.label)}</span>` : ""}`;
   };
   const n = rows.length;
   panel.innerHTML = `
@@ -231,8 +240,9 @@ export function renderSaveEdits(panel, { rows, species, phase, message, cloud, o
         <p class="lead">${n ? `${n} change${n === 1 ? "" : "s"} made in the app ${n === 1 ? "isn't" : "aren't"} in <code>data/plants.json</code> yet. Saving writes ${n === 1 ? "it" : "them"} into the file on this Mac.` : "Every change made in the app is already in data/plants.json."}</p>
         <ul class="editrows">${[...byPlant].map(([id, list]) => `
           <li><p class="erhead">${heading(id, list)}</p>
+            ${list[0].field === "added" && !list[0].dropped ? newPlantLines(list[0].to, species, areaNames) : ""}
             ${list[0].plant ? `<ul>${list.map((r) => {
-              const [label, from, to] = fieldText(r, species);
+              const [label, from, to] = fieldText(r, species, areaNames);
               return `<li><span class="erlabel">${esc(label)}</span><span><span class="erfrom">${esc(from)}</span> → <b>${esc(to)}</b></span></li>`;
             }).join("")}</ul>` : ""}
           </li>`).join("")}</ul>
@@ -251,8 +261,18 @@ export function renderSaveEdits(panel, { rows, species, phase, message, cloud, o
   panel.querySelector(phase === "done" ? "[data-done]" : ".close").focus({ preventScroll: true });
 }
 
+// What a new plant will look like in plants.json, for the review.
+function newPlantLines(p, species, areaNames) {
+  const sp = species.get(p.speciesId);
+  const line = (label, value) => `<li><span class="erlabel">${esc(label)}</span><b>${esc(value)}</b></li>`;
+  return `<ul>${line("Kind", sp?.commonName || p.speciesId)}${line("Bed", areaNames?.get(p.area) || p.area)}${line("Spot", spotText(p.position))}${line("Size", acrossText(p, sp))}${p.finished ? line("Finished for the season", dateText(p.finished)) : ""}</ul>`;
+}
+
 // ---------- all-plants list ----------
-export function renderList(panel, { plants, species, areaNames, areaOrder, month, filters, unsaved = 0, onFilters, onPick, onShowInYard, onSaveEdits, onClose }) {
+export function renderList(panel, { plants: everything, species, areaNames, areaOrder, month, filters, unsaved = 0, onFilters, onPick, onShowInYard, onSaveEdits, onClose }) {
+  // Plants removed from the yard are listed apart at the bottom, so they can be found and put back.
+  const plants = everything.filter((p) => !p.removed);
+  const removed = everything.filter((p) => p.removed);
   const q = filters.q.trim().toLowerCase();
   const matches = plants.filter((p) => {
     const sp = species.get(p.speciesId);
@@ -317,6 +337,14 @@ export function renderList(panel, { plants, species, areaNames, areaOrder, month
             ${b.length ? `<span class="pbadges">${b.join("")}</span>` : ""}
           </button></li>`;
         }).join("")}</ul>`).join("") : `<p class="empty">No plants match. Try clearing the filters.</p>`}
+      ${removed.length ? `
+        <details class="removedlist" ${listState.removedOpen ? "open" : ""}>
+          <summary>Removed from the yard (${removed.length})</summary>
+          <ul>${removed.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
+            <span class="pname">${esc(p.name)} <span class="plabel">${p.label.startsWith("#") ? esc(p.label) : ""}</span></span>
+            <span class="pstate">${esc(dateText(p.removed).replace(/, \d{4}$/, ""))}</span>
+          </button></li>`).join("")}</ul>
+        </details>` : ""}
     </div>`;
   panel.hidden = false;
 
@@ -330,7 +358,9 @@ export function renderList(panel, { plants, species, areaNames, areaOrder, month
   panel.querySelector("#listShow").onclick = () => onShowInYard(matches.map((p) => p.id));
   panel.querySelectorAll("[data-id]").forEach((b) => (b.onclick = () => onPick(b.dataset.id)));
   panel.querySelector("#saveEditsBtn")?.addEventListener("click", onSaveEdits);
+  panel.querySelector(".removedlist")?.addEventListener("toggle", (e) => { listState.removedOpen = e.target.open; });
 }
+const listState = { removedOpen: false }; // whether the removed plants are showing in the list
 
 // ---------- photo viewer ----------
 export function openLightbox(photos, start) {
