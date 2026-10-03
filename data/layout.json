@@ -178,17 +178,6 @@
   ],
   "structures": [
     {
-      "id": "house-wall",
-      "name": "House wall (beyond the left fence)",
-      "type": "wall",
-      "x": -30,
-      "z": -4,
-      "width": 4,
-      "depth": 18,
-      "height": 12,
-      "color": "#9aa3a8"
-    },
-    {
       "id": "fence-left",
       "name": "White vinyl fence",
       "type": "fence",

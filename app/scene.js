@@ -338,6 +338,10 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // The sun never moves, so shadows are only redrawn when something in the yard changes, not on every frame of a turn.
+  renderer.shadowMap.autoUpdate = false;
+  const redrawShadows = () => { renderer.shadowMap.needsUpdate = true; };
+  redrawShadows();
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(SKY);
@@ -353,7 +357,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   controls.screenSpacePanning = false;
   controls.zoomToCursor = true;
   controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
-  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: null }; // two fingers are handled below ("two-finger gestures")
   controls.maxPolarAngle = 1.45;
   controls.minDistance = 5;
   controls.maxDistance = 170;
@@ -554,6 +558,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
         u.faded = fade;
         m.visible = !fade && u.inSeason !== false;
         u.trunk.visible = !fade;
+        redrawShadows();
       }
     }
   }
@@ -572,6 +577,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
       hitTargets.push(g.userData.hit);
     }
     placeRings();
+    redrawShadows();
   }
   function setMonth(month) {
     setPlants(lastPlants, lastSpecies, month);
@@ -583,6 +589,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
       c.visible = !!col && !c.userData.faded;
       if (col) c.material = mat(col === "fall" ? c.userData.fallColor : col);
     }
+    redrawShadows();
     needsRender = true;
   }
   function setBloom(on) {
@@ -607,6 +614,72 @@ export function createYard(canvas, { layout, onPick, onMove }) {
   }
   function select(id) { selectedId = id; placeRings(); }
   function setHighlight(h) { highlight = h; placeRings(); }
+
+  // ----- two-finger gestures -----
+  // Done here rather than in OrbitControls, which damps turns (the view trails behind your fingers), reads each finger
+  // against the other's last position (so turns stutter) and ignores twisting. Both fingers' moves are applied together
+  // once per frame, straight away: twisting turns the yard around the spot between your fingers, pinching zooms toward
+  // that spot, sliding both fingers sideways also turns, and sliding both up or down tilts.
+  const UP = V(0, 1, 0);
+  const fingers = new Map();
+  let pair = null; // where the two fingers were when their move was last applied
+  const firstTwo = () => [...fingers.values()].slice(0, 2).map((f) => ({ ...f }));
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "touch") return;
+    fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (fingers.size < 2) return;
+    pair = firstTwo();
+    anim = null;
+    controls._sphericalDelta.set(0, 0, 0); // stop any glide left over from a one-finger drag
+    controls._panOffset.set(0, 0, 0);
+    userMoved = true;
+    onMove?.();
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    const f = fingers.get(e.pointerId);
+    if (f) { f.x = e.clientX; f.y = e.clientY; }
+  });
+  const dropFinger = (e) => {
+    if (!fingers.delete(e.pointerId)) return;
+    pair = fingers.size >= 2 ? firstTwo() : null;
+  };
+  canvas.addEventListener("pointerup", dropFinger);
+  canvas.addEventListener("pointercancel", dropFinger);
+
+  const angleOf = (p, q) => Math.atan2(q.y - p.y, q.x - p.x);
+  // How far both fingers moved together along one axis (0 when they move apart, as in a pinch or twist).
+  const together = (u, v) => (u * v > 0 ? Math.sign(u) * Math.min(Math.abs(u), Math.abs(v)) : 0);
+  function applyFingers() {
+    if (!pair) return;
+    const [a1, b1] = firstTwo(), [a0, b0] = pair;
+    if (a1.x === a0.x && a1.y === a0.y && b1.x === b0.x && b1.y === b0.y) return;
+    pair = [a1, b1];
+    const rect = canvas.getBoundingClientRect();
+
+    let spin = angleOf(a1, b1) - angleOf(a0, b0);
+    if (spin > Math.PI) spin -= Math.PI * 2;
+    if (spin < -Math.PI) spin += Math.PI * 2;
+    spin -= (together(a1.x - a0.x, b1.x - b0.x) * Math.PI) / rect.width; // a sideways slide across the screen turns half way round
+    const tilt = (together(a1.y - a0.y, b1.y - b0.y) * Math.PI) / rect.height;
+    const s = current();
+    const scale = clampDist((s.radius * Math.hypot(b0.x - a0.x, b0.y - a0.y)) / Math.max(Math.hypot(b1.x - a1.x, b1.y - a1.y), 1)) / s.radius;
+
+    // Turn and zoom around the ground between the fingers, so that spot stays under them.
+    const mx = (a1.x + b1.x) / 2, my = (a1.y + b1.y) / 2;
+    const hitGround = screenRay(mx, my).ray.intersectPlane(GROUND, V(0, 0, 0));
+    const pivot = hitGround && hitGround.distanceTo(camera.position) < 150 ? hitGround : controls.target.clone();
+    for (const p of [camera.position, controls.target]) p.sub(pivot).applyAxisAngle(UP, spin).multiplyScalar(scale).add(pivot);
+    const kept = controls.target.clone();
+    camera.position.add(inYard(controls.target).clone().sub(kept));
+
+    if (tilt) {
+      const t = current();
+      t.phi = THREE.MathUtils.clamp(t.phi - tilt, 0.02, controls.maxPolarAngle);
+      camera.position.copy(place(controls.target, t));
+    }
+    camera.lookAt(controls.target);
+    needsRender = true;
+  }
 
   // ----- tapping -----
   // A quick tap or click picks a plant, and a double-tap or double-click zooms in on that spot. Anything done
@@ -671,6 +744,7 @@ export function createYard(canvas, { layout, onPick, onMove }) {
       needsRender = true;
       if (t === 1) anim = null;
     }
+    applyFingers();
     if (controls.update()) needsRender = true;
     if (selRing.visible) {
       selRing.material.opacity = 0.6 + 0.35 * Math.sin(now / 300);

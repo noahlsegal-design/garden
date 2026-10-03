@@ -28,7 +28,7 @@ Supabase puts free projects to sleep after about a week of little use, and email
 ## Use it
 
 - **Move around like a map.** Drag with one finger (or the mouse) to slide around the yard. Pinch, or scroll on a computer, to zoom in on the spot under your fingers or pointer. Double-tap (or double-click) a spot to zoom in on it.
-- **Turn and tilt** by sliding two fingers, or with right-drag or Shift-drag on a computer. The **↺ ↻** buttons in the corner turn the view too, and **+ −** zoom.
+- **Turn** by twisting two fingers, or by sliding two fingers sideways. **Tilt** by sliding two fingers up or down. On a computer, use right-drag or Shift-drag. The **↺ ↻** buttons in the corner turn the view too, and **+ −** zoom.
 - **Views** jumps to a vantage point: the deck (the start view), straight above like a map, the back corner, the shed, or across the lawn. It can also zoom to one bed. Trees that block your view step aside, so you can see what's behind them.
 - **Reset view** brings you back to the starting view.
 - **Tap a plant** to open its card. The card shows what the plant is doing this month, the care due now, dog safety, the rest of the year, cut-flower tips, wildlife value and sources.

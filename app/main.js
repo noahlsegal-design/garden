@@ -20,7 +20,7 @@ const TODAY = today().getMonth();
 const NO_FILTERS = { q: "", area: "all", unconfirmed: false, toxic: false, attention: false };
 
 const HINT = matchMedia("(pointer: coarse)").matches
-  ? "Drag to move around · Pinch to zoom · Slide two fingers to turn · Tap a plant"
+  ? "Drag to move around · Pinch to zoom · Twist two fingers to turn · Tap a plant"
   : "Drag to move around · Scroll to zoom · Shift-drag or right-drag to turn · Click a plant";
 const state = { month: TODAY, bloom: false, selectedId: null, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
 let garden, yard, byId, areaOrder, store, bloomBar;
