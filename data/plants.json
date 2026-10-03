@@ -1332,12 +1332,12 @@
     },
     {
       "id": "is-dahlia-3",
-      "label": "Orange",
+      "label": "Old Gold",
       "area": "island-bed",
-      "name": "Orange",
+      "name": "Old Gold",
       "speciesId": "dahlia",
-      "idConfidence": 100,
-      "confirmedByOwner": true,
+      "idConfidence": 75,
+      "confirmedByOwner": false,
       "alsoPossible": [],
       "photos": [
         "Source/photos/IMG_4552.JPG",
@@ -1349,7 +1349,7 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). An older dahlia whose variety name isn't known, so it's just called Orange. Flower color is a plain orange, not taken from the order photos.",
+      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). An older dahlia you think is Old Gold, not yet confirmed. Flower color is a plain orange, not taken from the order photos.",
       "needsAttention": false
     },
     {
