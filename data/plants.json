@@ -1,6 +1,6 @@
 {
   "_about": "One entry per plant in the yard. 'speciesId' links to species.json for care info. 'position' is in feet (see layout.json). idConfidence is 0-100, and anything under 50 shows an 'unconfirmed' badge. Set confirmedByOwner to true once you've confirmed a plant. Add \"finished\": \"YYYY-MM-DD\" when a plant is done (like a crop at the end of its season): it leaves the 3D yard and This week from that date.",
-  "_asOf": "2026-09-24",
+  "_asOf": "2026-10-03",
   "plants": [
     {
       "id": "pb-01",
@@ -143,10 +143,10 @@
       "id": "pb-06b",
       "label": "#6b",
       "area": "perennial-bed",
-      "name": "Young dahlia? (tagged, staked)",
+      "name": "Sheer Heaven",
       "speciesId": "dahlia",
-      "idConfidence": 65,
-      "confirmedByOwner": false,
+      "idConfidence": 100,
+      "confirmedByOwner": true,
       "alsoPossible": [],
       "photos": [
         "Source/photos/IMG_4566.JPG"
@@ -157,7 +157,7 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "NOT in the original catalog. The handoff says there's no IMG_4566, but there is. Tall single stem, divided toothed leaves, green stake and a white tag I can't read. Please read the tag.",
+      "notes": "Perennial bed. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
@@ -210,7 +210,7 @@
       "id": "pb-09",
       "label": "#9",
       "area": "perennial-bed",
-      "name": "Dahlia (tagged)",
+      "name": "Ed Kuhn",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -224,7 +224,7 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Tag partly readable: \"FIVEFORK FA…\" and \"Ed K?hn\". Probably a grower name plus the variety. Please read it in person.",
+      "notes": "Perennial bed. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
@@ -1287,10 +1287,10 @@
       "needsAttention": false
     },
     {
-      "id": "is-dahlias",
-      "label": "Dahlia clump",
+      "id": "is-dahlia-1",
+      "label": "Wine Eyed Jill",
       "area": "island-bed",
-      "name": "Dahlia clump (many colors)",
+      "name": "Wine Eyed Jill",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1300,12 +1300,210 @@
         "Source/photos/IMG_4553.JPG"
       ],
       "position": {
-        "x": -6.8,
-        "z": 21.7
+        "x": -7.0,
+        "z": 19.6
       },
-      "size": 3,
+      "size": 1.0,
       "issues": [],
-      "notes": "Big caged clump: orange, red, coral, pink and burgundy.",
+      "notes": "Zone 2 in the shed island bed, row 1 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-2",
+      "label": "Omega",
+      "area": "island-bed",
+      "name": "Omega",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -5.6,
+        "z": 19.6
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 1 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-3",
+      "label": "Orange",
+      "area": "island-bed",
+      "name": "Orange",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -8.8,
+        "z": 21.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). Variety not named yet.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-4",
+      "label": "Belle of Barmera",
+      "area": "island-bed",
+      "name": "Belle of Barmera",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -7.4,
+        "z": 21.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-5",
+      "label": "Labyrinth",
+      "area": "island-bed",
+      "name": "Labyrinth",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -6.0,
+        "z": 21.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-6",
+      "label": "Ketchup and Mustard",
+      "area": "island-bed",
+      "name": "Ketchup and Mustard",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -4.6,
+        "z": 21.0
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 2 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-7",
+      "label": "Valley Porcupine",
+      "area": "island-bed",
+      "name": "Valley Porcupine",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -9.0,
+        "z": 22.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 3 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-8",
+      "label": "Lynn Slight",
+      "area": "island-bed",
+      "name": "Lynn Slight",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -7.6,
+        "z": 22.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 3 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-9",
+      "label": "Patches",
+      "area": "island-bed",
+      "name": "Patches",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -6.2,
+        "z": 22.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 3 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
+      "needsAttention": false
+    },
+    {
+      "id": "is-dahlia-10",
+      "label": "Crazy Cleere's",
+      "area": "island-bed",
+      "name": "Crazy Cleere's",
+      "speciesId": "dahlia",
+      "idConfidence": 100,
+      "confirmedByOwner": true,
+      "alsoPossible": [],
+      "photos": [
+        "Source/photos/IMG_4552.JPG",
+        "Source/photos/IMG_4553.JPG"
+      ],
+      "position": {
+        "x": -4.8,
+        "z": 22.4
+      },
+      "size": 1.0,
+      "issues": [],
+      "notes": "Zone 2 in the shed island bed, row 3 (rows run front to back from the deck, left to right). Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
@@ -1545,9 +1743,9 @@
     },
     {
       "id": "ds-1",
-      "label": "Dahlia 1",
+      "label": "Cafe Au Lait",
       "area": "dahlia-strip",
-      "name": "Dahlia 1 (strip)",
+      "name": "Cafe Au Lait",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1561,14 +1759,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 1 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-2",
-      "label": "Dahlia 2",
+      "label": "Bloomquist Alan",
       "area": "dahlia-strip",
-      "name": "Dahlia 2 (strip)",
+      "name": "Bloomquist Alan",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1582,14 +1780,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 2 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-3",
-      "label": "Dahlia 3",
+      "label": "Miss Amara",
       "area": "dahlia-strip",
-      "name": "Dahlia 3 (strip)",
+      "name": "Miss Amara",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1603,14 +1801,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 3 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-4",
-      "label": "Dahlia 4",
+      "label": "Henriette",
       "area": "dahlia-strip",
-      "name": "Dahlia 4 (strip)",
+      "name": "Henriette",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1624,14 +1822,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 4 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-5",
-      "label": "Dahlia 5",
+      "label": "Andy's Legacy",
       "area": "dahlia-strip",
-      "name": "Dahlia 5 (strip)",
+      "name": "Andy's Legacy",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1645,14 +1843,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 5 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-6",
-      "label": "Dahlia 6",
+      "label": "Hapet Salmon",
       "area": "dahlia-strip",
-      "name": "Dahlia 6 (strip)",
+      "name": "Hapet Salmon",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1666,14 +1864,14 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 6 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {
       "id": "ds-7",
-      "label": "Dahlia 7",
+      "label": "Terracotta",
       "area": "dahlia-strip",
-      "name": "Dahlia 7 (strip)",
+      "name": "Terracotta",
       "speciesId": "dahlia",
       "idConfidence": 100,
       "confirmedByOwner": true,
@@ -1687,7 +1885,7 @@
       },
       "size": 1.0,
       "issues": [],
-      "notes": "Colors in IMG_4547 include white, peach/apricot and coral-pink. Tell me which is which to label them.",
+      "notes": "Dahlia strip, position 7 from the deck. Fivefork Farms order, January 2026.",
       "needsAttention": false
     },
     {

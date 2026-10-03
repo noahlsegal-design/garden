@@ -66,6 +66,26 @@ export const PLANT_LOOK = {
   "pb-39": { leaf: "#5e2350" },   // purple ruffled coral bells
   "pb-48": { leaf: "#a7b0a4" },   // silver-veined coral bells
   "pb-50": { leaf: "#b8577f" },   // pink/purple speckled coral bells
+  // Named dahlias (flower colors taken from the Fivefork Farms order photos)
+  "ds-1": { flower: "#e8bfc0" },
+  "ds-2": { flower: "#f3d9bf" },
+  "ds-3": { flower: "#f4c88f" },
+  "ds-4": { flower: "#f2a283" },
+  "ds-5": { flower: "#c8765a" },
+  "ds-6": { flower: "#ee9a78" },
+  "ds-7": { flower: "#ec8a5a" },
+  "pb-06b": { flower: "#f5dfae" },
+  "pb-09": { flower: "#e0245e" },
+  "is-dahlia-1": { flower: "#d9a7c8" },
+  "is-dahlia-2": { flower: "#e0518a" },
+  "is-dahlia-3": { flower: "#e87f2d" },
+  "is-dahlia-4": { flower: "#ee7a7a" },
+  "is-dahlia-5": { flower: "#e8a090" },
+  "is-dahlia-6": { flower: "#c0302a" },
+  "is-dahlia-7": { flower: "#f3e2dc" },
+  "is-dahlia-8": { flower: "#5e1a2c" },
+  "is-dahlia-9": { flower: "#a8274f" },
+  "is-dahlia-10": { flower: "#b58ad0" },
 };
 
 const DAHLIA_COLORS = ["#f08a6a", "#f4b183", "#e85d75", "#f6efe6", "#c43d5a", "#f0a2b8", "#e87f2d", "#7a1f3d"];
@@ -73,7 +93,7 @@ const DAHLIA_COLORS = ["#f08a6a", "#f4b183", "#e85d75", "#f6efe6", "#c43d5a", "#
 export function lookFor(plant) {
   const base = LOOK[plant.speciesId] || {};
   const look = { leaf: LEAF, flower: "#e8e0f0", fruit: "#c0392b", fall: "#c9772e", aging: "#d9b3a3", h: 1, ...base, ...PLANT_LOOK[plant.id] };
-  if (plant.speciesId === "dahlia") {
+  if (plant.speciesId === "dahlia" && !PLANT_LOOK[plant.id]?.flower) { // seed-grown dahlias without a name get a varied color
     let hash = 0;
     for (const ch of plant.id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
     look.flower = DAHLIA_COLORS[hash % DAHLIA_COLORS.length];
