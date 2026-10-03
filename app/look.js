@@ -101,19 +101,29 @@ export function lookFor(plant) {
   return look;
 }
 
-// How far a plant spreads from its middle, in feet, as the 3D yard draws it. "size" in plants.json scales it.
+const feet = (v) => typeof v === "number" && Number.isFinite(v) && v > 0;
+// How far a plant spreads from its middle, in feet, as the 3D yard draws it: half its "width" (feet across) in
+// plants.json if it has one, or else a usual width for its kind scaled by "size".
 export function plantRadius(plant, sp) {
+  if (feet(plant.width)) return plant.width / 2;
   const shrub = lookFor(plant).shrub || sp?.kind === "shrub";
   return (shrub ? 1.1 : 0.75) * (plant.size || 1);
+}
+// How much bigger or smaller than usual a plant is drawn across (1 = usual), for the size of its leaves and flowers.
+export function widthScale(plant, sp) {
+  const shrub = lookFor(plant).shrub || sp?.kind === "shrub";
+  return plantRadius(plant, sp) / (shrub ? 1.1 : 0.75);
 }
 // How tall a plant is when fully grown, in feet: "height" in plants.json if it's been set, or else worked out
 // from its width and kind (so a plant made wider grows taller too, until it has a height of its own).
 export function plantHeight(plant, sp) {
-  const h = plant.height;
-  if (typeof h === "number" && h > 0) return h;
+  if (feet(plant.height)) return plant.height;
   return Math.max(0.3, plantRadius(plant, sp) * 1.2 * lookFor(plant).h);
 }
 const halfFeet = (ft) => Math.max(0.5, Math.round(ft * 2) / 2);
-// "about 3 ft across" and "about 2.5 ft tall", to the nearest half foot.
-export const acrossText = (plant, sp) => `about ${halfFeet(plantRadius(plant, sp) * 2)} ft across`;
-export const tallText = (plant, sp) => `about ${halfFeet(plantHeight(plant, sp))} ft tall`;
+const tenth = (ft) => Math.round(ft * 10) / 10;
+// "3 ft across" and "4.5 ft tall" for sizes that were entered, or "about 3 ft across" (to the nearest half
+// foot) for ones worked out from the plant's kind.
+export const acrossText = (plant, sp) => (feet(plant.width) ? `${tenth(plant.width)} ft across` : `about ${halfFeet(plantRadius(plant, sp) * 2)} ft across`);
+export const tallText = (plant, sp) => (feet(plant.height) ? `${tenth(plant.height)} ft tall` : `about ${halfFeet(plantHeight(plant, sp))} ft tall`);
+export const stemsText = (n) => `${n} main ${n === 1 ? "stem" : "stems"}`;

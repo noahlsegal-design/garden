@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce, newPlant, newPlantId, basePlant, spotText } from "../app/edits.js";
 import { buildWeek, mondayOf, parseYmd } from "../app/tasks.js";
 import { dogSafety, areaAt } from "../app/data.js";
-import { plantRadius, acrossText, plantHeight, tallText } from "../app/look.js";
+import { plantRadius, acrossText, plantHeight, tallText, widthScale } from "../app/look.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
 const species = new Map(read("species.json").species.map((s) => [s.id, s]));
@@ -227,15 +227,29 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   const h1 = plantHeight({ ...small, size: 1 }, sp);
   assert(plantHeight({ ...small, size: 2 }, sp) > h1, "without a height of its own, a wider plant is taller too");
   assert.equal(plantHeight({ ...small, size: 2, height: h1 }, sp), h1, "with one, width and height are separate");
-  assert.equal(tallText({ ...small, height: 4.2 }, sp), "about 4 ft tall");
-  const edits = { [small.id]: { height: { v: 5, at }, size: { v: 0.8, at } } };
+  assert.equal(tallText({ ...small, height: 4.24 }, sp), "4.2 ft tall", "a height you entered is shown as entered");
+  assert.equal(tallText({ ...small, height: null }, sp), `about ${Math.max(0.5, Math.round(h1 * 2) / 2)} ft tall`, "a worked-out one is rounded");
+
+  // Width in feet takes over from "size", and leaves and flowers scale with it.
+  assert.equal(plantRadius({ ...small, size: 2, width: 3 }, sp), 1.5);
+  assert.equal(acrossText({ ...small, width: 3 }, sp), "3 ft across");
+  assert.equal(widthScale({ ...small, width: 3 }, sp), widthScale({ ...small, size: 2 }, sp));
+
+  const edits = { [small.id]: { height: { v: 5, at }, width: { v: 2.5, at }, stems: { v: 3, at } } };
   const out = withEdits(plants, edits, species, false).find((p) => p.id === small.id);
   assert.equal(out.height, 5);
+  assert.equal(out.width, 2.5);
+  assert.equal(out.stems, 3);
+  for (const bad of [0, 2.5, "3", 1000]) {
+    assert.equal(withEdits(plants, { [small.id]: { stems: { v: bad, at } } }, species, false).find((p) => p.id === small.id).stems, small.stems, `${JSON.stringify(bad)} stems is ignored`);
+  }
   assert.equal(withEdits(plants, { [small.id]: { height: { v: 99, at } } }, species, false).find((p) => p.id === small.id).height, small.height, "a height that makes no sense is ignored");
   const resized = describeEdits(small, edits, species, false, "");
-  assert.deepEqual(resized.map((l) => [l.text, l.fields.sort()]), [["Resized", ["height", "size"]]], "undoing a resize puts back width and height together");
-  const row = unsavedEdits(plants, edits, species).find((r) => r.field === "height");
-  assert.deepEqual(fieldText(row, species), ["Height", tallText(small, sp), "about 5 ft tall"]);
+  assert.deepEqual(resized.map((l) => [l.text, l.fields.sort()]), [["Resized", ["height", "width"]], ["Set to 3 main stems", ["stems"]]], "undoing a resize puts back width and height together");
+  const rows = unsavedEdits(plants, edits, species);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "height"), species), ["Height", tallText(small, sp), "5 ft tall"]);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "width"), species), ["Width", acrossText(small, sp), "2.5 ft across"]);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "stems"), species), ["Main stems or trunks", "—", "3"]);
 }
 
 console.log("edits: all checks passed");

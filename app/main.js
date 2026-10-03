@@ -9,7 +9,7 @@ import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant,
 import { renderTasks } from "./tasklist.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
-import { acrossText, tallText, plantHeight } from "./look.js";
+import { plantHeight, plantRadius } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -376,10 +376,8 @@ function drawEditBar() {
     view, note: access?.note || "", kinds, draft: editMode.draft || {}, message: editMode.message,
     undo: last ? last.label : "",
     plant: p && {
-      name: p.name, size: p.size || 1, height: Math.round(plantHeight(p, sp) * 10) / 10,
+      name: p.name, stems: p.stems ?? null, ...measured(p, sp), estimated: p.width == null && p.height == null,
       where: [sp?.commonName, garden.areaNames.get(p.area) || p.area].filter(Boolean).join(" · "),
-      sizeText: (size) => acrossText({ ...p, size }, sp),
-      heightText: (height) => tallText({ ...p, height }, sp),
     },
     focus: view === "adding" ? "#addKind" : null,
     onAdd: () => { editMode.step = "adding"; editMode.draft = { kind: "", name: "" }; editMode.message = ""; pickToEditQuietly(null); drawEditBar(); },
@@ -392,13 +390,13 @@ function drawEditBar() {
     },
     onCancel: cancelAdding,
     onClose: () => pickToEdit(null),
-    // Width and height change separately: a plant without a height of its own keeps the height it has now
-    // when it's made wider or narrower.
-    onSize: (change, done) => {
-      const values = "size" in change && p.height == null ? { ...change, height: Math.round(plantHeight(p, sp) * 10) / 10 } : change;
+    // Height, width and main stems. Height and width change separately: entering one keeps the other as it
+    // looks now, so a plant made wider doesn't also grow taller.
+    onMeasure: (change, done) => {
+      const values = "stems" in change ? change : { ...measured(p, sp), ...change };
       if (!done) return yard.updatePlant({ ...p, ...values });
       editMode.message = "";
-      saveValues(p.id, values, "Undo resize");
+      saveValues(p.id, values, "stems" in change ? "Undo stems" : "Undo resize");
     },
     onRemove: () => {
       editMode.message = `Removed “${p.name}”. It's hidden from the yard and This week, not erased.`;
@@ -409,6 +407,10 @@ function drawEditBar() {
     onUndo: undoLast,
   });
   if (!$("editBar").hidden) $("stage").style.setProperty("--bloombar", `${$("editBar").offsetHeight}px`);
+}
+// A plant's height and width in feet, to a tenth: what it was given, or what the yard draws for its kind.
+function measured(p, sp) {
+  return { height: Math.round(plantHeight(p, sp) * 10) / 10, width: Math.round(plantRadius(p, sp) * 20) / 10 };
 }
 function pickToEditQuietly(id) {
   state.selectedId = id;

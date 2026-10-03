@@ -7,7 +7,7 @@ import {
   stateText, careFor, restOfYear, CARE_TYPES, sourceName, photoUrl, thumbUrl, esc,
 } from "./data.js";
 import { dateText, fieldText, spotText } from "./edits.js";
-import { acrossText, tallText } from "./look.js";
+import { acrossText, tallText, stemsText } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -153,7 +153,8 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
       <p><b>ID:</b> ${p.confirmedByOwner ? "Confirmed." : `${p.idConfidence}% sure from photos.`}${p.alsoPossible?.length && !p.confirmedByOwner ? ` Also possible: ${esc(p.alsoPossible.join("; "))}.` : ""}</p>
       ${p.notes ? `<p>${esc(p.notes)}</p>` : ""}
       ${sp.notes ? `<p>${esc(sp.notes)}</p>` : ""}
-      <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code> · ${esc(acrossText(p, sp))}, ${esc(tallText(p, sp))}</p>
+      <p><b>Size:</b> ${esc(tallText(p, sp))}, ${esc(acrossText(p, sp))}${p.stems ? `, ${esc(stemsText(p.stems))}` : ""}.${p.width == null && p.height == null ? " A guess for this kind; enter your own in Edit mode." : ""}</p>
+      <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code></p>
     </details>
 
     <details>
@@ -265,7 +266,7 @@ export function renderSaveEdits(panel, { rows, species, areaNames, phase, messag
 function newPlantLines(p, species, areaNames) {
   const sp = species.get(p.speciesId);
   const line = (label, value) => `<li><span class="erlabel">${esc(label)}</span><b>${esc(value)}</b></li>`;
-  return `<ul>${line("Kind", sp?.commonName || p.speciesId)}${line("Bed", areaNames?.get(p.area) || p.area)}${line("Spot", spotText(p.position))}${line("Width", acrossText(p, sp))}${line("Height", tallText(p, sp))}${p.finished ? line("Finished for the season", dateText(p.finished)) : ""}</ul>`;
+  return `<ul>${line("Kind", sp?.commonName || p.speciesId)}${line("Bed", areaNames?.get(p.area) || p.area)}${line("Spot", spotText(p.position))}${line("Width", acrossText(p, sp))}${line("Height", tallText(p, sp))}${p.stems ? line("Main stems or trunks", String(p.stems)) : ""}${p.finished ? line("Finished for the season", dateText(p.finished)) : ""}</ul>`;
 }
 
 // ---------- all-plants list ----------
