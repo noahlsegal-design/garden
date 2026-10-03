@@ -12,17 +12,18 @@
 // "removed" hides a plant from the yard and This week without erasing it, so it can be put back.
 
 import { MONTH_NAMES } from "./data.js";
-import { acrossText } from "./look.js";
+import { acrossText, tallText } from "./look.js";
 
-export const EDITABLE = ["name", "speciesId", "confirmedByOwner", "idConfidence", "finished", "position", "size", "area", "removed"];
+export const EDITABLE = ["name", "speciesId", "confirmedByOwner", "idConfidence", "finished", "position", "size", "height", "area", "removed"];
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const num = (v) => typeof v === "number" && Number.isFinite(v);
 // Whether a value makes sense for its detail. One that doesn't (from an older or newer copy of the app, say) is ignored.
 function usable(field, v, species) {
-  if (v == null) return !["position", "size", "area", "speciesId", "name"].includes(field);
+  if (v == null) return !["position", "size", "area", "speciesId", "name"].includes(field); // a height can be taken away
   if (field === "speciesId") return species.has(v);
   if (field === "position") return num(v.x) && num(v.z);
   if (field === "size") return num(v) && v > 0 && v <= 10;
+  if (field === "height") return num(v) && v > 0 && v <= 30;
   return true;
 }
 
@@ -161,7 +162,8 @@ export function fieldText(row, species, areaNames = new Map()) {
   if (f === "idConfidence") return ["ID confidence", row.from == null ? "—" : `${row.from}%`, row.to == null ? "—" : `${row.to}%`];
   if (f === "finished") return ["Finished for the season", row.from ? dateText(row.from) : "no", row.to ? dateText(row.to) : "no"];
   if (f === "position") return ["Spot", spotText(row.from), spotText(row.to)];
-  if (f === "size") return ["Size", row.from == null ? "—" : acrossText({ ...row.plant, size: row.from }, sp), acrossText({ ...row.plant, size: row.to }, sp)];
+  if (f === "size") return ["Width", row.from == null ? "—" : acrossText({ ...row.plant, size: row.from }, sp), acrossText({ ...row.plant, size: row.to }, sp)];
+  if (f === "height") return ["Height", tallText({ ...row.plant, height: row.from }, sp), tallText({ ...row.plant, height: row.to }, sp)];
   if (f === "area") return ["Bed", show(areaNames.get(row.from) || row.from), show(areaNames.get(row.to) || row.to)];
   if (f === "removed") return ["Removed from the yard", row.from ? dateText(row.from) : "no", row.to ? dateText(row.to) : "no"];
   return [f, JSON.stringify(row.from), JSON.stringify(row.to)];
@@ -202,8 +204,8 @@ export function describeEdits(filePlant, edits, species, onMac, me, areaNames = 
     const area = live("area");
     out.push({ key: "moved", text: area ? `Moved to ${areaNames.get(area.v) || area.v}` : "Moved", fields: moves, who: who(moves.map(live)) });
   }
-  const size = live("size");
-  if (size) out.push({ key: "size", text: "Resized", fields: ["size"], who: who([size]) });
+  const sizes = ["size", "height"].filter(live);
+  if (sizes.length) out.push({ key: "size", text: "Resized", fields: sizes, who: who(sizes.map(live)) });
   const gone = live("removed");
   if (gone) out.push({ key: "removed", text: gone.v ? "Removed from the yard" : "Put back in the yard", fields: ["removed"], who: who([gone]) });
   return out;

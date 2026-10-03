@@ -8,7 +8,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { stateFor, areaAt } from "./data.js";
-import { lookFor, plantRadius } from "./look.js";
+import { lookFor, plantRadius, plantHeight } from "./look.js";
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const W = (x, z, y = 0) => V(-x, y, z);
@@ -58,7 +58,7 @@ function buildPlant(p, sp, month, bloomView = false) {
   const look = lookFor(p);
   const s = p.size || 1;
   const r = plantRadius(p, sp);
-  const H = Math.max(0.3, r * 1.2 * look.h);
+  const H = plantHeight(p, sp);
   const rand = rng(hashStr(p.id));
   const state = stateFor(sp, month);
   const blooming = state === "bloom";

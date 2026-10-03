@@ -112,6 +112,8 @@ def clean(field, value, kinds, areas):
         return BAD
     if field == "size":
         return round(value, 2) if is_number(value) and 0.2 <= value <= 6 else BAD
+    if field == "height":  # feet tall when grown, or None to work it out from the width again
+        return value if value is None else round(value, 1) if is_number(value) and 0.2 <= value <= 30 else BAD
     if field == "area":
         return value if value in areas else BAD
     return BAD
@@ -133,7 +135,7 @@ def new_plant(plant_id, value, kinds, areas):
     label = value.get("label") if isinstance(value.get("label"), str) and value.get("label").strip() else plant["name"]
     plant.update({"label": label.strip()[:120], "alsoPossible": [], "photos": [], "issues": [], "notes": None, "needsAttention": False})
     out = {k: plant[k] for k in NEW_PLANT_ORDER}
-    for field in ("finished", "removed"):
+    for field in ("height", "finished", "removed"):
         tidy = clean(field, value.get(field), kinds, areas)
         if tidy is not BAD and tidy is not None:
             set_detail(out, field, tidy)
@@ -145,12 +147,13 @@ def set_detail(plant, field, value):
         plant.pop(field, None)
     elif field in plant:
         plant[field] = value
-    else:  # a new detail goes just under the plant's name, where it's easy to spot
+    else:  # a new detail goes just under the plant's name, where it's easy to spot (a height goes with the size)
+        after = "size" if field == "height" and "size" in plant else "name"
         items = list(plant.items())
         plant.clear()
         for key, old in items:
             plant[key] = old
-            if key == "name":
+            if key == after:
                 plant[field] = value
         plant.setdefault(field, value)
 

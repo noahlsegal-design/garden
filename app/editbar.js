@@ -7,7 +7,8 @@
 
 import { esc } from "./data.js";
 
-export const SIZE_RANGE = { min: 0.4, max: 4, step: 0.1 };
+export const SIZE_RANGE = { min: 0.4, max: 4, step: 0.1 }; // width, as "size" in plants.json
+export const HEIGHT_RANGE = { min: 0.3, max: 15, step: 0.1 }; // feet
 
 const ICON = {
   add: '<path d="M12 5v14M5 12h14"/>',
@@ -55,9 +56,12 @@ export function renderEditBar(el, o) {
         <button type="button" class="close" id="ebClose" aria-label="Done with this plant">✕</button>
       </div>
       <div class="ebsize">
-        <label for="ebSize">Size</label>
+        <label for="ebSize">Width</label>
         <input type="range" id="ebSize" min="${SIZE_RANGE.min}" max="${SIZE_RANGE.max}" step="${SIZE_RANGE.step}" value="${p.size}" aria-valuetext="${esc(p.sizeText(p.size))}">
         <span class="ebsizetext" id="ebSizeText">${esc(p.sizeText(p.size))}</span>
+        <label for="ebHeight">Height</label>
+        <input type="range" id="ebHeight" min="${HEIGHT_RANGE.min}" max="${HEIGHT_RANGE.max}" step="${HEIGHT_RANGE.step}" value="${p.height}" aria-valuetext="${esc(p.heightText(p.height))}">
+        <span class="ebsizetext" id="ebHeightText">${esc(p.heightText(p.height))}</span>
       </div>
       ${message}
       <div class="ebbtns">
@@ -69,7 +73,7 @@ export function renderEditBar(el, o) {
   } else {
     body = `
       <div class="ebhead"><p class="ebtitle">Edit mode</p></div>
-      <p class="ebhelp">Drag a plant to move it. Tap one to resize or remove it.</p>
+      <p class="ebhelp">Drag a plant to move it. Tap one to change its width or height, or remove it.</p>
       ${message}
       <div class="ebbtns">
         <button type="button" class="pill primary" id="ebAdd">${icon("add")}Add a plant</button>
@@ -86,12 +90,13 @@ export function renderEditBar(el, o) {
   q("#ebClose")?.addEventListener("click", o.onClose);
   q("#ebRemove")?.addEventListener("click", o.onRemove);
   q("#ebCard")?.addEventListener("click", o.onCard);
-  const size = q("#ebSize");
-  if (size) {
-    // The plant grows and shrinks in the yard as you slide; the new size is saved when you let go.
-    const text = () => { const t = o.plant.sizeText(Number(size.value)); q("#ebSizeText").textContent = t; size.setAttribute("aria-valuetext", t); };
-    size.addEventListener("input", () => { text(); o.onSize(Number(size.value), false); });
-    size.addEventListener("change", () => { text(); o.onSize(Number(size.value), true); });
+  // The plant grows and shrinks in the yard as you slide; the new width or height is saved when you let go.
+  for (const [id, field, describe] of [["ebSize", "size", o.plant?.sizeText], ["ebHeight", "height", o.plant?.heightText]]) {
+    const slider = q(`#${id}`);
+    if (!slider) continue;
+    const text = () => { const t = describe(Number(slider.value)); q(`#${id}Text`).textContent = t; slider.setAttribute("aria-valuetext", t); };
+    slider.addEventListener("input", () => { text(); o.onSize({ [field]: Number(slider.value) }, false); });
+    slider.addEventListener("change", () => { text(); o.onSize({ [field]: Number(slider.value) }, true); });
   }
   const form = q("#ebAddForm");
   if (form) {

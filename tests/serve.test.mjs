@@ -83,18 +83,21 @@ try {
   const mover = before.find((p) => p.area === "dahlia-strip" && !p.finished);
   const goner = before.find((p) => p.area === "perennial-bed" && !p.finished);
   res = await post("/api/save-edits", { edits: {
-    [mover.id]: { position: { x: 4.04, z: 21.96 }, area: "island-bed", size: 1.456 },
-    [goner.id]: { removed: "2026-10-03", position: { x: "far", z: 1 }, size: 50, area: "the moon" },
+    [mover.id]: { position: { x: 4.04, z: 21.96 }, area: "island-bed", size: 1.456, height: 3.04 },
+    [goner.id]: { removed: "2026-10-03", position: { x: "far", z: 1 }, size: 50, area: "the moon", height: 0 },
   } });
   out = await res.json();
-  assert.deepEqual(out.skipped.sort(), [`${goner.id} area`, `${goner.id} position`, `${goner.id} size`]);
-  assert.deepEqual(out.fileHad[mover.id], { position: mover.position, area: mover.area, size: mover.size });
+  assert.deepEqual(out.skipped.sort(), [`${goner.id} area`, `${goner.id} height`, `${goner.id} position`, `${goner.id} size`]);
+  assert.deepEqual(out.fileHad[mover.id], { position: mover.position, area: mover.area, size: mover.size, height: null });
   assert.deepEqual(out.fileHad[goner.id], { removed: null });
   let now = file();
   const moved = now.plants.find((p) => p.id === mover.id);
   assert.deepEqual(moved.position, { x: 4, z: 22 }, "spots are kept to a tenth of a foot");
   assert.equal(moved.area, "island-bed");
   assert.equal(moved.size, 1.46);
+  assert.equal(moved.height, 3);
+  const movedKeys = Object.keys(moved);
+  assert.equal(movedKeys[movedKeys.indexOf("size") + 1], "height", "a height goes just under the size");
   const removed = now.plants.find((p) => p.id === goner.id);
   assert.equal(removed.removed, "2026-10-03", "removed plants stay in the file, marked");
   assert.deepEqual(removed.position, goner.position);
@@ -105,23 +108,27 @@ try {
   const newId = "dahlia-test1234";
   const added = { id: newId, label: "Café au Lait", area: "dahlia-strip", name: " Café au Lait ", speciesId: "dahlia", idConfidence: 100, confirmedByOwner: true,
     alsoPossible: ["junk"], photos: ["/etc/passwd"], position: { x: -23.3, z: 3.1 }, size: 1, issues: [], notes: "<script>", needsAttention: true, extra: "dropped" };
+  const tall = { ...added, id: "dahlia-tall1234", height: 4.5 };
   res = await post("/api/save-edits", { edits: {
     [newId]: { added },
+    [tall.id]: { added: tall },
     "Bad ID!": { added: { ...added, id: "Bad ID!" } },
     "dahlia-nokind": { added: { ...added, speciesId: "no-such-kind" } },
     [mover.id]: { added },
   } });
   out = await res.json();
-  assert.deepEqual(out.fileHad, { [newId]: { added: null } });
+  assert.deepEqual(out.fileHad, { [newId]: { added: null }, [tall.id]: { added: null } });
   assert.deepEqual(out.skipped.sort(), ["Bad ID! added", "dahlia-nokind added", `${mover.id} added`].sort(), "bad IDs, unknown kinds and IDs already in the file are refused");
   now = file();
   const i = now.plants.findIndex((p) => p.id === newId);
-  const strip = now.plants.map((p, k) => [p.area, k]).filter(([a]) => a === "dahlia-strip").map(([, k]) => k);
-  assert.equal(i, Math.max(...strip.filter((k) => k !== i)) + 1, "right after the last plant in the same bed");
+  const strip = now.plants.map((p, k) => [p, k]).filter(([p]) => p.area === "dahlia-strip" && ![newId, tall.id].includes(p.id)).map(([, k]) => k);
+  assert.equal(i, Math.max(...strip) + 1, "right after the last plant in the same bed");
   assert.deepEqual(Object.keys(now.plants[i]), Object.keys(plants.find((p) => !p.dogToxicOverride && !p.finished)), "same details, in the same order, as the other plants");
   assert.equal(now.plants[i].name, "Café au Lait");
   assert.deepEqual([now.plants[i].photos, now.plants[i].alsoPossible, now.plants[i].notes], [[], [], null], "only the details the app sets are taken");
-  assert.equal(now.plants.length, plants.length + 1);
+  assert.equal(now.plants.length, plants.length + 2);
+  const tallKeys = Object.keys(now.plants.find((p) => p.id === tall.id));
+  assert.equal(tallKeys[tallKeys.indexOf("size") + 1], "height", "a new plant's height goes just under its size");
   res = await post("/api/save-edits", { edits: { [newId]: { added } } });
   assert.deepEqual((await res.json()).skipped, [`${newId} added`], "saving the same new plant twice doesn't add it twice");
 

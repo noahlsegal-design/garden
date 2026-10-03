@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce, newPlant, newPlantId, basePlant, spotText } from "../app/edits.js";
 import { buildWeek, mondayOf, parseYmd } from "../app/tasks.js";
 import { dogSafety, areaAt } from "../app/data.js";
-import { plantRadius, acrossText } from "../app/look.js";
+import { plantRadius, acrossText, plantHeight, tallText } from "../app/look.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
 const species = new Map(read("species.json").species.map((s) => [s.id, s]));
@@ -221,6 +221,21 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   assert(plantRadius({ ...small, size: 2 }, species.get(small.speciesId)) === 2 * plantRadius({ ...small, size: 1 }, species.get(small.speciesId)));
   if (shrub) assert(plantRadius({ ...shrub, size: 1 }, species.get(shrub.speciesId)) > plantRadius({ ...small, size: 1 }, species.get(small.speciesId)), "shrubs are drawn wider");
   assert.equal(acrossText({ ...small, size: 1 }, species.get("dahlia")), "about 1.5 ft across");
+
+  // Height: worked out from the width until a plant has one of its own, then separate from it.
+  const sp = species.get(small.speciesId);
+  const h1 = plantHeight({ ...small, size: 1 }, sp);
+  assert(plantHeight({ ...small, size: 2 }, sp) > h1, "without a height of its own, a wider plant is taller too");
+  assert.equal(plantHeight({ ...small, size: 2, height: h1 }, sp), h1, "with one, width and height are separate");
+  assert.equal(tallText({ ...small, height: 4.2 }, sp), "about 4 ft tall");
+  const edits = { [small.id]: { height: { v: 5, at }, size: { v: 0.8, at } } };
+  const out = withEdits(plants, edits, species, false).find((p) => p.id === small.id);
+  assert.equal(out.height, 5);
+  assert.equal(withEdits(plants, { [small.id]: { height: { v: 99, at } } }, species, false).find((p) => p.id === small.id).height, small.height, "a height that makes no sense is ignored");
+  const resized = describeEdits(small, edits, species, false, "");
+  assert.deepEqual(resized.map((l) => [l.text, l.fields.sort()]), [["Resized", ["height", "size"]]], "undoing a resize puts back width and height together");
+  const row = unsavedEdits(plants, edits, species).find((r) => r.field === "height");
+  assert.deepEqual(fieldText(row, species), ["Height", tallText(small, sp), "about 5 ft tall"]);
 }
 
 console.log("edits: all checks passed");

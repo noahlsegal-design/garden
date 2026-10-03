@@ -106,8 +106,14 @@ export function plantRadius(plant, sp) {
   const shrub = lookFor(plant).shrub || sp?.kind === "shrub";
   return (shrub ? 1.1 : 0.75) * (plant.size || 1);
 }
-// "about 3 ft across", to the nearest half foot.
-export function acrossText(plant, sp) {
-  const ft = Math.max(0.5, Math.round(plantRadius(plant, sp) * 4) / 2);
-  return `about ${ft} ft across`;
+// How tall a plant is when fully grown, in feet: "height" in plants.json if it's been set, or else worked out
+// from its width and kind (so a plant made wider grows taller too, until it has a height of its own).
+export function plantHeight(plant, sp) {
+  const h = plant.height;
+  if (typeof h === "number" && h > 0) return h;
+  return Math.max(0.3, plantRadius(plant, sp) * 1.2 * lookFor(plant).h);
 }
+const halfFeet = (ft) => Math.max(0.5, Math.round(ft * 2) / 2);
+// "about 3 ft across" and "about 2.5 ft tall", to the nearest half foot.
+export const acrossText = (plant, sp) => `about ${halfFeet(plantRadius(plant, sp) * 2)} ft across`;
+export const tallText = (plant, sp) => `about ${halfFeet(plantHeight(plant, sp))} ft tall`;

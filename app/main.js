@@ -9,7 +9,7 @@ import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant,
 import { renderTasks } from "./tasklist.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
-import { acrossText } from "./look.js";
+import { acrossText, tallText, plantHeight } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -376,9 +376,10 @@ function drawEditBar() {
     view, note: access?.note || "", kinds, draft: editMode.draft || {}, message: editMode.message,
     undo: last ? last.label : "",
     plant: p && {
-      name: p.name, size: p.size || 1,
+      name: p.name, size: p.size || 1, height: Math.round(plantHeight(p, sp) * 10) / 10,
       where: [sp?.commonName, garden.areaNames.get(p.area) || p.area].filter(Boolean).join(" · "),
       sizeText: (size) => acrossText({ ...p, size }, sp),
+      heightText: (height) => tallText({ ...p, height }, sp),
     },
     focus: view === "adding" ? "#addKind" : null,
     onAdd: () => { editMode.step = "adding"; editMode.draft = { kind: "", name: "" }; editMode.message = ""; pickToEditQuietly(null); drawEditBar(); },
@@ -391,10 +392,13 @@ function drawEditBar() {
     },
     onCancel: cancelAdding,
     onClose: () => pickToEdit(null),
-    onSize: (size, done) => {
-      if (!done) return yard.updatePlant({ ...p, size });
+    // Width and height change separately: a plant without a height of its own keeps the height it has now
+    // when it's made wider or narrower.
+    onSize: (change, done) => {
+      const values = "size" in change && p.height == null ? { ...change, height: Math.round(plantHeight(p, sp) * 10) / 10 } : change;
+      if (!done) return yard.updatePlant({ ...p, ...values });
       editMode.message = "";
-      saveValues(p.id, { size }, "Undo resize");
+      saveValues(p.id, values, "Undo resize");
     },
     onRemove: () => {
       editMode.message = `Removed “${p.name}”. It's hidden from the yard and This week, not erased.`;

@@ -63,7 +63,7 @@ Open a plant's card while signed in. Under its badges:
 Tap **Edit** at the top right of the yard (it turns into **Done**). The bloom timeline makes way for the edit bar.
 
 - **Move a plant:** press on it and drag. Let go where it belongs. Moving it into a different bed changes its bed too. Pressing on open ground still slides the map, and putting down a second finger sets the plant back and turns or zooms the view as usual.
-- **Resize or remove:** tap a plant. Slide **Size** to make it bigger or smaller (the bar shows about how wide it is). **Remove** hides it from the yard and This week without erasing it. Removed plants are listed at the bottom of **All plants**, where **Put it back in the yard** brings one back.
+- **Resize or remove:** tap a plant. **Width** and **Height** each have a slider and show the size in feet. They're separate, so a plant can be tall and narrow. Height is its full-grown height, so it still looks shorter in months when it's dormant or just coming up. **Remove** hides it from the yard and This week without erasing it. Removed plants are listed at the bottom of **All plants**, where **Put it back in the yard** brings one back.
 - **Add a plant:** tap **Add a plant**, choose its kind, name it, tap **Next: place it**, then tap the spot in the yard. It's added right away, and This week includes it: a new dahlia gets its own box in the dahlia jobs. Drag it afterwards to fine-tune.
 - **Undo** in the edit bar takes back your last move, resize, removal or addition.
 
