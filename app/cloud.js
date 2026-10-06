@@ -1,6 +1,6 @@
 // Talks to Supabase, the online database that keeps the shared garden once the app is on the internet: signing
-// in, and loading and saving check-offs, first-frost dates and plant changes. Everyone listed as a garden member
-// shares the same ones. It uses Supabase's plain web addresses, so no extra library is needed. The tables and
+// in, and loading and saving check-offs, first-frost dates, plant changes, and each plant's notes and photos.
+// Everyone listed as a garden member shares the same ones. It uses Supabase's plain web addresses, so no extra library is needed. The tables and
 // security rules are in supabase/setup.sql.
 
 import { SUPABASE_URL, SUPABASE_KEY } from "./config.js";
@@ -66,6 +66,7 @@ export function signOut() {
   const old = session;
   session = null;
   writeSession(null);
+  forgetPhotos();
   if (old) send(`${base}/auth/v1/logout`, { method: "POST", headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${old.access}` } }).catch(() => {});
 }
 
@@ -180,3 +181,131 @@ async function save(change) {
 }
 
 export const cloudBackend = { load, save };
+
+// ---------- notes and photos ----------
+// Notes are rows in plant_notes. Photos sit in the private "plant-photos" storage folder, which has no public
+// addresses: each one is fetched while signed in. A photo never changes once it's up, so each device keeps the
+// ones it has fetched (in the browser's own storage, cleared on sign-out) and doesn't download them again. That
+// keeps well inside the free plan's monthly downloads.
+export const BUCKET = "plant-photos";
+export const thumbOf = (photo) => photo.replace(/\.jpg$/, "-thumb.jpg");
+const PHOTO_CACHE = "garden-photos";
+const photoCache = () => (globalThis.caches ? caches.open(PHOTO_CACHE).catch(() => null) : Promise.resolve(null));
+
+async function storage(path, { method = "GET", body, headers = {} } = {}, retried = false) {
+  const res = await send(`${base}/storage/v1/${path}`, {
+    method, body, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${await pass()}`, ...headers },
+  });
+  if (res.ok) return res;
+  // Storage sometimes reports its real status inside the reply rather than as the reply's own status.
+  const err = await res.json().catch(() => ({}));
+  const code = Number(err.statusCode) || res.status;
+  if (code === 401 && !retried) { // the pass may have just expired: renew it and try once more
+    await pass(true);
+    return storage(path, { method, body, headers }, true);
+  }
+  if (code === 409 || /already exists|duplicate/i.test(err.message || err.error || "")) return null; // sent before
+  if (code === 401) throw fail("signed-out");
+  if (code === 403 || /row-level security|unauthori[sz]ed/i.test(err.message || "")) throw fail("not-member");
+  if (code === 404 || /bucket not found/i.test(err.message || err.error || "")) throw fail("setup");
+  if (code === 413 || /too large|exceeded/i.test(err.message || "")) throw fail("too-big");
+  throw fail("offline");
+}
+
+// Names to show on notes, from the garden's members: the name given in Supabase, or the start of their email.
+let people = null;
+async function peopleNames() {
+  if (!people || people.user !== session?.user) {
+    const rows = await rest("garden_members?select=user_id,email,name");
+    people = { user: session?.user, names: new Map(rows.map((m) => [m.user_id, m.name || m.email.split("@")[0]])) };
+  }
+  return people.names;
+}
+
+const NOTE_COLUMNS = "id,plant_id,noted_on,body,photo,photo_w,photo_h,photo_bytes,user_id,created_at";
+const noteOf = (r, names) => ({
+  id: r.id, plantId: r.plant_id, date: r.noted_on, body: r.body || "", photo: r.photo || null,
+  w: r.photo_w || null, h: r.photo_h || null, bytes: r.photo_bytes || 0, at: r.created_at,
+  by: names.get(r.user_id) || "", mine: r.user_id === session?.user,
+});
+
+// A plant's notes, newest first.
+async function listNotes(plantId) {
+  const rows = await all(`plant_notes?select=${NOTE_COLUMNS}&plant_id=${eq(plantId)}&order=noted_on.desc,created_at.desc`);
+  const names = await peopleNames();
+  return rows.map((r) => noteOf(r, names));
+}
+
+// Saves a note, sending its photo and small copy first. Safe to repeat: a photo or note that already got there
+// last time is left as it is.
+async function addNote(note, photo, thumb) {
+  if (photo) {
+    const headers = { "Content-Type": "image/jpeg", "cache-control": "max-age=31536000", "x-upsert": "false" };
+    await storage(`object/${BUCKET}/${thumbOf(note.photo)}`, { method: "POST", body: thumb, headers });
+    await storage(`object/${BUCKET}/${note.photo}`, { method: "POST", body: photo, headers });
+  }
+  const row = {
+    id: note.id, plant_id: note.plantId, noted_on: note.date, body: note.body, photo: note.photo,
+    photo_w: note.w, photo_h: note.h, photo_bytes: note.bytes || 0,
+  };
+  await rest("plant_notes", { method: "POST", body: [row], prefer: "resolution=ignore-duplicates,return=minimal" });
+  const names = await peopleNames().catch(() => new Map());
+  return noteOf({ ...row, user_id: session?.user, created_at: new Date().toISOString() }, names);
+}
+
+// Deletes a note and its photos (the photos first, so none are ever left behind with no note).
+async function removeNote(note) {
+  if (note.photo) {
+    const paths = [note.photo, thumbOf(note.photo)];
+    await storage(`object/${BUCKET}`, { method: "DELETE", body: JSON.stringify({ prefixes: paths }), headers: { "Content-Type": "application/json" } });
+    dropCached(paths);
+  }
+  await rest(`plant_notes?id=${eq(note.id)}`, { method: "DELETE", prefer: "return=minimal" });
+}
+
+// A photo as an address the page can show, from this device's copy if it has one.
+const shown = new Map(); // photo name -> address of the picture in memory
+const photoKey = (path) => `${base}/storage/v1/object/authenticated/${BUCKET}/${path}`;
+async function photoAddress(path) {
+  if (shown.has(path)) return shown.get(path);
+  const cache = await photoCache();
+  let blob = await cache?.match(photoKey(path), { ignoreVary: true }).then((r) => r?.blob()).catch(() => null);
+  if (!blob) {
+    const res = await storage(`object/authenticated/${BUCKET}/${path}`);
+    if (!res) throw fail("offline");
+    blob = await res.blob();
+    cache?.put(photoKey(path), new Response(blob, { headers: { "Content-Type": "image/jpeg" } })).catch(() => {});
+  }
+  const url = URL.createObjectURL(blob);
+  shown.set(path, url);
+  return url;
+}
+// A photo just taken on this device: kept, so it shows straight away and is never downloaded again.
+function keepPhoto(path, blob) {
+  if (!shown.has(path)) shown.set(path, URL.createObjectURL(blob));
+  photoCache().then((c) => c?.put(photoKey(path), new Response(blob, { headers: { "Content-Type": "image/jpeg" } }))).catch(() => {});
+}
+function dropCached(paths) {
+  for (const p of paths) {
+    if (shown.has(p)) { URL.revokeObjectURL(shown.get(p)); shown.delete(p); }
+  }
+  photoCache().then((c) => c && Promise.all(paths.map((p) => c.delete(photoKey(p))))).catch(() => {});
+}
+// After signing out, this device doesn't keep anyone's photos.
+function forgetPhotos() {
+  for (const url of shown.values()) URL.revokeObjectURL(url);
+  shown.clear();
+  people = null;
+  globalThis.caches?.delete(PHOTO_CACHE).catch(() => {});
+}
+
+// How many photos the garden has and how much room they take, against the free plan's 1 GB.
+async function photoUse() {
+  const rows = await all("plant_notes?select=photo_bytes&photo=not.is.null&order=id");
+  return { count: rows.length, bytes: rows.reduce((t, r) => t + (r.photo_bytes || 0), 0) };
+}
+
+// The name shown on your own notes.
+const myName = async () => (await peopleNames()).get(session?.user) || "";
+
+export const notesBackend = { list: listNotes, add: addNote, remove: removeNote, photo: photoAddress, keepPhoto, use: photoUse, me: myName };

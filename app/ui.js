@@ -1,6 +1,6 @@
 // Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): month buttons, the plant card
-// (with its confirm, rename and finish controls), the all-plants list, "Save app edits into files", and the
-// photo viewer.
+// (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js), the all-plants
+// list, "Save app edits into files", and the photo viewer.
 
 import {
   MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, isDogRisk, TOX_INFO,
@@ -99,7 +99,7 @@ function editHtml(p, edit) {
     </div>${shapeChoice}${growsOn}${changes}`;
 }
 
-export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto }) {
+export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes }) {
   // Keep what's typed in an open form, and the scroll position, when the same card redraws.
   const same = lastCardId === p.id;
   if (!same) editing = null;
@@ -141,6 +141,8 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
         : p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
     </div>
 
+    <section class="notes" id="cardNotes" aria-labelledby="notesTitle" hidden></section>
+
     ${unsure ? `<p class="small" style="margin-top:10px">Care shown is for the best guess. It depends on confirming the ID${p.alsoPossible?.length ? `. It could also be: ${esc(p.alsoPossible.join("; "))}` : ""}.</p>` : ""}
 
     <div class="box ${dogCls}">
@@ -181,19 +183,24 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     </details>
   `;
   sheet.hidden = false;
+  onNotes?.(sheet.querySelector("#cardNotes"));
   sheet.scrollTop = scroll;
   sheet.querySelector(".close").onclick = onClose;
   sheet.querySelectorAll("[data-photo]").forEach((b) => (b.onclick = () => onPhoto(p.photos, Number(b.dataset.photo))));
   if (!edit?.can) return;
 
   const redraw = (focus) => {
-    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto });
+    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes });
     if (focus) sheet.querySelector(focus)?.focus();
   };
   const name = sheet.querySelector("#editName"), kind = sheet.querySelector("#editKind");
   if (name && typed.name != null) name.value = typed.name;
   if (kind && typed.kind != null) kind.value = typed.kind;
-  if (focusId) sheet.querySelector(`#${CSS.escape(focusId)}`)?.focus({ preventScroll: true });
+  if (focusId && !sheet.contains(document.activeElement)) {
+    const f = sheet.querySelector(`#${CSS.escape(focusId)}`);
+    f?.focus({ preventScroll: true });
+    if (f?.tagName === "TEXTAREA") f.setSelectionRange(f.value.length, f.value.length);
+  }
   // Picking a different kind suggests its name, until you type a name of your own.
   let nameTouched = typed.name != null && typed.name !== p.name;
   if (name) name.oninput = () => { nameTouched = true; };
@@ -386,19 +393,32 @@ export function renderList(panel, { plants: everything, species, areaNames, area
 const listState = { removedOpen: false }; // whether the removed plants are showing in the list
 
 // ---------- photo viewer ----------
+// photos are the garden's own photo names (from plants.json), or notes' photos as { caption, load }, where
+// load() gives the picture's address once it's fetched.
 export function openLightbox(photos, start) {
   const box = $("lightbox");
   let i = start;
   const prevFocus = document.activeElement;
   const draw = () => {
+    const ph = photos[i];
+    const caption = typeof ph === "string" ? ph.split("/").pop() : ph.caption;
     box.innerHTML = `
-      <div class="lbbar"><span>Photo ${i + 1} of ${photos.length} · ${esc(photos[i].split("/").pop())}</span><button type="button" id="lbClose" aria-label="Close photo">✕</button></div>
-      <div class="lbimg"><img src="${photoUrl(photos[i])}" alt="Garden photo ${i + 1}"></div>
+      <div class="lbbar"><span>Photo ${i + 1} of ${photos.length} · ${esc(caption)}</span><button type="button" id="lbClose" aria-label="Close photo">✕</button></div>
+      <div class="lbimg"><img alt="Garden photo ${i + 1}" ${typeof ph === "string" ? `src="${photoUrl(ph)}"` : ""}><p class="lbwait" hidden></p></div>
       <div class="lbnav" ${photos.length > 1 ? "" : "hidden"}><button type="button" id="lbPrev" aria-label="Previous photo">‹ Prev</button><button type="button" id="lbNext" aria-label="Next photo">Next ›</button></div>`;
     box.querySelector("#lbClose").onclick = close;
     box.querySelector("#lbPrev").onclick = () => { i = (i - 1 + photos.length) % photos.length; draw(); };
     box.querySelector("#lbNext").onclick = () => { i = (i + 1) % photos.length; draw(); };
     box.querySelector("#lbClose").focus();
+    if (typeof ph !== "string") {
+      const img = box.querySelector(".lbimg img"), wait = box.querySelector(".lbwait"), shown = i;
+      ph.load().then((url) => { if (shown === i) img.src = url; }).catch(() => {
+        if (shown !== i) return;
+        img.remove();
+        wait.textContent = "This photo couldn't be loaded. Check your connection and try again.";
+        wait.hidden = false;
+      });
+    }
   };
   const onKey = (e) => {
     if (e.key === "Escape") { e.stopImmediatePropagation(); close(); }

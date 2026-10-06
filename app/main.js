@@ -4,7 +4,8 @@ import { loadGarden, MONTH_NAMES, esc, areaAt } from "./data.js";
 import { createYard } from "./scene.js";
 import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
-import { cloudReady, cloudBackend, account, signIn, signOut } from "./cloud.js";
+import { cloudReady, cloudBackend, notesBackend, thumbOf, account, signIn, signOut } from "./cloud.js";
+import { createNotes } from "./notes.js";
 import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant, newPlant, newPlantId,
   STRUCTURE, isStructureEdit, structureBase, withStructureEdits, unsavedStructureEdits, staleStructureEdits } from "./edits.js";
 import { renderTasks } from "./tasklist.js";
@@ -36,6 +37,8 @@ const undoStack = []; // Edit mode changes made on this device, newest last: { l
 // Plants that show in the yard, the bloom timeline and This week.
 const inYard = (p) => !p.finished && !p.removed;
 let garden, yard, byId, areaOrder, store, bloomBar;
+// Each plant's notes and photos, kept in the shared garden on Supabase (none without a garden account).
+const notes = cloudReady ? createNotes({ backend: notesBackend, thumbOf, today: () => ymd(today()), onPhoto: openLightbox }) : null;
 // data/plants.json as it is, before the plant changes made in the app (edits.js) go on top, and layout.json's
 // structures (the arch trellises can be changed in Edit mode too).
 let filePlants, fileById, fileStructures;
@@ -74,7 +77,11 @@ async function start() {
   });
   store.refresh();
   // Coming back to the app (say, after checking things off on the other device) fetches the latest list.
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") store.refresh(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    store.refresh();
+    notes?.refresh();
+  });
 
   let has3d = true;
   try {
@@ -252,6 +259,7 @@ function showCard() {
     plant: p, species: garden.species.get(p.speciesId), month: state.month,
     areaName: garden.areaNames.get(p.area) || p.area, edit: editControls(p),
     onClose: closeCard, onPhoto: openLightbox,
+    onNotes: notes && ((el) => notes.draw(el, p.id, editAccess("see and add notes and photos"))),
   });
 }
 function closeCard() {
@@ -643,7 +651,7 @@ function drawTasks() {
       await signIn(email, password); // shows its own message if it doesn't work
       await store.refresh();
     },
-    onSignOut: () => { signOut(); store.forget(); },
+    onSignOut: () => { signOut(); store.forget(); notes?.forget(); },
     areaNames: garden.areaNames, areaOrder,
     onToggle: (keys, on) => {
       // Dated no earlier than the week shown, so a job ticked off ahead of time stays visible in that week.

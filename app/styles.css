@@ -222,6 +222,44 @@ details[open] > summary::after{content:"–"}
 .formbtns .btn:disabled{opacity:.55; cursor:default}
 .box .btn{margin-top:12px}
 
+/* the card's notes and photos (notes.js) */
+.notes{margin-top:16px; padding-top:12px; border-top:1px solid var(--line)}
+.noteshead{display:flex; justify-content:space-between; align-items:center; gap:10px; min-height:40px}
+.noteshead h3{margin:0; font-size:1rem; font-weight:700}
+.noteshead h3 span{color:var(--muted); font-weight:400}
+.notes > p.small{margin:6px 0 0}
+.noteform textarea{font:inherit; font-size:1rem; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:84px; resize:vertical; line-height:1.4}
+.noteform input[type=date]{width:auto; min-width:11em; -webkit-appearance:none; appearance:none}
+.notepick{display:flex; align-items:center; gap:12px; margin-top:4px}
+.notepick img{height:72px; width:auto; max-width:120px; object-fit:cover; border-radius:8px; display:block}
+.notepick .pill{cursor:pointer; margin:0; font-size:.9rem}
+.offscreen{position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; pointer-events:none}
+.notepick .pill:focus-within{outline:2px solid var(--bloom); outline-offset:2px}
+.notelist{list-style:none; margin:8px 0 0; padding:0}
+.note{padding:10px 0 12px; border-bottom:1px dashed var(--line)}
+.note:last-child{border-bottom:0}
+.notemeta{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 6px; font-size:.86rem; color:var(--muted)}
+.notemeta b{color:var(--ink); font-size:.95rem}
+.notemeta .linkbtn{margin-left:auto; font-weight:600; font-size:.84rem}
+.note .notebody{margin:4px 0 0; white-space:pre-wrap; overflow-wrap:anywhere}
+.notepic{display:block; margin-top:8px; padding:0; border:0; border-radius:10px; overflow:hidden; background:var(--chip); height:150px; max-width:100%; aspect-ratio:4 / 3}
+.notepic img{display:block; width:100%; height:100%; object-fit:cover}
+.notepic img:not([src]){visibility:hidden}
+.notepic.missing{display:grid; place-items:center; width:120px; aspect-ratio:auto !important}
+.notepic.missing::after{content:"Photo couldn't load"; font-size:.78rem; color:var(--muted); padding:8px; text-align:center}
+.notepic.missing img{display:none}
+.note.waiting .notepic, .note.waiting .notebody{opacity:.75}
+.note .notewait{margin:6px 0 0; font-size:.82rem; color:var(--warn); font-weight:600}
+.noteask{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:6px; padding:8px 10px; border-radius:10px; background:var(--danger-bg); font-size:.9rem}
+.noteask span{flex-basis:100%}
+.noteask .btn{margin:0}
+.btn.danger{background:var(--danger); color:var(--sheet)}
+.notes > .linkbtn{margin-top:4px}
+.lbwait{margin:auto; padding:0 24px; text-align:center; color:#ddd}
+.lbbar span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px}
+.lbbar button{flex:none}
+.notemeta .linkbtn{color:var(--muted)}
+
 /* ---------- all-plants list ---------- */
 .listpanel{position:fixed; inset:0; z-index:10; background:var(--sheet); display:flex; flex-direction:column; animation:fadein .15s ease}
 @keyframes fadein{from{opacity:0}}

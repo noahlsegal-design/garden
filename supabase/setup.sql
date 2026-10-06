@@ -2,12 +2,13 @@
 -- share it. In Supabase, open SQL Editor, paste all of this, and click Run. It's safe to run again.
 --
 -- Everyone listed in garden_members shares one garden: the same This week check-offs, recorded first-frost
--- dates and plant changes (renames, confirmed IDs, plants finished for the season). Nobody else can read or
--- change any of it, even with an account.
+-- dates, plant changes (renames, confirmed IDs, plants finished for the season) and each plant's notes and
+-- photos. Nobody else can read or change any of it, even with an account.
 --
 -- To add someone: create their account under Authentication > Users (Add user > Create new user, with
--- "Auto Confirm User" ticked), then run this line here with their email:
---   select private.add_member('their@email.com');
+-- "Auto Confirm User" ticked), then run this line here with their email and the name to show on their notes:
+--   select private.add_member('their@email.com', 'Sam');
+-- Running it again for someone already in the garden just changes their name.
 -- To remove someone:
 --   delete from public.garden_members where email = 'their@email.com';
 
@@ -23,6 +24,8 @@ create table if not exists public.garden_members (
   email text not null,
   added_on timestamptz not null default now()
 );
+-- The name shown on someone's notes ("June 12 · Noah"). Without one, the start of their email is shown.
+alter table public.garden_members add column if not exists name text check (char_length(name) <= 40);
 
 create or replace function private.is_member() returns boolean
 language sql stable security definer set search_path = ''
@@ -30,7 +33,9 @@ as $$ select exists (select 1 from public.garden_members where user_id = (select
 revoke all on function private.is_member() from public, anon;
 grant execute on function private.is_member() to authenticated;
 
-create or replace function private.add_member(who text) returns text
+-- (The first version took only an email. It's replaced by this one, where the name is optional.)
+drop function if exists private.add_member(text);
+create or replace function private.add_member(who text, called text default null) returns text
 language plpgsql security definer set search_path = ''
 as $$
 declare
@@ -41,12 +46,11 @@ begin
   if found_id is null then
     raise exception 'There''s no account with the email %. Add it first under Authentication > Users.', who;
   end if;
-  insert into public.garden_members (user_id, email) values (found_id, found_email)
-    on conflict (user_id) do update set email = excluded.email;
-  return found_email || ' is in the garden';
+  insert into public.garden_members (user_id, email, name) values (found_id, found_email, nullif(trim(called), ''))
+    on conflict (user_id) do update set email = excluded.email, name = coalesce(excluded.name, public.garden_members.name);
+  return found_email || ' is in the garden' || coalesce(' as ' || nullif(trim(called), ''), '');
 end $$;
--- Only you, here in the SQL Editor, can add people. The app can't.
-revoke all on function private.add_member(text) from public, anon, authenticated;
+revoke all on function private.add_member(text, text) from public, anon, authenticated;
 
 -- ---------- check-offs: one row per checked-off task (and per plant, for one-time jobs) ----------
 -- user_id is who checked it off.
@@ -81,6 +85,47 @@ create table if not exists public.plant_edits (
   changed_at timestamptz not null default now(),
   primary key (plant_id, field)
 );
+
+-- ---------- notes and photos on each plant ("June 12: thrips on dahlia #9") ----------
+-- One row per note. The app makes up the id, so a note that waited on a phone without signal is never saved
+-- twice. noted_on is the day it's about (today, unless you pick an earlier day). photo, if there is one, is the
+-- picture's name in the private "plant-photos" storage folder below; its small copy has "-thumb" before
+-- ".jpg". photo_bytes is how much room both copies take, so the app can keep an eye on the free plan's 1 GB.
+create table if not exists public.plant_notes (
+  id uuid primary key,
+  plant_id text not null check (char_length(plant_id) between 1 and 100),
+  noted_on date not null,
+  body text not null default '' check (char_length(body) <= 2000),
+  photo text check (photo ~ '^[0-9a-f-]{36}\.jpg$'),
+  photo_w int check (photo_w between 1 and 4000),
+  photo_h int check (photo_h between 1 and 4000),
+  photo_bytes int not null default 0 check (photo_bytes between 0 and 4000000),
+  user_id uuid default auth.uid() references auth.users (id) on delete set null,
+  created_at timestamptz not null default now(),
+  check (body <> '' or photo is not null)
+);
+create index if not exists plant_notes_by_plant on public.plant_notes (plant_id, noted_on desc, created_at desc);
+
+-- Each note records who added it and when, whatever the app sends.
+create or replace function private.stamp_note() returns trigger
+language plpgsql set search_path = ''
+as $$
+begin
+  new.user_id := coalesce((select auth.uid()), new.user_id);
+  new.created_at := now();
+  return new;
+end $$;
+drop trigger if exists stamp_note on public.plant_notes;
+create trigger stamp_note before insert on public.plant_notes
+  for each row execute function private.stamp_note();
+
+-- The private storage folder for the photos. Nothing in it has a public address: the app fetches each photo
+-- while signed in. The app shrinks photos on the phone first (about 1600 px, and a small copy for the list)
+-- and drops their location data, so each one is well under the 2 MB limit here, and only JPEGs are taken.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('plant-photos', 'plant-photos', false, 2097152, array['image/jpeg'])
+on conflict (id) do update
+  set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 
 -- ---------- moving from one list per person to one shared garden ----------
 -- Before the garden was shared, each person had their own check-offs and frost dates. This merges them into
@@ -138,10 +183,13 @@ alter table public.garden_members enable row level security;
 alter table public.checkoffs enable row level security;
 alter table public.frosts enable row level security;
 alter table public.plant_edits enable row level security;
+alter table public.plant_notes enable row level security;
 
-revoke all on public.garden_members, public.checkoffs, public.frosts, public.plant_edits from anon, authenticated;
+revoke all on public.garden_members, public.checkoffs, public.frosts, public.plant_edits, public.plant_notes from anon, authenticated;
 grant select on public.garden_members to authenticated;
 grant select, insert, update, delete on public.checkoffs, public.frosts, public.plant_edits to authenticated;
+-- Notes are added and deleted, never changed in place.
+grant select, insert, delete on public.plant_notes to authenticated;
 
 drop policy if exists "Members see who's in the garden" on public.garden_members;
 create policy "Members see who's in the garden" on public.garden_members
@@ -168,7 +216,29 @@ create policy "Garden plant changes" on public.plant_edits
   using ((select private.is_member()))
   with check ((select private.is_member()));
 
+drop policy if exists "Garden notes" on public.plant_notes;
+create policy "Garden notes" on public.plant_notes
+  for all to authenticated
+  using ((select private.is_member()))
+  with check ((select private.is_member()));
+
+-- The photos: only people in the garden can see, add or delete them. A photo's name has to be one the app
+-- makes (the note's id, then .jpg or -thumb.jpg), and photos can't be replaced once they're up.
+drop policy if exists "Garden photos: see" on storage.objects;
+create policy "Garden photos: see" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'plant-photos' and (select private.is_member()));
+drop policy if exists "Garden photos: add" on storage.objects;
+create policy "Garden photos: add" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'plant-photos' and (select private.is_member()) and name ~ '^[0-9a-f-]{36}(-thumb)?\.jpg$');
+drop policy if exists "Garden photos: delete" on storage.objects;
+create policy "Garden photos: delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'plant-photos' and (select private.is_member()));
+
 commit;
 
 -- Who's in the garden now. You should see your own email, plus anyone you've added.
-select email as "In the garden", added_on as "Added" from public.garden_members order by added_on;
+select email as "In the garden", coalesce(name, '(no name yet)') as "Name on notes", added_on as "Added"
+from public.garden_members order by added_on;

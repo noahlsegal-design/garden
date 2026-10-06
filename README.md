@@ -23,7 +23,9 @@ Before publishing, Claude runs `node stamp-version.mjs`. It gives the app's file
 
 ### Costs and privacy
 
-GitHub and Supabase are both free at this size. The website is public like any web page: anyone with the link can see the yard and plants, but only the two of you can sign in, check things off and change plants. Changes made in the app (renames, confirmed IDs, finished plants, and plants added, moved, resized or removed) only show when you're signed in; the public site shows what's in `data/plants.json`. Your original photos and videos, and `NEXT-STEPS.md`, stay on this Mac and are never uploaded (the list is in `.gitignore`).
+GitHub and Supabase are both free at this size. The website is public like any web page: anyone with the link can see the yard and plants, but only the two of you can sign in, check things off, change plants, and see or add notes and photos. Changes made in the app (renames, confirmed IDs, finished plants, and plants added, moved, resized or removed) only show when you're signed in; the public site shows what's in `data/plants.json`. Your original photos and videos, and `NEXT-STEPS.md`, stay on this Mac and are never uploaded (the list is in `.gitignore`).
+
+Notes and photos are private. They're kept in your Supabase project, and the photos sit in a private storage folder with no public address, so only people in the garden can see them. Each photo is made smaller on the phone before it's sent (about 1600 pixels on its long side, plus a small copy for the card, together usually well under 1 MB) and its location and camera details are removed. The free plan's 1 GB of storage holds a couple of thousand photos, and the app stops taking new photos at 900 MB. Each phone keeps the photos it has already shown, so looking at them again doesn't use any of the free plan's monthly downloads.
 
 Supabase puts free projects to sleep after about a week of little use, and emails you first. If the app says it can't reach your garden account, sign in at supabase.com and click **Resume project**. Nothing is lost, and check-offs wait on your phone in the meantime.
 
@@ -73,10 +75,16 @@ Changes save to the shared garden, so they show on both your phones right away. 
 
 The changes sit on top of `data/plants.json` rather than changing it. Now and then, on the Mac copy (open it with Start Garden.command and sign in), go to **All plants → Save app edits into files**. It shows each change, writes them into `plants.json` (new plants go in after the others in their bed), and clears them. Then ask Claude to "publish the garden". Until it's published, the website keeps showing the changes from Supabase, so nothing flips back in between.
 
+### Notes and photos
+
+Every plant card has **Notes and photos**: a log of what you notice, like "June 12: thrips on dahlia #9", newest first, each with who added it. Tap **Add a note**, write what you saw or did, and tap **Add a photo** to take one with the camera or pick one from your photos. The day starts as today; change it if you're catching up. **Save note**. Photos open full size when tapped. **Delete** asks first, and takes the photo with it.
+
+If there's no signal in the yard, the note (photo and all) waits on your phone, marked "Waiting for a connection", and saves by itself once you're back online, even if you close the app in between.
+
 ### Adding someone to the garden
 
 1. In Supabase, go to **Authentication → Users → Add user → Create new user**, enter their email and a password, tick **Auto Confirm User**, and click **Create user**.
-2. In **SQL Editor**, run `select private.add_member('their@email.com');` with their email.
+2. In **SQL Editor**, run `select private.add_member('their@email.com', 'Sam');` with their email and the name to show on their notes. (Running it again with a different name renames them. Without a name, notes show the start of their email.)
 
 They can then sign in on their phone. An account that hasn't been added sees a note saying so, and can't see or change anything.
 
@@ -92,9 +100,9 @@ They can then sign in on their phone. An account that hasn't been added sees a n
 | `Start Garden.command` | Double-click to run the app |
 | `stamp-version.mjs` | Puts the app's version tag into `index.html` before publishing (see above) |
 | `serve.py` | The tiny web server that `Start Garden.command` runs. It makes browsers check for updated files so you never get a stale version. It also does **Save app edits into files**, and with no garden account connected, it saves check-offs on the Mac |
-| `supabase/setup.sql` | The setup for your garden in Supabase: who shares it, where check-offs and plant changes are stored, and the rules that keep them private. Safe to run again |
+| `supabase/setup.sql` | The setup for your garden in Supabase: who shares it, where check-offs, plant changes, notes and photos are stored, and the rules that keep them private. Safe to run again |
 | `.gitignore` | The list of what stays on this Mac and is never uploaded |
-| `tests/` | Automatic checks Claude runs after changes (`node tests/tasks.test.mjs`, and the same for `store`, `cloud`, `edits`, `serve`, `shapes` and `version`) |
+| `tests/` | Automatic checks Claude runs after changes (`node tests/tasks.test.mjs`, and the same for `store`, `cloud`, `notes`, `edits`, `serve`, `shapes` and `version`) |
 | `NEXT-STEPS.md` | Your plan and ready-to-paste prompts for future Claude sessions. Stays on this Mac |
 
 After editing a file in `data/`, refresh your Mac copy to see it. The online copy updates once it's published.
