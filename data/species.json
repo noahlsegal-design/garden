@@ -143,8 +143,8 @@
         "Jul": "foliage",
         "Aug": "bloom",
         "Sep": "bloom",
-        "Oct": "frost-blackened",
-        "Nov": "stored",
+        "Oct": "bloom",
+        "Nov": "frost-blackened",
         "Dec": "stored"
       },
       "care": [
@@ -177,7 +177,8 @@
             "Jun",
             "Jul",
             "Aug",
-            "Sep"
+            "Sep",
+            "Oct"
           ],
           "type": "water",
           "text": "Water deeply 1–2 times a week in dry spells. Mulch keeps roots cool."
@@ -204,10 +205,11 @@
           "months": [
             "Jul",
             "Aug",
-            "Sep"
+            "Sep",
+            "Oct"
           ],
           "type": "harvest",
-          "text": "Cut-flower window: cut often (see Cut flowers). Deadhead anything you don't cut."
+          "text": "Cut-flower window, right up until the first frost: cut often (see Cut flowers). Deadhead anything you don't cut."
         },
         {
           "months": [

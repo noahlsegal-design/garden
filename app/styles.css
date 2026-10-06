@@ -205,6 +205,10 @@ details[open] > summary::after{content:"–"}
 .pill{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:999px; padding:6px 13px 6px 10px; font-size:.86rem; font-weight:600; min-height:40px}
 .pill svg{width:16px; height:16px; fill:none; stroke:var(--moss); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
 .pill:active{background:var(--chip)}
+.seasonbtns{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px}
+.seasonbtns .small{flex-basis:100%}
+.seasonbtns .pill[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.seasonbtns .pill[aria-pressed="true"] svg{stroke:currentColor}
 .editnote{margin-top:10px !important}
 .changes{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:2px}
 .changes li{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:.86rem; line-height:1.4; color:var(--ink); padding:4px 0; border-bottom:1px dashed var(--line)}

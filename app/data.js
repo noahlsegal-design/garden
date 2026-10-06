@@ -113,11 +113,56 @@ export const STATE_TEXT = {
   bare: ["Bare branches", "Leafless for winter."],
   "bare-flowerheads": ["Bare, with dried flower heads", "Leafless, with dried flowers left on for winter interest."],
   gone: ["Not in the ground", "Finished for the season or not planted yet."],
+  spent: ["Spent", "Done for the year and dying back. It stays in the yard, withered, until you pull it and mark it Finished for the season."],
 };
 
 export function stateFor(sp, m) {
   return sp.seasonal?.[MONTHS[m]] || "foliage";
 }
+// How a plant looks in a month: its stage, except that a crop finished for the year ("gone" after it grew this
+// year, with nothing more to come before January) is "spent" — left standing, withered, until it's cleared out.
+// A gap between sowings (radishes in June) or the months before planting stay "gone".
+// seasonNow: what you said on its card about how it's really doing (see seasonOverride), which wins over the calendar.
+export function shownStateFor(sp, m, seasonNow = null) {
+  const s = calendarState(sp, m);
+  if (!seasonNow || m < seasonNow.from || m > seasonNow.to) return s;
+  if (seasonNow.state === "dead") {
+    if (s === "stored") return s; // dahlia tubers dug and put away, as usual
+    return sp.seasonal && Object.values(sp.seasonal).includes("stored") ? "frost-blackened" : "spent";
+  }
+  if (!["spent", "frost-blackened", "stored"].includes(s)) return s; // only an end of season is put off
+  for (let k = m - 1; k >= 0; k--) if (ALIVE.has(calendarState(sp, k))) return calendarState(sp, k); // as it was last
+  return s;
+}
+function calendarState(sp, m) {
+  const s = stateFor(sp, m);
+  if (s !== "gone") return s;
+  for (let k = m + 1; k < 12; k++) if (stateFor(sp, k) !== "gone") return s;
+  for (let k = m - 1; k >= 0; k--) if (!["gone", "stored", "dormant"].includes(stateFor(sp, k))) return "spent";
+  return s;
+}
+// Stages of a plant that's up and growing.
+const ALIVE = new Set(["emerging", "seedling", "foliage", "bloom", "aging-bloom", "fruit", "harvest", "ferns"]);
+// Kinds whose calendar ends the year dead or dug up (crops, annuals, dahlias): on their card you can say whether
+// one is really still growing or already dead, when the weather doesn't match the calendar. Only once it's been
+// growing this year (not before it's planted).
+export function canOverrideSeason(sp, m) {
+  const year = MONTHS.map((_, k) => stateFor(sp, k));
+  if (!year.some((s) => ["gone", "stored", "frost-blackened"].includes(s))) return false;
+  return year.slice(0, m + 1).some((s) => ALIVE.has(s));
+}
+// A plant's "Still growing" or "Dead" from its card ({ state: "growing" | "dead", on: "YYYY-MM-DD" }) as the
+// months it covers: dead from that month to the end of the year; still growing from that month up to this one
+// (later months follow the calendar, since nobody knows yet). Null if there's none, or it's from another year.
+export const SEASON_STATES = ["growing", "dead"];
+export function seasonOverride(season, today) {
+  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(season?.on || "");
+  if (!m || !SEASON_STATES.includes(season.state) || Number(m[1]) !== today.getFullYear()) return null;
+  const from = Number(m[2]) - 1;
+  return { state: season.state, from, to: season.state === "dead" ? 11 : Math.max(from, today.getMonth()) };
+}
+export const seasonWords = (state) => (state === "dead" ? "dead" : "still growing");
+
 // How much of its full height a plant has reached in a month when it's "in leaf": perennials and crops grow
 // through spring, so they're drawn shorter early in the season and reach full height by the month they flower or
 // fruit. 1 for every other stage, and once a plant has flowered for the year.
@@ -133,8 +178,8 @@ export function growthFor(seasonal, month, from = 0.45) {
   return from + ((1 - from) * since) / (since + until);
 }
 
-export function stateText(sp, m) {
-  const s = stateFor(sp, m);
+export function stateText(sp, m, seasonNow = null) {
+  const s = shownStateFor(sp, m, seasonNow);
   return STATE_TEXT[s] || [s, ""];
 }
 

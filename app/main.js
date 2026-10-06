@@ -1,6 +1,6 @@
 // Starts the app: loads the data, builds the 3D yard, and wires up the buttons.
 
-import { loadGarden, MONTH_NAMES, esc, areaAt } from "./data.js";
+import { loadGarden, MONTH_NAMES, esc, areaAt, seasonOverride } from "./data.js";
 import { createYard } from "./scene.js";
 import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
@@ -36,6 +36,9 @@ let yardEditing = false; // whether the yard lets plants be dragged and placed (
 const undoStack = []; // Edit mode changes made on this device, newest last: { label, id, before } or { label, id, added: true }
 // Plants that show in the yard, the bloom timeline and This week.
 const inYard = (p) => !p.finished && !p.removed;
+// Each plant with "Still growing" or "Dead" from its card worked out as the months it covers this year (seasonNow),
+// which the yard, the card and the list draw it by.
+const withSeasons = (plants) => plants.map((p) => (p.season ? { ...p, seasonNow: seasonOverride(p.season, today()) } : p));
 let garden, yard, byId, areaOrder, store, bloomBar;
 // Each plant's notes and photos, kept in the shared garden on Supabase (none without a garden account).
 const notes = cloudReady ? createNotes({ backend: notesBackend, thumbOf, today: () => ymd(today()), onPhoto: openLightbox }) : null;
@@ -58,9 +61,10 @@ async function start() {
     $("status").innerHTML = `<div><p><b>The garden couldn't load.</b></p><pre>${String(err.message).replace(/</g, "&lt;")}</pre></div>`;
     return;
   }
-  byId = new Map(garden.plants.map((p) => [p.id, p]));
   filePlants = garden.plants;
-  fileById = byId;
+  garden.plants = withSeasons(filePlants);
+  byId = new Map(garden.plants.map((p) => [p.id, p]));
+  fileById = new Map(filePlants.map((p) => [p.id, p]));
   fileStructures = garden.layout.structures;
   kinds = [...garden.species.values()]
     .map((s) => [s.id, s.commonName, /unconfirmed/i.test(s.commonName) || s.id.startsWith("unknown")])
@@ -278,7 +282,7 @@ function applyEdits() {
   const sig = JSON.stringify(store.checks.edits);
   if (!yard || editsDrawn == null || sig === editsDrawn) return false;
   editsDrawn = sig;
-  garden.plants = withEdits(filePlants, store.checks.edits, garden.species, ON_MAC);
+  garden.plants = withSeasons(withEdits(filePlants, store.checks.edits, garden.species, ON_MAC));
   byId = new Map(garden.plants.map((p) => [p.id, p]));
   yard.setArches(archesNow());
   const growing = garden.plants.filter(inYard);

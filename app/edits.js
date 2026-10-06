@@ -14,11 +14,11 @@
 // Arch trellises changed in Edit mode (moved, resized, turned, given another shape) are kept the same way, under
 // the ID "structure-" plus the arch's id in data/layout.json, and "Save app edits into files" writes them there.
 
-import { MONTH_NAMES } from "./data.js";
+import { MONTH_NAMES, SEASON_STATES, seasonWords } from "./data.js";
 import { acrossText, tallText, stemsText, isSupport, SUPPORTS, SHAPES } from "./look.js";
 import { ARCH_FIELDS, ARCH_SHAPES, usableArchValue } from "./arches.js";
 
-export const EDITABLE = ["name", "speciesId", "confirmedByOwner", "idConfidence", "finished", "position", "size", "width", "height", "stems", "shape", "support", "area", "removed"];
+export const EDITABLE = ["name", "speciesId", "confirmedByOwner", "idConfidence", "finished", "position", "size", "width", "height", "stems", "shape", "support", "area", "removed", "season"];
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const num = (v) => typeof v === "number" && Number.isFinite(v);
 // Whether a value makes sense for its detail. One that doesn't (from an older or newer copy of the app, say) is ignored.
@@ -31,6 +31,7 @@ function usable(field, v, species) {
   if (field === "stems") return Number.isInteger(v) && v >= 1 && v <= 999;
   if (field === "support") return isSupport(v);
   if (field === "shape") return SHAPES.some((s) => s.id === v);
+  if (field === "season") return SEASON_STATES.includes(v.state) && /^\d{4}-\d{2}-\d{2}$/.test(v.on || "");
   return true;
 }
 
@@ -238,6 +239,10 @@ export function fieldText(row, species, areaNames = new Map()) {
   if (f === "support") return ["Grows on", supportName(row.from), supportName(row.to)];
   if (f === "shape") return ["Shape", shapeName(row.from), shapeName(row.to)];
   if (f === "area") return ["Bed", show(areaNames.get(row.from) || row.from), show(areaNames.get(row.to) || row.to)];
+  if (f === "season") {
+    const said = (v) => (v ? `${seasonWords(v.state)} (${dateText(v.on)})` : "as the calendar says");
+    return ["How it's really doing", said(row.from), said(row.to)];
+  }
   if (f === "removed") return ["Removed from the yard", row.from ? dateText(row.from) : "no", row.to ? dateText(row.to) : "no"];
   return [f, JSON.stringify(row.from), JSON.stringify(row.to)];
 }
@@ -285,6 +290,8 @@ export function describeEdits(filePlant, edits, species, onMac, me, areaNames = 
   if (shape) out.push({ key: "shape", text: shape.v ? `Shape set to ${shapeName(shape.v)}` : "Shape back to its kind's usual", fields: ["shape"], who: who([shape]) });
   const support = live("support");
   if (support) out.push({ key: "support", text: support.v ? `Grows on ${supportName(support.v).replace(/^The /, "the ").replace(/^A /, "a ")}` : "Grows its kind's usual way", fields: ["support"], who: who([support]) });
+  const season = live("season");
+  if (season) out.push({ key: "season", text: season.v ? `Marked ${seasonWords(season.v.state)}` : "Back to the calendar", fields: ["season"], who: who([season]) });
   const gone = live("removed");
   if (gone) out.push({ key: "removed", text: gone.v ? "Removed from the yard" : "Put back in the yard", fields: ["removed"], who: who([gone]) });
   return out;

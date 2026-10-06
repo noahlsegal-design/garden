@@ -4,7 +4,7 @@
 
 import {
   MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, isDogRisk, TOX_INFO,
-  stateText, careFor, restOfYear, CARE_TYPES, sourceName, photoUrl, thumbUrl, esc,
+  stateText, careFor, restOfYear, CARE_TYPES, sourceName, photoUrl, thumbUrl, esc, canOverrideSeason, seasonWords,
 } from "./data.js";
 import { dateText, fieldText, spotText } from "./edits.js";
 import { acrossText, tallText, stemsText } from "./look.js";
@@ -99,6 +99,23 @@ function editHtml(p, edit) {
     </div>${shapeChoice}${growsOn}${changes}`;
 }
 
+// "Still growing" and "Dead", for when the weather doesn't match the calendar: shown for this month only (it's
+// about how the plant is today), on crops, annuals and dahlias once they've been growing this year. Tapping the
+// one that's on goes back to the calendar.
+const covers = (p, month) => p.seasonNow && month >= p.seasonNow.from && month <= p.seasonNow.to;
+function seasonHtml(p, sp, month, edit) {
+  if (!edit?.can || p.finished || p.removed || month !== Number(edit.today.slice(5, 7)) - 1 || !canOverrideSeason(sp, month)) return "";
+  const on = covers(p, month) ? p.seasonNow.state : null;
+  const pill = (state, label, icon) => `<button type="button" class="pill" data-season="${state}" aria-pressed="${on === state}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${icon}"/></svg>${label}</button>`;
+  return `
+      <div class="seasonbtns" role="group" aria-label="How it's really doing">
+        <span class="small">Not what you see?</span>
+        ${pill("growing", "Still growing", "M12 21V11M12 11c0-4 3-6 7-6 0 4-3 6-7 6zM12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5z")}
+        ${pill("dead", "Dead", "M12 21v-8c0-3-2-5-5-6M12 13c1-2 3-3 5-2-1 2-3 3-5 2z")}
+      </div>
+      ${on ? `<p class="small">Tap it again to go back to the calendar.</p>` : ""}`;
+}
+
 export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes }) {
   // Keep what's typed in an open form, and the scroll position, when the same card redraws.
   const same = lastCardId === p.id;
@@ -108,7 +125,10 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
   const scroll = same ? sheet.scrollTop : 0;
   lastCardId = p.id;
   const away = p.removed || p.finished; // not in the yard right now
-  const [statusLabel, statusSentence] = p.removed ? removedText(p) : p.finished ? finishedText(p) : stateText(sp, month);
+  const [statusLabel, calendarSentence] = p.removed ? removedText(p) : p.finished ? finishedText(p) : stateText(sp, month, p.seasonNow);
+  const statusSentence = !away && covers(p, month)
+    ? `${calendarSentence} Marked ${seasonWords(p.seasonNow.state)} on ${dateText(p.season.on).replace(/, \d{4}$/, "")}, so this goes by what you saw rather than the usual calendar.`
+    : calendarSentence;
   const now = away ? [] : careFor(sp, month);
   const later = restOfYear(sp, month);
   const dog = dogSafety(p, sp);
@@ -135,6 +155,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
       <h3>Right now · ${MONTH_NAMES[month]}</h3>
       <div class="status">${esc(statusLabel)}</div>
       <p>${esc(statusSentence)}</p>
+      ${seasonHtml(p, sp, month, edit)}
       ${p.issues?.length ? `<ul class="issues">${p.issues.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}
       ${now.length ? `<ul class="tasks">${now.map(taskLi).join("")}</ul>` : away ? "" : `<p class="small">No care needed this month.</p>`}
       ${p.removed && edit?.can ? `<button type="button" class="btn" data-edit="restore">Put it back in the yard</button>`
@@ -216,6 +237,8 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     else if (what === "unfinish") edit.onSave({ finished: null });
     else if (what === "restore") edit.onSave({ removed: null });
   }));
+  sheet.querySelectorAll("[data-season]").forEach((b) => (b.onclick = () =>
+    edit.onSave({ season: b.getAttribute("aria-pressed") === "true" ? null : { state: b.dataset.season, on: edit.today } })));
   sheet.querySelectorAll("[data-undo]").forEach((b) => (b.onclick = () => edit.onUndo(b.dataset.undo.split(" "))));
   const support = sheet.querySelector("[data-support]");
   if (support) support.onchange = () => edit.onSave({ support: support.value || null }); // shown in the yard straight away
@@ -363,7 +386,7 @@ export function renderList(panel, { plants: everything, species, areaNames, area
           if (p.issues?.length) b.push(`<span class="badge attention">Needs attention</span>`);
           return `<li><button type="button" data-id="${esc(p.id)}">
             <span class="pname">${esc(p.name)} <span class="plabel">${p.label.startsWith("#") ? esc(p.label) : ""}</span></span>
-            <span class="pstate">${esc(p.finished ? "Finished" : stateText(sp, month)[0])}</span>
+            <span class="pstate">${esc(p.finished ? "Finished" : stateText(sp, month, p.seasonNow)[0])}</span>
             ${b.length ? `<span class="pbadges">${b.join("")}</span>` : ""}
           </button></li>`;
         }).join("")}</ul>`).join("") : `<p class="empty">No plants match. Try clearing the filters.</p>`}

@@ -367,8 +367,10 @@ const cellUV = (i) => {
 };
 
 // Collects the triangles of one plant, then hands back one geometry.
-function builder(paint) {
+// spent: a crop done for the year, so about half its leaves have dropped and the rest hang limp in dead browns.
+function builder(paint, spent = false) {
   const pos = [], nor = [], uv = [], col = [], idx = [];
+  const fade = seeded(97);
   const m = new THREE.Matrix4(), nm = new THREE.Matrix3(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), v = new THREE.Vector3();
   let center = V(0, 1, 0); // the middle of the clump, which leaf lighting is softened toward
   let nv = 0;
@@ -403,6 +405,13 @@ function builder(paint) {
     // A flat picture card. Its bottom middle sits at `base`, it runs `h` along `up` and is `w` wide, facing as
     // close to `facing` as it can. soft (0–1) bends its lighting toward the clump's middle so it looks rounded.
     card(cellName, color, base, up, facing, w, h, soft = 0.6) {
+      if (spent) {
+        if (fade() < 0.45) return;
+        color = mix(color, WITHERED[Math.floor(fade() * WITHERED.length)], 0.55 + 0.35 * fade());
+        up = up.clone().normalize().add(V(0, -0.75, 0)); // drooping from where it's attached
+        if (up.lengthSq() < 0.05) up = facing.clone().setY(-1);
+        h *= 0.8; w *= 0.65; // curled and shrivelled
+      }
       const u = up.clone().normalize();
       let right = new THREE.Vector3().crossVectors(u, facing);
       if (right.lengthSq() < 1e-6) right.set(1, 0, 0).cross(u);
@@ -458,6 +467,7 @@ const shade = (color, k) => {
 const mix = (a, b, t) => new THREE.Color(a).lerp(new THREE.Color(b), t).getStyle();
 
 const TAN = "#c9b27a", BROWN = "#6b4f32", BARK = "#7a6048", SPRING = "#9ccf6a", SOIL = "#7a5a3c", DRIED = "#5b4330";
+const WITHERED = ["#7a6440", "#9a8455", "#5e4a32", "#8f8a4e", "#6f6a3c"]; // dead and dying leaves: tans, browns, olive
 
 // What a seasonal stage means for drawing: leaf color, how much of its full height the plant has reached, and
 // whether flowers, fruit or bare woody stems show.
@@ -478,6 +488,7 @@ function stageLook(state, look, woody) {
     case "fall-color": return { leaf: look.fall, h: 0.9 };
     case "yellowing": return { leaf: "#d4c05a", h: 0.75 };
     case "frost-blackened": return { leaf: "#3a2f2a", h: 0.5, slump: true };
+    case "spent": return { leaf: "#7f7448", h: 0.8, slump: true, dried: true, spent: true };
     default: return { leaf: look.leaf }; // foliage, ferns and anything unexpected
   }
 }
@@ -488,10 +499,10 @@ function stageLook(state, look, woody) {
 export function drawPlant(shape, { state, look, r, H, s, rand, stems, paint, grow = 1, month = 6, arch = null, support = null }) {
   materials();
   if (!SHAPE_IDS.has(shape)) shape = "mound";
-  const P = builder(paint);
   // A kind can say how it looks in a particular stage (look.stage, e.g. peony shoots are red) or month (look.months,
   // e.g. blueberries are still green in June), and when its plumes show if that isn't a stage of its own (look.plumes: months, 0 = January).
   const o = { h: 1, ...stageLook(state, look, WOODY.has(shape)), ...look.stage?.[state], ...look.months?.[month] };
+  const P = builder(paint, Boolean(o.spent));
   if (state === "foliage" && (!WOODY.has(shape) || look.annualCanes)) o.h *= grow;
   if (state === "foliage" && look.plumes?.includes(month)) o.flower = look.flower;
   const own = look.shape === shape; // a kind's own flower and leaf pictures go with its own shape

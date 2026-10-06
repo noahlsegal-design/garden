@@ -7,7 +7,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { stateFor, areaAt, growthFor } from "./data.js";
+import { shownStateFor, areaAt, growthFor } from "./data.js";
 import { lookFor, plantRadius, plantHeight, widthScale, shapeFor, supportFor } from "./look.js";
 import { drawPlant, plantMesh } from "./shapes.js";
 import { isArch, archOf, archProfile, archAxes, nearestArch } from "./arches.js";
@@ -116,7 +116,7 @@ const plain = (color) => new THREE.Color(color);
 // playing the bloom timeline then only puts kept drawings back in the yard.
 function plantDrawing(p, sp, month, drawings) {
   const look = lookFor(p);
-  const state = stateFor(sp, month);
+  const state = shownStateFor(sp, month, p.seasonNow);
   if (state === "gone" || state === "stored") return null;
   const r = plantRadius(p, sp), s = widthScale(p, sp), arch = archFor(p, look), shape = shapeFor(p), support = supportFor(p);
   const H = vineHeight(p, sp, shape, support);
@@ -166,7 +166,7 @@ export function buildPlant(p, sp, month, bloomView = false, drawings = null) {
   const look = lookFor(p);
   const r = plantRadius(p, sp);
   const H = vineHeight(p, sp, shapeFor(p), supportFor(p));
-  const state = stateFor(sp, month);
+  const state = shownStateFor(sp, month, p.seasonNow);
   const blooming = state === "bloom";
   const greyed = bloomView && !blooming;
   const paint = (color) => (greyed ? MUTED.clone().lerp(new THREE.Color(color), 0.25) : new THREE.Color(color));

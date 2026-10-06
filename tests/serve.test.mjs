@@ -159,6 +159,13 @@ try {
   assert.deepEqual((await res.json()).skipped, [`${plain.id} shape`]);
   res = await post("/api/save-edits", { edits: { [plain.id]: { shape: null } } });
   assert.equal(file().plants.find((p) => p.id === plain.id).shape, undefined, "back to its kind's shape");
+  // "Still growing" or "Dead" from the card is written as it was said, and a bad one is skipped.
+  res = await post("/api/save-edits", { edits: { [plain.id]: { season: { state: "dead", on: "2026-10-06" } } } });
+  assert.deepEqual(file().plants.find((p) => p.id === plain.id).season, { state: "dead", on: "2026-10-06" });
+  res = await post("/api/save-edits", { edits: { [plain.id]: { season: { state: "sleepy", on: "2026-10-06" } } } });
+  assert.deepEqual((await res.json()).skipped, [`${plain.id} season`]);
+  res = await post("/api/save-edits", { edits: { [plain.id]: { season: null } } });
+  assert.equal(file().plants.find((p) => p.id === plain.id).season, undefined, "back to the calendar");
 
   // Plant changes kept on the Mac (no garden account connected): saved, cleared, and kept with check-offs.
   res = await post("/api/checkoffs", { set: { "w|x|2026-09-21": "2026-09-25" }, edits: { "pb-02": { name: { v: "Avens", at: "2026-09-25T10:00:00Z", junk: 1 } }, "pb-03": { finished: { v: null } } } });

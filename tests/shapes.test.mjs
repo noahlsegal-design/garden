@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { LOOK, PLANT_LOOK, SHAPES, shapeFor, lookFor, plantHeight, plantRadius } from "../app/look.js";
-import { growthFor, MONTHS } from "../app/data.js";
+import { growthFor, shownStateFor, seasonOverride, canOverrideSeason, MONTHS } from "../app/data.js";
 import { ARCH_SHAPES, archOf, archProfile, archFeet, nearestArch } from "../app/arches.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
@@ -76,6 +76,33 @@ const m = (name) => MONTHS.indexOf(name);
 const cone = seasonal("coneflower"); // in leaf Apr–Jun, flowers in July
 ok(growthFor(cone, m("Apr"), 0.3) === 0.3, "coneflower starts April at the size it comes up");
 ok(growthFor(cone, m("May"), 0.3) < growthFor(cone, m("Jun"), 0.3), "and grows through spring");
+
+// ---------- crops done for the year are drawn spent, not left blank ----------
+const kind = (id) => species.find((s) => s.id === id);
+ok(shownStateFor(kind("cucumber"), m("Oct")) === "spent", "cucumbers finished in October stand spent");
+ok(shownStateFor(kind("peas"), m("Dec")) === "spent", "peas stay spent through December");
+ok(shownStateFor(kind("cucumber"), m("Mar")) === "gone", "nothing drawn before planting");
+ok(shownStateFor(kind("radish"), m("Jun")) === "gone", "a gap between sowings stays empty");
+ok(shownStateFor(kind("cucumber"), m("Aug")) === "fruit", "other stages unchanged");
+ok(shownStateFor(kind("dahlia"), m("Oct")) === "bloom", "dahlias flower until frost");
+ok(shownStateFor(kind("dahlia"), m("Dec")) === "stored", "stored dahlia tubers aren't spent");
+
+// ---------- "Still growing" or "Dead" from the card, when the weather doesn't match the calendar ----------
+const oct6 = new Date(2026, 9, 6);
+const growing = seasonOverride({ state: "growing", on: "2026-10-06" }, oct6), dead = seasonOverride({ state: "dead", on: "2026-09-12" }, oct6);
+ok(shownStateFor(kind("cucumber"), m("Oct"), growing) === "fruit", "cucumbers still growing in October keep fruiting");
+ok(shownStateFor(kind("cucumber"), m("Nov"), growing) === "spent", "later months follow the calendar");
+ok(shownStateFor(kind("cucumber"), m("Sep"), growing) === "fruit" && shownStateFor(kind("cucumber"), m("Aug"), dead) === "fruit", "earlier months are untouched");
+ok(shownStateFor(kind("tomato"), m("Oct"), growing) === "fruit", "a tomato the frost missed");
+ok(shownStateFor(kind("dill"), m("Oct"), growing) === "seedheads", "going to seed isn't dying");
+ok(shownStateFor(kind("cucumber"), m("Sep"), dead) === "spent" && shownStateFor(kind("cucumber"), m("Dec"), dead) === "spent", "dead stays dead");
+ok(shownStateFor(kind("dahlia"), m("Oct"), seasonOverride({ state: "dead", on: "2026-10-20" }, new Date(2026, 9, 20))) === "frost-blackened", "a dead dahlia is frost-blackened, ready to dig");
+ok(shownStateFor(kind("dahlia"), m("Nov"), seasonOverride({ state: "growing", on: "2026-11-02" }, new Date(2026, 10, 2))) === "bloom", "dahlias blooming into November");
+ok(seasonOverride({ state: "growing", on: "2025-10-06" }, oct6) === null, "last year's doesn't carry over");
+ok(seasonOverride({ state: "growing", on: "2026-09-20" }, oct6).to === m("Oct"), "still growing lasts until you say otherwise this year");
+ok(canOverrideSeason(kind("cucumber"), m("Oct")) && canOverrideSeason(kind("dahlia"), m("Oct")), "crops and dahlias can be marked");
+ok(!canOverrideSeason(kind("cucumber"), m("Mar")), "not before it's planted");
+ok(!canOverrideSeason(kind("peony"), m("Oct")) && !canOverrideSeason(kind("asparagus"), m("Oct")), "perennials follow their calendar");
 ok(growthFor(cone, m("Jun"), 0.3) < 1, "but isn't full height until it flowers");
 ok(growthFor(cone, m("Jul"), 0.3) === 1 && growthFor(cone, m("Jan"), 0.3) === 1, "flowering and dormant months are full size (or drawn by their own stage)");
 const peonyS = seasonal("peony"); // in leaf again Jul–Sep after flowering in June

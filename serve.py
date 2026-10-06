@@ -122,6 +122,12 @@ def clean(field, value, kinds, areas):
         return value if value is None or value in ("arch", "trellis", "pole", "ground") else BAD
     if field == "area":
         return value if value in areas else BAD
+    if field == "season":  # "still growing" or "dead" from the card, and the day you said so, or None for the calendar
+        if value is None:
+            return None
+        if isinstance(value, dict) and set(value) == {"state", "on"} and value["state"] in ("growing", "dead") and isinstance(value["on"], str) and DATE.fullmatch(value["on"]):
+            return {"state": value["state"], "on": value["on"]}
+        return BAD
     return BAD
 
 

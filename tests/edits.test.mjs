@@ -314,4 +314,17 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   assert.deepEqual(describeEdits(p, edits, species, false, "")[0].fields, ["shape"], "Undo clears the shape");
 }
 
+// ---------- "Still growing" or "Dead" from the card ----------
+{
+  const cuke = plants.find((p) => p.speciesId === "cucumber");
+  const said = { state: "growing", on: "2026-10-06" };
+  const out = withEdits(plants, { [cuke.id]: { season: { v: said, at } }, [other.id]: { season: { v: { state: "dormant", on: "2026-10-06" }, at } } }, species, false);
+  assert.deepEqual(out.find((p) => p.id === cuke.id).season, said, "a plant can be marked still growing");
+  assert.equal(out.find((p) => p.id === other.id).season, undefined, "an unknown state is ignored");
+  const card = describeEdits(cuke, { [cuke.id]: { season: { v: said, at } } }, species, false, "");
+  assert.equal(card[0].text, "Marked still growing");
+  assert.deepEqual(card[0].fields, ["season"], "Undo goes back to the calendar");
+  assert.deepEqual(fieldText({ plant: cuke, field: "season", from: null, to: { state: "dead", on: "2026-10-06" } }, species).slice(1), ["as the calendar says", "dead (Oct 6, 2026)"]);
+}
+
 console.log("edits: all checks passed");
