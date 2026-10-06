@@ -116,6 +116,10 @@ def clean(field, value, kinds, areas):
         return value if value is None else round(value, 1) if is_number(value) and 0.1 <= value <= 40 else BAD
     if field == "stems":  # how many main stems or trunks
         return value if value is None or (isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 999) else BAD
+    if field == "shape":  # how the 3D yard draws it, or None for its kind's usual shape (app/look.js SHAPES)
+        return value if value is None or value in SHAPES else BAD
+    if field == "support":  # what a vine grows on, or None for its kind's usual way
+        return value if value is None or value in ("arch", "trellis", "pole", "ground") else BAD
     if field == "area":
         return value if value in areas else BAD
     return BAD
@@ -144,7 +148,8 @@ def new_plant(plant_id, value, kinds, areas):
     return out
 
 
-SIZE_DETAILS = ["size", "width", "height", "stems"]  # kept together, in this order
+SIZE_DETAILS = ["size", "width", "height", "stems", "shape", "support"]  # kept together, in this order
+SHAPES = ("spikes", "daisies", "pompons", "mound", "fan", "grass", "shrub", "canes", "climber", "sprawler", "crop", "feathery")
 
 
 def set_detail(plant, field, value):
@@ -164,8 +169,56 @@ def set_detail(plant, field, value):
         plant.setdefault(field, value)
 
 
+# ---------- arch trellises (layout.json) ----------
+STRUCTURE = "structure-"
+ARCH_LIMITS = {"width": (1, 16), "height": (2, 14), "depth": (0, 6), "turn": (0, 179)}
+ARCH_SHAPES = ("round", "pointed", "flat", "low")
+
+
+def clean_arch(field, value):
+    if field == "position":
+        if isinstance(value, dict) and set(value) == {"x", "z"} and all(is_number(value[k]) and abs(value[k]) <= 200 for k in value):
+            return {"x": round(value["x"], 1), "z": round(value["z"], 1)}
+        return BAD
+    if field == "shape":
+        return value if value in ARCH_SHAPES else BAD
+    if field in ARCH_LIMITS:
+        lo, hi = ARCH_LIMITS[field]
+        return (round(value) if field == "turn" else round(value, 1)) if is_number(value) and lo <= value <= hi else BAD
+    return BAD
+
+
+# Writes {"structure-<id>": {field: value}} into layout.json's arch trellises; says what each detail was before.
+def save_arch_edits(edits, had, skipped):
+    with open(LAYOUT, encoding="utf-8") as f:
+        layout = json.load(f)
+    by_id = {STRUCTURE + s["id"]: s for s in layout["structures"] if s.get("type") == "trellis"}
+    changed = False
+    for sid, fields in edits.items():
+        arch = by_id.get(sid)
+        if arch is None or not isinstance(fields, dict):
+            skipped.append(sid)
+            continue
+        for field, value in fields.items():
+            value = clean_arch(field, value)
+            if value is BAD:
+                skipped.append(f"{sid} {field}")
+                continue
+            if field == "position":
+                had.setdefault(sid, {})[field] = {"x": arch.get("x"), "z": arch.get("z")}
+                arch["x"], arch["z"] = value["x"], value["z"]
+            else:
+                had.setdefault(sid, {})[field] = arch.get(field)
+                arch[field] = value
+            arch.setdefault("arch", True)
+            changed = True
+    if changed:
+        write_json(LAYOUT, layout)
+
+
 # Writes {plantId: {field: value}} into plants.json and says what each detail was before. A plant added in the
-# app comes as {plantId: {"added": the whole plant}} and goes in after the last plant in the same bed.
+# app comes as {plantId: {"added": the whole plant}} and goes in after the last plant in the same bed. Arch
+# trellis changes ("structure-<id>") go into layout.json.
 def save_edits(edits):
     with open(PLANTS, encoding="utf-8") as f:
         data = json.load(f)
@@ -175,7 +228,12 @@ def save_edits(edits):
         areas = {a["id"] for a in json.load(f)["areas"]} | {"fenceline"}
     by_id = {p["id"]: p for p in data["plants"]}
     had, skipped = {}, []
+    arch_edits = {k: v for k, v in edits.items() if k.startswith(STRUCTURE)}
+    if arch_edits:
+        save_arch_edits(arch_edits, had, skipped)
     for plant_id, fields in edits.items():
+        if plant_id in arch_edits:
+            continue
         if isinstance(fields, dict) and "added" in fields:
             plant = None if plant_id in by_id else new_plant(plant_id, fields["added"], kinds, areas)
             if plant is None:
@@ -197,7 +255,7 @@ def save_edits(edits):
                 continue
             had.setdefault(plant_id, {})[field] = plant.get(field)
             set_detail(plant, field, value)
-    if had:
+    if any(not k.startswith(STRUCTURE) for k in had):
         write_json(PLANTS, data)
     return {"fileHad": had, "skipped": skipped}
 

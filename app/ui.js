@@ -74,12 +74,29 @@ function editHtml(p, edit) {
       <p class="small">Its care, dog safety and This week jobs follow the kind you choose. Not in the list? Ask Claude to add that kind, with its care.</p>
       ${buttons("Confirm ID")}
     </form>${changes}`;
+  // How the 3D yard draws it, for when a plant's shape looks wrong or it grows differently than its kind usually does.
+  const usual = edit.shapes?.find((s) => s.id === edit.defaultShape)?.name || "";
+  const shapeChoice = edit.shapes ? `
+    <label class="growson" for="editShape">Shape${p.shape ? ' <span class="small">(custom)</span>' : ""}
+      <select id="editShape" data-shape>
+        <option value="" ${p.shape ? "" : "selected"}>Use the default for this kind${usual ? ` (${esc(usual)})` : ""}</option>
+        ${edit.shapes.map((s) => `<option value="${esc(s.id)}" ${s.id === p.shape ? "selected" : ""}>${esc(s.name)}</option>`).join("")}
+      </select>
+    </label>` : "";
+  // A vine can be given something to grow on: the arch, a trellis, a pole or the ground.
+  const growsOn = edit.supports ? `
+    <label class="growson" for="editSupport">Grows on
+      <select id="editSupport" data-support>
+        <option value="" ${p.support ? "" : "selected"}>Its usual way</option>
+        ${edit.supports.map((s) => `<option value="${esc(s.id)}" ${s.id === p.support ? "selected" : ""}>${esc(s.name)}</option>`).join("")}
+      </select>
+    </label>` : "";
   return `
     <div class="editbar">
       ${p.confirmedByOwner ? "" : `<button type="button" class="pill" data-edit="confirm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Confirm ID</button>`}
       <button type="button" class="pill" data-edit="rename"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Rename</button>
       ${p.finished || p.removed ? "" : `<button type="button" class="pill" data-edit="finish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c0-4 3-6 7-6 0 4-3 6-7 6zM12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5z"/></svg>Finished for the season</button>`}
-    </div>${changes}`;
+    </div>${shapeChoice}${growsOn}${changes}`;
 }
 
 export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto }) {
@@ -193,6 +210,10 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     else if (what === "restore") edit.onSave({ removed: null });
   }));
   sheet.querySelectorAll("[data-undo]").forEach((b) => (b.onclick = () => edit.onUndo(b.dataset.undo.split(" "))));
+  const support = sheet.querySelector("[data-support]");
+  if (support) support.onchange = () => edit.onSave({ support: support.value || null }); // shown in the yard straight away
+  const shape = sheet.querySelector("[data-shape]");
+  if (shape) shape.onchange = () => edit.onSave({ shape: shape.value || null });
   const form = sheet.querySelector("[data-form]");
   if (form) form.onsubmit = (e) => {
     e.preventDefault();
@@ -217,6 +238,7 @@ export function renderSaveEdits(panel, { rows, species, areaNames, phase, messag
   }
   const heading = (id, list) => {
     const p = list[0].plant, added = list[0].field === "added" ? list[0] : null;
+    if (list[0].structure) return `<b>${esc(list[0].structure.name || "Arch trellis")}</b> <span class="small">Goes into layout.json</span>`;
     if (added?.dropped) return `<b>${esc(added.to.name)}</b> <span class="small">was added and removed again in the app, so there's nothing to write and it's just cleared</span>`;
     if (added) return `<b>${esc(added.to.name)}</b> <span class="small">New plant</span>`;
     if (!p) return `<b>${esc(id)}</b> <span class="small">isn't in plants.json any more, so this is just cleared</span>`;
@@ -234,15 +256,15 @@ export function renderSaveEdits(panel, { rows, species, areaNames, phase, messag
     <div class="tlist saveedits">
       ${phase === "done" ? `
         <div class="season spring" role="status">
-          <p class="stitle">Saved into data/plants.json</p>
+          <p class="stitle">Saved into the garden's files</p>
           <p>${esc(message)}</p>
           <button type="button" class="btn" data-done>Done</button>
         </div>` : `
-        <p class="lead">${n ? `${n} change${n === 1 ? "" : "s"} made in the app ${n === 1 ? "isn't" : "aren't"} in <code>data/plants.json</code> yet. Saving writes ${n === 1 ? "it" : "them"} into the file on this Mac.` : "Every change made in the app is already in data/plants.json."}</p>
+        <p class="lead">${n ? `${n} change${n === 1 ? "" : "s"} made in the app ${n === 1 ? "isn't" : "aren't"} in the garden's files yet (<code>data/plants.json</code>, and <code>data/layout.json</code> for the arch). Saving writes ${n === 1 ? "it" : "them"} into the files on this Mac.` : "Every change made in the app is already in the garden's files."}</p>
         <ul class="editrows">${[...byPlant].map(([id, list]) => `
           <li><p class="erhead">${heading(id, list)}</p>
             ${list[0].field === "added" && !list[0].dropped ? newPlantLines(list[0].to, species, areaNames) : ""}
-            ${list[0].plant ? `<ul>${list.map((r) => {
+            ${list[0].plant || list[0].structure ? `<ul>${list.map((r) => {
               const [label, from, to] = fieldText(r, species, areaNames);
               return `<li><span class="erlabel">${esc(label)}</span><span><span class="erfrom">${esc(from)}</span> → <b>${esc(to)}</b></span></li>`;
             }).join("")}</ul>` : ""}
@@ -250,7 +272,7 @@ export function renderSaveEdits(panel, { rows, species, areaNames, phase, messag
         ${phase === "error" ? `<p class="savewarn" role="alert">${esc(message)}</p>` : ""}
         <p class="small">Once they're in the file, publish the garden to put them online.${cloud ? " Until then, phones and the website keep showing these changes from your garden account, so nothing looks different in between." : ""}</p>
         <div class="formbtns">
-          <button type="button" class="btn" data-save ${n && phase !== "saving" ? "" : "disabled"}>${phase === "saving" ? "Saving…" : "Write into plants.json"}</button>
+          <button type="button" class="btn" data-save ${n && phase !== "saving" ? "" : "disabled"}>${phase === "saving" ? "Saving…" : "Write into the files"}</button>
           <button type="button" class="linkbtn" data-cancel>Cancel</button>
         </div>`}
     </div>`;

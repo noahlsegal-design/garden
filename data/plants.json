@@ -48,27 +48,6 @@
       "needsAttention": false
     },
     {
-      "id": "pb-03",
-      "label": "#3",
-      "area": "perennial-bed",
-      "name": "Mostly weeds (maybe a lost planting)",
-      "speciesId": "weeds",
-      "idConfidence": 70,
-      "confirmedByOwner": false,
-      "alsoPossible": [],
-      "photos": [
-        "Source/photos/IMG_4562.JPG"
-      ],
-      "position": {
-        "x": -21.6,
-        "z": 38.1
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": "Grass and small weeds. An open spot.",
-      "needsAttention": false
-    },
-    {
       "id": "pb-04",
       "label": "#4",
       "area": "perennial-bed",
@@ -248,29 +227,6 @@
       "size": 1.0,
       "issues": [],
       "notes": "Mostly collapsed brown foliage, so it's hard to confirm.",
-      "needsAttention": false
-    },
-    {
-      "id": "pb-11",
-      "label": "#11",
-      "area": "perennial-bed",
-      "name": "Ornamental grass or sedge",
-      "speciesId": "ornamental-grass",
-      "idConfidence": 50,
-      "confirmedByOwner": false,
-      "alsoPossible": [
-        "Daylily (if the leaves are wider in person)"
-      ],
-      "photos": [
-        "Source/photos/IMG_4571.JPG"
-      ],
-      "position": {
-        "x": -24.7,
-        "z": 42.6
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": null,
       "needsAttention": false
     },
     {
@@ -489,31 +445,6 @@
       "size": 1.0,
       "issues": [],
       "notes": "Blooming now. Native.",
-      "needsAttention": false
-    },
-    {
-      "id": "pb-22",
-      "label": "#22",
-      "area": "perennial-bed",
-      "name": "Small-leaved sprawler (likely a weed)",
-      "speciesId": "weeds",
-      "idConfidence": 45,
-      "confirmedByOwner": false,
-      "alsoPossible": [
-        "Chickweed-type weed",
-        "Candytuft",
-        "Thyme"
-      ],
-      "photos": [
-        "Source/photos/IMG_4582.JPG"
-      ],
-      "position": {
-        "x": -21.5,
-        "z": 48.8
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": "Tiny leaves and tiny white flowers. Looks more like a chickweed-type weed than candytuft or thyme.",
       "needsAttention": false
     },
     {
@@ -846,29 +777,6 @@
       "needsAttention": false
     },
     {
-      "id": "pb-38",
-      "label": "#38",
-      "area": "perennial-bed",
-      "name": "Grass clump (ornamental or weed)",
-      "speciesId": "ornamental-grass",
-      "idConfidence": 40,
-      "confirmedByOwner": false,
-      "alsoPossible": [
-        "Weedy grass"
-      ],
-      "photos": [
-        "Source/photos/IMG_4598.JPG"
-      ],
-      "position": {
-        "x": -17,
-        "z": 56.5
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": "Next to the red glass globe.",
-      "needsAttention": false
-    },
-    {
       "id": "pb-39",
       "label": "#39",
       "area": "perennial-bed",
@@ -1153,27 +1061,6 @@
       "needsAttention": false
     },
     {
-      "id": "pb-52",
-      "label": "#52",
-      "area": "perennial-bed",
-      "name": "Thin sprawling stems, unknown",
-      "speciesId": "unknown-perennial",
-      "idConfidence": 30,
-      "confirmedByOwner": false,
-      "alsoPossible": [],
-      "photos": [
-        "Source/photos/IMG_4612.JPG"
-      ],
-      "position": {
-        "x": -12.8,
-        "z": 61.8
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": "Next to the blue glass globe.",
-      "needsAttention": false
-    },
-    {
       "id": "pb-53",
       "label": "#53",
       "area": "perennial-bed",
@@ -1193,55 +1080,6 @@
       "issues": [],
       "notes": "Finely divided blue-green leaves.",
       "needsAttention": false
-    },
-    {
-      "id": "pb-54",
-      "label": "#54",
-      "area": "perennial-bed",
-      "name": "Dead stalk, unknown",
-      "speciesId": "unknown-perennial",
-      "idConfidence": 20,
-      "confirmedByOwner": false,
-      "alsoPossible": [],
-      "photos": [
-        "Source/photos/IMG_4614.JPG"
-      ],
-      "position": {
-        "x": -17.5,
-        "z": 62.6
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": "Dead stalk on a bamboo stake at the chain-link, next to a tree trunk.",
-      "needsAttention": false
-    },
-    {
-      "id": "pb-55",
-      "label": "#55",
-      "area": "fenceline",
-      "name": "Beyond the chain-link: CHECK BEFORE TOUCHING",
-      "speciesId": "wild-fenceline",
-      "idConfidence": 40,
-      "confirmedByOwner": false,
-      "alsoPossible": [
-        "Poison ivy",
-        "Lily of the valley (TOXIC to dogs)",
-        "Box elder seedlings",
-        "Virginia creeper (harmless)"
-      ],
-      "photos": [
-        "Source/photos/IMG_4615.JPG"
-      ],
-      "position": {
-        "x": -17,
-        "z": 65.5
-      },
-      "size": 1.0,
-      "issues": [
-        "Possible poison ivy: don't touch bare-handed"
-      ],
-      "notes": "Outside the bed. The 5-leaflet vine is most likely Virginia creeper. Some 3-leaflet seedlings could be box elder or poison ivy.",
-      "needsAttention": true
     },
     {
       "id": "pb-hosta",
@@ -1886,27 +1724,6 @@
       "size": 1.0,
       "issues": [],
       "notes": "Dahlia strip, position 7 from the deck. Fivefork Farms order, January 2026.",
-      "needsAttention": false
-    },
-    {
-      "id": "tr-pot",
-      "label": "Pot at trellis",
-      "area": "trellis",
-      "name": "Potted plant at the trellis base",
-      "speciesId": "unknown-pot",
-      "idConfidence": 10,
-      "confirmedByOwner": false,
-      "alsoPossible": [],
-      "photos": [
-        "Source/photos/IMG_4548.JPG"
-      ],
-      "position": {
-        "x": -25,
-        "z": 12.8
-      },
-      "size": 1.0,
-      "issues": [],
-      "notes": null,
       "needsAttention": false
     },
     {

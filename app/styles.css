@@ -131,6 +131,11 @@ canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 .ebnum span{width:1.1em}
 .ebnum input{width:4.6em; font:inherit; font-size:1rem; color:var(--ink); text-align:right; padding:7px 8px; border-radius:9px; border:1px solid var(--line); background:var(--paper); min-height:40px}
 .ebnote{grid-column:1 / -1; margin:0; font-size:.78rem; color:var(--muted); line-height:1.35}
+.ebshapes{display:flex; flex-wrap:wrap; gap:6px}
+.ebshapes .pill{padding:5px 10px; min-height:36px}
+.ebshapes .pill[aria-checked="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.growson{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-top:10px; font-size:.9rem; font-weight:600}
+.growson select{font:inherit; font-weight:400; font-size:1rem; padding:7px 10px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:40px; max-width:100%}
 .ebform{display:grid; gap:6px}
 .ebform label{font-size:.85rem; font-weight:600; margin-top:2px}
 .ebform input, .ebform select{font:inherit; font-size:1rem; width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:44px}

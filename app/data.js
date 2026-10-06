@@ -118,6 +118,21 @@ export const STATE_TEXT = {
 export function stateFor(sp, m) {
   return sp.seasonal?.[MONTHS[m]] || "foliage";
 }
+// How much of its full height a plant has reached in a month when it's "in leaf": perennials and crops grow
+// through spring, so they're drawn shorter early in the season and reach full height by the month they flower or
+// fruit. 1 for every other stage, and once a plant has flowered for the year.
+const RESTING = new Set(["dormant", "bare", "gone", "stored", "dormant-tan", "rosette", "evergreen", "bare-flowerheads"]);
+const PEAK = new Set(["bloom", "aging-bloom", "fruit", "harvest", "ferns", "seedheads"]);
+export function growthFor(seasonal, month, from = 0.45) {
+  const st = (m) => seasonal?.[MONTHS[((m % 12) + 12) % 12]] || "foliage";
+  if (st(month) !== "foliage") return 1;
+  let since = 0; // months of growth so far this year
+  for (; since < 11 && !RESTING.has(st(month - since - 1)); since++) if (PEAK.has(st(month - since - 1))) return 1;
+  let until = 1; // months until it flowers or fruits
+  for (; until < 12 && !PEAK.has(st(month + until)); until++) if (RESTING.has(st(month + until))) return Math.min(1, from + ((1 - from) * since) / 3);
+  return from + ((1 - from) * since) / (since + until);
+}
+
 export function stateText(sp, m) {
   const s = stateFor(sp, m);
   return STATE_TEXT[s] || [s, ""];

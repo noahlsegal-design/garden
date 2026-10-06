@@ -1554,55 +1554,6 @@
       "notes": null
     },
     {
-      "id": "ornamental-grass",
-      "commonName": "Ornamental grass or sedge (unconfirmed)",
-      "scientificName": "unknown",
-      "kind": "perennial",
-      "dogToxic": {
-        "status": "check",
-        "detail": "It depends on the ID. Most ornamental grasses aren't listed as toxic.",
-        "source": null
-      },
-      "wildlife": "Standing winter clumps give birds cover and seed.",
-      "seasonal": {
-        "Jan": "dormant-tan",
-        "Feb": "dormant-tan",
-        "Mar": "dormant-tan",
-        "Apr": "foliage",
-        "May": "foliage",
-        "Jun": "foliage",
-        "Jul": "foliage",
-        "Aug": "foliage",
-        "Sep": "foliage",
-        "Oct": "foliage",
-        "Nov": "dormant-tan",
-        "Dec": "dormant-tan"
-      },
-      "care": [
-        {
-          "months": [
-            "Mar",
-            "Apr"
-          ],
-          "type": "prune",
-          "text": "Cut the old foliage down to a few inches in early spring, before new green shoots get tall. Leave it standing all winter."
-        },
-        {
-          "months": [
-            "Apr",
-            "May"
-          ],
-          "type": "divide",
-          "text": "Divide in spring if the center dies out."
-        }
-      ],
-      "sources": [],
-      "confidence": 40,
-      "confidenceWhy": "General grass care. It could also be a daylily or a weedy grass.",
-      "cutFlower": null,
-      "notes": null
-    },
-    {
       "id": "aster-or-fleabane",
       "commonName": "Aster or fleabane (unconfirmed)",
       "scientificName": "Symphyotrichum / Erigeron",
@@ -1749,122 +1700,6 @@
       "notes": null
     },
     {
-      "id": "weeds",
-      "commonName": "Weeds / open spot",
-      "scientificName": "mixed",
-      "kind": "weed",
-      "dogToxic": {
-        "status": "check",
-        "detail": "It depends on what's growing there. Common chickweed isn't on ASPCA's list.",
-        "source": null
-      },
-      "wildlife": "An open spot. Could be a place for a new planting.",
-      "seasonal": {
-        "Jan": "bare",
-        "Feb": "bare",
-        "Mar": "bare",
-        "Apr": "foliage",
-        "May": "foliage",
-        "Jun": "foliage",
-        "Jul": "foliage",
-        "Aug": "foliage",
-        "Sep": "foliage",
-        "Oct": "foliage",
-        "Nov": "bare",
-        "Dec": "bare"
-      },
-      "care": [
-        {
-          "months": [
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep"
-          ],
-          "type": "prep",
-          "text": "Pull weeds after a rain, when roots slide out easily, and before they set seed.",
-          "repeat": "weekly"
-        },
-        {
-          "months": [
-            "Sep",
-            "Oct"
-          ],
-          "type": "prep",
-          "text": "Fall is a good time to plant a perennial here (September is ideal for many)."
-        }
-      ],
-      "sources": [
-        "https://plants.ces.ncsu.edu/plants/stellaria-media/"
-      ],
-      "confidence": 50,
-      "confidenceWhy": "Basic weed advice.",
-      "cutFlower": null,
-      "notes": null
-    },
-    {
-      "id": "wild-fenceline",
-      "commonName": "Wild growth beyond the fence: CHECK BEFORE TOUCHING",
-      "scientificName": "mixed: possibly Toxicodendron radicans, Convallaria majalis, Acer negundo, Parthenocissus",
-      "kind": "wild",
-      "dogToxic": {
-        "status": "toxic",
-        "detail": "Possible lily of the valley is TOXIC to dogs (cardenolides: vomiting, irregular heartbeat, seizures). Possible poison ivy is non-toxic to dogs, BUT its urushiol oil rubs off the dog's coat onto people.",
-        "source": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lily-valley"
-      },
-      "wildlife": "Wild edge habitat for birds.",
-      "seasonal": {
-        "Jan": "bare",
-        "Feb": "bare",
-        "Mar": "bare",
-        "Apr": "foliage",
-        "May": "foliage",
-        "Jun": "foliage",
-        "Jul": "foliage",
-        "Aug": "foliage",
-        "Sep": "foliage",
-        "Oct": "foliage",
-        "Nov": "bare",
-        "Dec": "bare"
-      },
-      "care": [
-        {
-          "months": [
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct"
-          ],
-          "type": "pest",
-          "text": "Don't touch bare-handed. Poison ivy has 3 leaflets (\"leaves of three\"). The 5-leaflet vine in your photo is most likely Virginia creeper, which is harmless. Wear gloves and long sleeves, and wash tools and clothes afterward.",
-          "tip": true
-        },
-        {
-          "months": [
-            "May",
-            "Jun"
-          ],
-          "type": "pest",
-          "text": "Check whether the strap-leaved plants are lily of the valley (white bell flowers in May). If they are, keep the dog out.",
-          "repeat": "once"
-        }
-      ],
-      "sources": [
-        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/poison-ivy",
-        "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants/lily-valley",
-        "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?taxonid=275935"
-      ],
-      "confidence": 40,
-      "confidenceWhy": "Seen only through the chain-link, so the ID is uncertain.",
-      "cutFlower": null,
-      "notes": null
-    },
-    {
       "id": "wild-asters-goldenrod",
       "commonName": "White wood aster & goldenrod (wild)",
       "scientificName": "Eurybia divaricata / Solidago",
@@ -1998,7 +1833,7 @@
         "Jan": "bare",
         "Feb": "bare",
         "Mar": "bare",
-        "Apr": "bloom",
+        "Apr": "leafing",
         "May": "bloom",
         "Jun": "fruit",
         "Jul": "fruit",
@@ -2574,7 +2409,7 @@
         "Mar": "gone",
         "Apr": "gone",
         "May": "seedling",
-        "Jun": "seedling",
+        "Jun": "bloom",
         "Jul": "fruit",
         "Aug": "fruit",
         "Sep": "fruit",
@@ -3316,7 +3151,7 @@
         "Mar": "gone",
         "Apr": "gone",
         "May": "seedling",
-        "Jun": "bloom",
+        "Jun": "foliage",
         "Jul": "bloom",
         "Aug": "bloom",
         "Sep": "bloom",
@@ -3407,47 +3242,6 @@
       ],
       "confidence": 75,
       "confidenceWhy": "You confirmed the plant. The care and toxicity come from NC State.",
-      "cutFlower": null,
-      "notes": null
-    },
-    {
-      "id": "unknown-pot",
-      "commonName": "Potted plant at the trellis base",
-      "scientificName": "unknown",
-      "kind": "container",
-      "dogToxic": {
-        "status": "check",
-        "detail": "Unknown.",
-        "source": null
-      },
-      "wildlife": null,
-      "seasonal": {
-        "Jan": "dormant",
-        "Feb": "dormant",
-        "Mar": "dormant",
-        "Apr": "dormant",
-        "May": "foliage",
-        "Jun": "foliage",
-        "Jul": "foliage",
-        "Aug": "foliage",
-        "Sep": "foliage",
-        "Oct": "foliage",
-        "Nov": "dormant",
-        "Dec": "dormant"
-      },
-      "care": [
-        {
-          "months": [
-            "Sep",
-            "Oct"
-          ],
-          "type": "prep",
-          "text": "Tell me what it is, and whether it comes indoors for winter."
-        }
-      ],
-      "sources": [],
-      "confidence": 10,
-      "confidenceWhy": "Not identified.",
       "cutFlower": null,
       "notes": null
     }

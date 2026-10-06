@@ -6,10 +6,12 @@
 
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
-import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce, newPlant, newPlantId, basePlant, spotText } from "../app/edits.js";
+import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, fieldText, inForce, newPlant, newPlantId, basePlant, spotText,
+  withStructureEdits, unsavedStructureEdits, staleStructureEdits, structureBase } from "../app/edits.js";
+import { isArch, archOf } from "../app/arches.js";
 import { buildWeek, mondayOf, parseYmd } from "../app/tasks.js";
 import { dogSafety, areaAt } from "../app/data.js";
-import { plantRadius, acrossText, plantHeight, tallText, widthScale } from "../app/look.js";
+import { plantRadius, acrossText, plantHeight, tallText, widthScale, LOOK, lookFor, isVine, supportFor, shapeFor } from "../app/look.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
 const species = new Map(read("species.json").species.map((s) => [s.id, s]));
@@ -219,21 +221,23 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   const shrub = plants.find((p) => species.get(p.speciesId)?.kind === "shrub");
   const small = dahlias[0];
   assert(plantRadius({ ...small, size: 2 }, species.get(small.speciesId)) === 2 * plantRadius({ ...small, size: 1 }, species.get(small.speciesId)));
-  if (shrub) assert(plantRadius({ ...shrub, size: 1 }, species.get(shrub.speciesId)) > plantRadius({ ...small, size: 1 }, species.get(small.speciesId)), "shrubs are drawn wider");
-  assert.equal(acrossText({ ...small, size: 1 }, species.get("dahlia")), "about 1.5 ft across");
+  // Each kind is drawn at its usual spread from the research (look.js "wide"), scaled by "size".
+  assert.equal(acrossText({ ...small, size: 1 }, species.get("dahlia")), `about ${LOOK.dahlia.wide} ft across`);
+  if (shrub) assert.equal(plantRadius({ ...shrub, size: 1 }, species.get(shrub.speciesId)), lookFor(shrub).wide / 2, "shrubs too");
 
-  // Height: worked out from the width until a plant has one of its own, then separate from it.
+  // Height: the kind's (or named variety's) usual height until a plant has one of its own, whatever its width.
   const sp = species.get(small.speciesId);
   const h1 = plantHeight({ ...small, size: 1 }, sp);
-  assert(plantHeight({ ...small, size: 2 }, sp) > h1, "without a height of its own, a wider plant is taller too");
-  assert.equal(plantHeight({ ...small, size: 2, height: h1 }, sp), h1, "with one, width and height are separate");
+  assert.equal(h1, lookFor(small).ft, "a plant without a height of its own is its kind's or variety's usual height");
+  assert.equal(plantHeight({ ...small, size: 2 }, sp), h1, "and making it wider doesn't change that");
+  assert.equal(plantHeight({ ...small, size: 2, height: 3.3 }, sp), 3.3, "a height of its own wins");
   assert.equal(tallText({ ...small, height: 4.24 }, sp), "4.2 ft tall", "a height you entered is shown as entered");
   assert.equal(tallText({ ...small, height: null }, sp), `about ${Math.max(0.5, Math.round(h1 * 2) / 2)} ft tall`, "a worked-out one is rounded");
 
   // Width in feet takes over from "size", and leaves and flowers scale with it.
   assert.equal(plantRadius({ ...small, size: 2, width: 3 }, sp), 1.5);
   assert.equal(acrossText({ ...small, width: 3 }, sp), "3 ft across");
-  assert.equal(widthScale({ ...small, width: 3 }, sp), widthScale({ ...small, size: 2 }, sp));
+  assert.equal(widthScale({ ...small, width: LOOK.dahlia.wide * 2 }, sp), widthScale({ ...small, size: 2 }, sp), "twice the usual width is size 2");
 
   const edits = { [small.id]: { height: { v: 5, at }, width: { v: 2.5, at }, stems: { v: 3, at } } };
   const out = withEdits(plants, edits, species, false).find((p) => p.id === small.id);
@@ -250,6 +254,64 @@ assert(unsure && finished && dahlias.length > 1 && other, "the garden still has 
   assert.deepEqual(fieldText(rows.find((r) => r.field === "height"), species), ["Height", tallText(small, sp), "5 ft tall"]);
   assert.deepEqual(fieldText(rows.find((r) => r.field === "width"), species), ["Width", acrossText(small, sp), "2.5 ft across"]);
   assert.deepEqual(fieldText(rows.find((r) => r.field === "stems"), species), ["Main stems or trunks", "—", "3"]);
+}
+
+// ---------- arch trellises (Edit mode) ----------
+{
+  const structures = layout.structures;
+  const file = structures.find(isArch);
+  assert(file, "the yard still has an arch trellis");
+  const id = `structure-${file.id}`;
+  const edits = { [id]: { shape: { v: "pointed", at }, turn: { v: 35, at }, position: { v: { x: -20, z: 15 }, at }, width: { v: 99, at } } };
+  const arch = withStructureEdits(structures, edits, false).find(isArch);
+  assert.deepEqual([arch.shape, arch.turn, arch.x, arch.z, arch.width], ["pointed", 35, -20, 15, file.width], "changes layer on top; a width out of range is ignored");
+  assert.equal(JSON.stringify(withStructureEdits(structures, {}, false)), JSON.stringify(structures), "no changes, no difference");
+  assert.equal(archOf(file).shape, "round", "an arch from the old layout is round, a single hoop, facing as before");
+  assert.deepEqual([archOf(file).depth, archOf(file).turn], [0, 0]);
+  // Arch changes stay out of the plants' lists, and get their own rows.
+  assert.equal(withEdits(plants, edits, species, false).length, plants.length, "an arch is never taken for a new plant");
+  assert.equal(unsavedEdits(plants, edits, species).length, 0, "plants.json has nothing to write for an arch");
+  assert.equal(staleEdits(plants, { [id]: { shape: { v: "low", saved: true, fileHad: null } } }).length, 0);
+  const rows = unsavedStructureEdits(structures, edits);
+  assert.deepEqual(rows.map((r) => r.field).sort(), ["position", "shape", "turn", "width"]);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "shape"), species), ["Shape", "Round", "Pointed"]);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "turn"), species), ["Turned", "0°", "35°"]);
+  assert.equal(editFor(structureBase(file), {}, "width", file.width, at), null, "setting an arch back to what the file says clears the change");
+  // Saved arch changes are cleared once the published layout has moved past them.
+  const saved = { [id]: { shape: { v: "pointed", at, saved: true, fileHad: null } } };
+  assert.equal(staleStructureEdits(structures, saved).length, 0, "still waiting for the website's layout.json");
+  assert.deepEqual(staleStructureEdits(structures.map((x) => (x === file ? { ...x, shape: "pointed" } : x)), saved), [[id, "shape"]]);
+}
+
+// ---------- what a vine grows on ----------
+{
+  const luffa = plants.find((p) => p.speciesId === "loofah");
+  const melon = plants.find((p) => p.speciesId === "honeydew");
+  assert(isVine(luffa) && isVine(melon) && !isVine(other), "luffa and melon are vines; other plants aren't");
+  const grown = withEdits(plants, { [melon.id]: { support: { v: "trellis", at } }, [other.id]: { support: { v: "rope", at } } }, species, false);
+  assert.equal(supportFor(grown.find((p) => p.id === melon.id)), "trellis", "a melon can be trained up a trellis");
+  assert.equal(grown.find((p) => p.id === other.id).support, undefined, "an unknown support is ignored");
+  assert.equal(supportFor({ ...other, support: "pole" }), null, "only vines grow on things");
+  const card = describeEdits(melon, { [melon.id]: { support: { v: "arch", at } } }, species, false, "");
+  assert.equal(card[0].text, "Grows on the arch");
+}
+
+// ---------- a plant's own shape (the card's Shape choice) ----------
+{
+  const p = other;
+  const edits = { [p.id]: { shape: { v: "fan", at } } };
+  const shaped = withEdits(plants, edits, species, false).find((q) => q.id === p.id);
+  assert.equal(shapeFor(shaped), "fan", "a chosen shape is drawn");
+  assert.equal(withEdits(plants, { [p.id]: { shape: { v: "blob", at } } }, species, false).find((q) => q.id === p.id).shape, undefined, "an unknown shape is ignored");
+  // Confirming a different kind keeps the chosen shape (the owner's choice, October 2026).
+  const kind = [...species.keys()].find((k) => k !== p.speciesId && LOOK[k]?.shape !== "fan");
+  const confirmed = withEdits(plants, { [p.id]: { shape: { v: "fan", at }, speciesId: { v: kind, at }, confirmedByOwner: { v: true, at } } }, species, false).find((q) => q.id === p.id);
+  assert.equal(shapeFor(confirmed), "fan", "a custom shape stays when the kind is changed");
+  assert.equal(shapeFor({ ...confirmed, shape: undefined }), LOOK[kind].shape, "and without one it follows the new kind");
+  const rows = unsavedEdits(plants, edits, species);
+  assert.deepEqual(fieldText(rows.find((r) => r.field === "shape"), species), ["Shape", "Its kind's usual shape", "Strappy fan"]);
+  assert.equal(describeEdits(p, edits, species, false, "")[0].text, "Shape set to Strappy fan");
+  assert.deepEqual(describeEdits(p, edits, species, false, "")[0].fields, ["shape"], "Undo clears the shape");
 }
 
 console.log("edits: all checks passed");

@@ -134,6 +134,32 @@ try {
   res = await post("/api/save-edits", { edits: { [newId]: { added } } });
   assert.deepEqual((await res.json()).skipped, [`${newId} added`], "saving the same new plant twice doesn't add it twice");
 
+  // Arch trellis changes go into layout.json (and only there); bad values are refused.
+  const layoutPath = join(dir, "data", "layout.json");
+  const layoutBefore = readFileSync(layoutPath, "utf8");
+  const plantsBefore = readFileSync(plantsPath, "utf8");
+  const archBefore = JSON.parse(layoutBefore).structures.find((x) => x.id === "arch-trellis");
+  res = await post("/api/save-edits", { edits: { "structure-arch-trellis": { shape: "pointed", width: 6.04, depth: 2, turn: 35.4, position: { x: -22.7, z: 18.4 }, height: 99, colour: "red" }, "structure-no-such": { width: 3 } } });
+  const body = await res.json();
+  assert.deepEqual(body.fileHad["structure-arch-trellis"], { shape: null, width: archBefore.width, depth: null, turn: null, position: { x: archBefore.x, z: archBefore.z } }, "says what the arch had");
+  assert.deepEqual(body.skipped.sort(), ["structure-arch-trellis colour", "structure-arch-trellis height", "structure-no-such"]);
+  const arch = JSON.parse(readFileSync(layoutPath, "utf8")).structures.find((x) => x.id === "arch-trellis");
+  assert.deepEqual([arch.shape, arch.width, arch.depth, arch.turn, arch.x, arch.z, arch.height, arch.arch], ["pointed", 6, 2, 35, -22.7, 18.4, archBefore.height, true]);
+  assert.equal(readFileSync(plantsPath, "utf8"), plantsBefore, "an arch change leaves plants.json alone");
+  assert(!readFileSync(layoutPath, "utf8").endsWith("\n") && readFileSync(layoutPath, "utf8").startsWith('{\n  "'), "layout.json keeps its layout");
+  // A vine's support is written like any other detail, just under its sizes.
+  res = await post("/api/save-edits", { edits: { [plain.id]: { support: "trellis" } } });
+  assert.equal(file().plants.find((p) => p.id === plain.id).support, "trellis");
+  res = await post("/api/save-edits", { edits: { [plain.id]: { support: "rope" } } });
+  assert.deepEqual((await res.json()).skipped, [`${plain.id} support`]);
+  // A plant's own shape is written too, and taken away again with null.
+  res = await post("/api/save-edits", { edits: { [plain.id]: { shape: "fan" } } });
+  assert.equal(file().plants.find((p) => p.id === plain.id).shape, "fan");
+  res = await post("/api/save-edits", { edits: { [plain.id]: { shape: "blob" } } });
+  assert.deepEqual((await res.json()).skipped, [`${plain.id} shape`]);
+  res = await post("/api/save-edits", { edits: { [plain.id]: { shape: null } } });
+  assert.equal(file().plants.find((p) => p.id === plain.id).shape, undefined, "back to its kind's shape");
+
   // Plant changes kept on the Mac (no garden account connected): saved, cleared, and kept with check-offs.
   res = await post("/api/checkoffs", { set: { "w|x|2026-09-21": "2026-09-25" }, edits: { "pb-02": { name: { v: "Avens", at: "2026-09-25T10:00:00Z", junk: 1 } }, "pb-03": { finished: { v: null } } } });
   let state = await res.json();

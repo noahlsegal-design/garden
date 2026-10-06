@@ -7,8 +7,10 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { stateFor, areaAt } from "./data.js";
-import { lookFor, plantRadius, plantHeight, widthScale } from "./look.js";
+import { stateFor, areaAt, growthFor } from "./data.js";
+import { lookFor, plantRadius, plantHeight, widthScale, shapeFor, supportFor } from "./look.js";
+import { drawPlant, plantMesh } from "./shapes.js";
+import { isArch, archOf, archProfile, archAxes, nearestArch } from "./arches.js";
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const W = (x, z, y = 0) => V(-x, y, z);
@@ -51,77 +53,144 @@ const CANOPY = [null, null, null, "#a9cc72", "#5e8f45", "#4f7d3a", "#4b7636", "#
 const FALL = ["#d9822b", "#e3b23c", "#b8452a", "#c9a23a", "#8f6a3a"];
 const SKY = "#dde8ec";
 
+// Arch trellises in the yard (layout.json, with any Edit mode changes), so a vine planted at one can climb it.
+let ARCHES = [];
+// The arch a vine climbs, in the plant's own space (three.js x runs the other way from yard feet): a vine told to
+// grow on the arch climbs the nearest one within 10 ft; a luffa left to its usual way climbs one within 4 ft.
+function archFor(p, look) {
+  const support = supportFor(p);
+  if (support ? support !== "arch" : !look.climbsArch) return null;
+  const near = nearestArch(ARCHES, p.position.x, p.position.z, support ? 10 : 4);
+  if (!near) return null;
+  const { arch: a, leg } = near, { across, through } = archAxes(a);
+  return {
+    dx: -(a.x - p.position.x), dz: a.z - p.position.z, // the arch's middle
+    across: [-across[0], across[1]], through: [-through[0], through[1]], // leg to leg, and the way you walk through
+    profile: archProfile(a), leg, depth: a.depth, height: a.height,
+  };
+}
+
+// One arch trellis: its frame (two frames joined by rungs when it has depth) and an invisible box to tap or drag
+// it by in Edit mode.
+function buildArch(a, hitId) {
+  const g = new THREE.Group();
+  const m = mat(a.color);
+  const pts = archProfile(a, 20);
+  const { across, through } = archAxes(a);
+  const ax = V(-across[0], 0, across[1]), th = V(-through[0], 0, through[1]);
+  const at = ([u, y], off) => ax.clone().multiplyScalar(u).addScaledVector(th, off).setY(y);
+  const tube = (from, to, r) => {
+    const dir = to.clone().sub(from), len = dir.length();
+    if (len < 1e-3) return;
+    const t = new THREE.Mesh(GEO.cyl, m);
+    t.position.copy(from);
+    t.quaternion.setFromUnitVectors(V(0, 1, 0), dir.divideScalar(len));
+    t.scale.set(r, len, r);
+    t.castShadow = true; t.receiveShadow = true;
+    g.add(t);
+  };
+  const frames = a.depth > 0.05 ? [-a.depth / 2, a.depth / 2] : [0];
+  for (const off of frames) for (let i = 1; i < pts.length; i++) tube(at(pts[i - 1], off), at(pts[i], off), 0.07);
+  if (frames.length > 1) { // rungs joining the two frames, up the legs and over the top
+    const legRungs = Math.max(1, Math.floor(pts[1][1] / 1.2));
+    for (const [u] of [pts[0], pts.at(-1)]) for (let k = 1; k <= legRungs; k++) {
+      const y = (pts[1][1] * k) / (legRungs + 0.5);
+      tube(at([u, y], frames[0]), at([u, y], frames[1]), 0.04);
+    }
+    for (let i = 2; i < pts.length - 2; i += 3) tube(at(pts[i], frames[0]), at(pts[i], frames[1]), 0.04);
+  }
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), HIT_MAT);
+  hit.scale.set(a.width + 0.6, a.height + 0.3, Math.max(a.depth, 0.4) + 0.8);
+  hit.rotation.y = Math.atan2(-ax.z, ax.x) ; // box x along the arch's span
+  hit.userData.plantId = hitId;
+  g.add(hit);
+  g.position.copy(W(a.x, a.z));
+  g.userData = { plantId: hitId, radius: a.width / 2 + 0.3, height: a.height, hit, structure: true };
+  return g;
+}
+
 // ---------- one plant ----------
+const plain = (color) => new THREE.Color(color);
+// A plant's drawing (a geometry, or null if there's nothing to draw) in a month. Drawing every plant takes a while,
+// so with `drawings` (see keptDrawings) each plant's drawing for a stage is made once and kept: changing months or
+// playing the bloom timeline then only puts kept drawings back in the yard.
+function plantDrawing(p, sp, month, drawings) {
+  const look = lookFor(p);
+  const state = stateFor(sp, month);
+  if (state === "gone" || state === "stored") return null;
+  const r = plantRadius(p, sp), s = widthScale(p, sp), arch = archFor(p, look), shape = shapeFor(p), support = supportFor(p);
+  const H = vineHeight(p, sp, shape, support);
+  const grow = growthFor(sp?.seasonal, month, look.growFrom);
+  const draw = () => drawPlant(shape, { state, look, r, H, s, rand: rng(hashStr(p.id)), stems: p.stems, paint: plain, month, grow, arch, support })?.geometry ?? null;
+  if (!drawings) return draw();
+  // Everything the drawing depends on: the plant (its kind, shape, size, stems and, for a vine, what it grows on)…
+  const kept = drawings.forPlant(p.id, JSON.stringify([p.speciesId, shape, r, H, s, p.stems ?? 0, support, arch]));
+  // …and the month only through its stage, spring growth, grass plumes and any look a kind has for that month.
+  const key = `${state}|${grow.toFixed(3)}|${look.plumes?.includes(month) ? 1 : 0}|${look.months?.[month] ? month : ""}`;
+  if (!kept.has(key)) kept.set(key, draw());
+  return kept.get(key);
+}
+
+// How tall a plant is drawn. A melon or squash trained up a trellis, pole or arch stands about 5 ft tall
+// (unless it's been given a height of its own) instead of lying a foot deep on the ground.
+function vineHeight(p, sp, shape, support) {
+  const H = plantHeight(p, sp);
+  return shape === "sprawler" && support && support !== "ground" && !(p.height > 0) ? Math.max(H, 5) : H;
+}
+
+// Plant drawings kept for reuse, per plant: when a plant changes (say it's resized in Edit mode) or leaves the yard,
+// its old drawings are freed.
+function keptDrawings() {
+  const byPlant = new Map(); // plant id → { sig, drawings: Map(stage key → geometry or null) }
+  const free = (e) => { for (const g of e.drawings.values()) g?.dispose(); };
+  return {
+    forPlant(id, sig) {
+      let e = byPlant.get(id);
+      if (!e || e.sig !== sig) {
+        if (e) free(e);
+        e = { sig, drawings: new Map() };
+        byPlant.set(id, e);
+      }
+      return e.drawings;
+    },
+    keepOnly(ids) {
+      for (const [id, e] of byPlant) if (!ids.has(id)) { free(e); byPlant.delete(id); }
+    },
+  };
+}
+
 // bloomView: the bloom timeline is on, so plants in flower get a ring in their flower color and everything else is greyed.
-function buildPlant(p, sp, month, bloomView = false) {
+// drawings: kept plant drawings to reuse (the yard's); without them the plant gets a drawing of its own.
+export function buildPlant(p, sp, month, bloomView = false, drawings = null) {
   const g = new THREE.Group();
   const look = lookFor(p);
-  const shrub = look.shrub || sp?.kind === "shrub";
-  const s = widthScale(p, sp);
   const r = plantRadius(p, sp);
-  const H = plantHeight(p, sp);
-  const rand = rng(hashStr(p.id));
+  const H = vineHeight(p, sp, shapeFor(p), supportFor(p));
   const state = stateFor(sp, month);
   const blooming = state === "bloom";
-  const paint = bloomView && !blooming ? (color, opts) => mat(MUTED.clone().lerp(new THREE.Color(color), 0.25).getStyle(), opts) : mat;
+  const greyed = bloomView && !blooming;
+  const paint = (color) => (greyed ? MUTED.clone().lerp(new THREE.Color(color), 0.25) : new THREE.Color(color));
   const body = new THREE.Group();
   g.add(body);
 
-  const blob = (color, hFrac = 1, rFrac = 1, opts) => body.add(mesh(GEO.blob, paint(color, opts), V(0, (H * hFrac) / 2, 0), [r * rFrac, (H * hFrac) / 2, r * rFrac]));
-  const tufts = (color, hFrac = 1) => {
-    for (let i = 0; i < 7; i++) {
-      const a = rand() * Math.PI * 2, d = r * 0.55 * Math.sqrt(rand());
-      body.add(mesh(GEO.cone, paint(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.16 * s + 0.05, H * hFrac * (0.7 + 0.4 * rand()), 0.16 * s + 0.05], { rot: [(rand() - 0.5) * 0.5, 0, (rand() - 0.5) * 0.5] }));
+  if (state === "gone") g.add(mesh(GEO.ring, mat(bloomView ? "#c9c6b8" : "#b9a57e", { transparent: true, opacity: 0.8, side: THREE.DoubleSide }), V(0, 0.2, 0), [r, 1, r], { shadow: false }));
+  else if (state === "stored") {
+    g.add(mesh(GEO.ring, mat("#8a6a45", { transparent: true, opacity: 0.8, side: THREE.DoubleSide }), V(0, 0.2, 0), [r, 1, r], { shadow: false }));
+    body.add(mesh(GEO.box, mat(bloomView ? "#b3b0a3" : "#8a6a45"), V(0, 0, 0), [0.55, 0.4, 0.55]));
+  } else {
+    const drawing = plantDrawing(p, sp, month, drawings);
+    if (drawing) {
+      const shaped = plantMesh(drawing, greyed ? MUTED : null);
+      shaped.castShadow = true; shaped.receiveShadow = true;
+      shaped.userData.own = !drawings; // a drawing of its own is freed when the plant is redrawn; kept ones stay
+      body.add(shaped);
     }
-  };
-  const foliage = (color = look.leaf, hFrac = 1) => (look.grass ? tufts(color, hFrac) : blob(color, hFrac));
-  const dots = (color, n = 7, size = 0.17, yTop = 1) => {
-    for (let i = 0; i < n; i++) {
-      const a = rand() * Math.PI * 2, d = r * 0.75 * Math.sqrt(rand());
-      const y = H * yTop * (0.62 + 0.42 * rand()) * Math.sqrt(1 - (d / r) ** 2 * 0.6);
-      body.add(mesh(GEO.ball, paint(color), V(Math.cos(a) * d, y, Math.sin(a) * d), (size + 0.05 * rand()) * Math.max(1, s * 0.8)));
-    }
-  };
-  const sticks = (color = "#6b4f32", n = 7, hFrac = 1) => {
-    for (let i = 0; i < n; i++) {
-      const a = rand() * Math.PI * 2, d = r * 0.35 * rand();
-      body.add(mesh(GEO.cyl, paint(color), V(Math.cos(a) * d, 0, Math.sin(a) * d), [0.045 * s + 0.02, H * hFrac * (0.75 + 0.3 * rand()), 0.045 * s + 0.02], { rot: [(rand() - 0.5) * 0.7, 0, (rand() - 0.5) * 0.7] }));
-    }
-  };
-  const marker = (color, opacity = 0.75) => g.add(mesh(GEO.ring, paint(color, { transparent: true, opacity, side: THREE.DoubleSide }), V(0, 0.2, 0), [r, 1, r], { shadow: false }));
-
-  switch (state) {
-    case "gone": marker("#b9a57e", 0.8); break;
-    case "stored":
-      marker("#8a6a45", 0.8);
-      body.add(mesh(GEO.box, paint("#8a6a45"), V(0, 0, 0), [0.55, 0.4, 0.55]));
-      break;
-    case "dormant":
-      if (shrub) sticks(); else blob("#7a5a3c", 0.18, 0.6);
-      break;
-    case "dormant-tan": tufts("#c9b27a", 0.9); break;
-    case "bare": if (shrub) sticks(); else blob("#7a5a3c", 0.18, 0.6); break;
-    case "bare-flowerheads": sticks("#7a6048"); dots("#cbb89a", 6, 0.28); break;
-    case "emerging": case "seedling": foliage("#9ccf6a", 0.45); break;
-    case "leafing": if (shrub) { sticks(); dots("#9ccf6a", 10, 0.2); } else foliage("#9ccf6a", 0.6); break;
-    case "rosette": blob(look.leaf, 0.32); break;
-    case "evergreen": foliage(new THREE.Color(look.leaf).multiplyScalar(0.8).getStyle(), 0.8); break;
-    case "bloom": foliage(); dots(look.flower, look.grass ? 5 : 8); break;
-    case "aging-bloom": foliage(); dots(look.aging, 7, 0.24); break;
-    case "fruit": foliage(); dots(look.fruit, 7, 0.14); break;
-    case "harvest": foliage(); if (look.fruit && !["radish", "beet"].includes(p.speciesId)) dots(look.fruit, 5, 0.14); break;
-    case "ferns": body.add(mesh(GEO.cone, paint(look.leaf, { transparent: true, opacity: 0.85 }), V(0, 0, 0), [r * 0.9, H * 1.1, r * 0.9])); break;
-    case "seedheads": sticks("#6b4f32", 6, 0.95); dots("#3b2a1e", 5, 0.13, 1.05); break;
-    case "fall-color": foliage(look.fall, 0.85); break;
-    case "yellowing": foliage("#d4c05a", 0.7); break;
-    case "frost-blackened": foliage("#3a2f2a", 0.7); break;
-    default: foliage(); // foliage and anything unexpected
   }
 
   if (look.pot) {
-    g.add(mesh(GEO.cyl, paint("#b5653a"), V(0, 0, 0), [0.45, 0.6, 0.45]));
+    g.add(mesh(GEO.cyl, mat(paint("#b5653a").getStyle()), V(0, 0, 0), [0.45, 0.6, 0.45]));
     body.position.y = 0.6;
-  }
+  } else body.position.y = 0.04; // just above the soil, so the lowest leaves aren't hidden under the bed's surface
 
   if (bloomView && blooming) {
     const y = look.pot ? 0.65 : 0.22; // just above the bed's surface
@@ -140,6 +209,11 @@ function buildPlant(p, sp, month, bloomView = false) {
   g.position.copy(W(p.position.x, p.position.z, groundHeight(p.area)));
   g.userData = { plantId: p.id, radius: r, height: H, hit, blooming };
   return g;
+}
+
+// Frees the geometry a plant's drawing made for itself (shared shapes stay).
+function freePlant(g) {
+  g.traverse((o) => { if (o.userData.own) o.geometry.dispose(); });
 }
 
 // How high a bed's surface is: plants in the raised beds sit on the soil, and pots on the deck sit on the boards.
@@ -245,13 +319,8 @@ function buildYard(layout, trees, fadeable) {
       case "trellis": {
         const c = W(s.x, s.z);
         const m = mat(s.color);
-        if (s.id === "arch-trellis") {
-          const R = s.width / 2, post = s.height - R;
-          for (const dz of [-R, R]) g.add(mesh(GEO.cyl, m, V(c.x, 0, c.z + dz), [0.08, post, 0.08]));
-          const arc = new THREE.Mesh(new THREE.TorusGeometry(R, 0.08, 6, 24, Math.PI), m);
-          arc.rotation.y = Math.PI / 2; arc.position.set(c.x, post, c.z); arc.castShadow = true;
-          g.add(arc);
-        } else {
+        if (isArch(s)) break; // arches are drawn by the yard (setArches), since they can be changed in Edit mode
+        {
           for (const dx of [-s.width / 2, s.width / 2]) g.add(mesh(GEO.cyl, m, V(c.x + dx, 0, c.z), [0.1, s.height, 0.1]));
           for (const y of [2, 4, s.height - 0.1]) g.add(mesh(GEO.box, m, V(c.x, y, c.z), [s.width, 0.1, 0.1]));
         }
@@ -387,6 +456,10 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
 
   const trees = [], fadeable = [];
   scene.add(buildYard(layout, trees, fadeable));
+  ARCHES = layout.structures.filter(isArch).map(archOf);
+  const archRoot = new THREE.Group();
+  scene.add(archRoot);
+  let structGroups = new Map(), structHits = [];
   const areaById = new Map(layout.areas.map((a) => [a.id, a]));
 
   const plantsRoot = new THREE.Group();
@@ -448,7 +521,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
     needsRender = true;
   }
   function focus(id) {
-    const g = groups.get(id);
+    const g = groups.get(id) || structGroups.get(id);
     if (!g) return;
     const target = V(g.position.x, 0, g.position.z);
     const s = current();
@@ -569,19 +642,42 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
 
   // ----- plants -----
   let lastPlants = [], lastSpecies = null, lastMonth = 0, bloomView = false;
+  const drawings = keptDrawings();
   function setPlants(plants, species, month) {
     lastPlants = plants; lastSpecies = species; lastMonth = month;
+    for (const g of plantsRoot.children) freePlant(g);
     plantsRoot.clear();
     groups = new Map();
     hitTargets = [];
+    drawings.keepOnly(new Set(plants.map((p) => p.id)));
     for (const p of plants) {
-      const g = buildPlant(p, species.get(p.speciesId), month, bloomView);
+      const g = buildPlant(p, species.get(p.speciesId), month, bloomView, drawings);
       plantsRoot.add(g);
       groups.set(p.id, g);
       hitTargets.push(g.userData.hit);
     }
     placeRings();
     redrawShadows();
+    drawAhead();
+  }
+  // While nothing else is happening, draw every plant for the other months too (nearest months first, a few
+  // milliseconds at a time), so the month buttons and the bloom timeline are quick from the first tap.
+  let aheadJob = 0;
+  function drawAhead() {
+    const job = ++aheadJob, plants = lastPlants, species = lastSpecies;
+    const months = [1, 11, 2, 10, 3, 9, 4, 8, 5, 7, 6].map((d) => (lastMonth + d) % 12);
+    let mi = 0, pi = 0;
+    const step = () => {
+      if (job !== aheadJob) return; // the yard changed; a newer pass has started
+      const until = performance.now() + 6;
+      while (mi < months.length && performance.now() < until) {
+        const p = plants[pi];
+        if (p) plantDrawing(p, species.get(p.speciesId), months[mi], drawings);
+        if (++pi >= plants.length) { pi = 0; mi++; }
+      }
+      if (mi < months.length) setTimeout(step, 40);
+    };
+    setTimeout(step, 600);
   }
   function setMonth(month) {
     setPlants(lastPlants, lastSpecies, month);
@@ -602,7 +698,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
     setPlants(lastPlants, lastSpecies, lastMonth);
   }
   function placeRings() {
-    const g = selectedId && groups.get(selectedId);
+    const g = selectedId && (groups.get(selectedId) || structGroups.get(selectedId));
     selRing.visible = !!g;
     if (g) { selRing.position.set(g.position.x, g.position.y + 0.22, g.position.z); selRing.scale.setScalar(g.userData.radius * 1.45 + 0.3); }
     hlRoot.clear();
@@ -619,13 +715,34 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
   // Redraws one plant, say while its size is being adjusted, without rebuilding the whole yard.
   function updatePlant(p) {
     const old = groups.get(p.id);
-    if (old) { plantsRoot.remove(old); hitTargets = hitTargets.filter((h) => h !== old.userData.hit); }
-    const g = buildPlant(p, lastSpecies.get(p.speciesId), lastMonth, bloomView);
+    if (old) { plantsRoot.remove(old); freePlant(old); hitTargets = hitTargets.filter((h) => h !== old.userData.hit); }
+    const g = buildPlant(p, lastSpecies.get(p.speciesId), lastMonth, bloomView, drawings);
     plantsRoot.add(g);
     groups.set(p.id, g);
     hitTargets.push(g.userData.hit);
     placeRings();
     redrawShadows();
+  }
+  // The arch trellises (layout.json with Edit mode's changes): each is { ...arch, hitId } where hitId is what a
+  // tap or drag on it reports. Vines growing on them are redrawn to follow.
+  let archesShown = "";
+  function setArches(list) {
+    const sig = JSON.stringify(list);
+    if (sig === archesShown) return;
+    archesShown = sig;
+    archRoot.traverse((o) => { if (o.isMesh && o.geometry !== GEO.cyl) o.geometry.dispose(); });
+    archRoot.clear();
+    structGroups = new Map();
+    structHits = [];
+    ARCHES = list.map(archOf);
+    list.forEach((a, i) => {
+      const g = buildArch(ARCHES[i], a.hitId);
+      archRoot.add(g);
+      structGroups.set(a.hitId, g);
+      structHits.push(g.userData.hit);
+    });
+    if (lastSpecies) setPlants(lastPlants, lastSpecies, lastMonth);
+    else { placeRings(); redrawShadows(); }
   }
   function select(id) { selectedId = id; placeRings(); }
   function setHighlight(h) { highlight = h; placeRings(); }
@@ -716,8 +833,8 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
     pressed.add(e.pointerId);
     if (drag) { putBack(drag); drag = null; return; } // a second finger: back to moving the view
     if (!editing || placing || others || (e.pointerType === "mouse" && e.button !== 0)) return;
-    const hit = screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false)[0];
-    const g = hit && groups.get(hit.object.userData.plantId);
+    const hit = screenRay(e.clientX, e.clientY).intersectObjects([...hitTargets, ...structHits], false)[0];
+    const g = hit && (groups.get(hit.object.userData.plantId) || structGroups.get(hit.object.userData.plantId));
     const spot = g && groundAt(e.clientX, e.clientY, g.position.y);
     if (!spot) return;
     controls.enabled = false; // until every finger is up
@@ -728,7 +845,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
   canvas.addEventListener("pointermove", (e) => {
     if (!drag) {
       if (editing && e.pointerType === "mouse" && !pressed.size) {
-        canvas.style.cursor = placing ? "crosshair" : screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false).length ? "grab" : "";
+        canvas.style.cursor = placing ? "crosshair" : screenRay(e.clientX, e.clientY).intersectObjects([...hitTargets, ...structHits], false).length ? "grab" : "";
       }
       return;
     }
@@ -741,7 +858,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
     // Stay inside the yard (three.js x runs the other way from yard feet).
     spot.x = THREE.MathUtils.clamp(spot.x, -b.xMax, -b.xMin);
     spot.z = THREE.MathUtils.clamp(spot.z, b.zMin, b.zMax);
-    const area = areaAt(layout, -spot.x, spot.z);
+    const area = drag.g.userData.structure ? null : areaAt(layout, -spot.x, spot.z); // arches stand on the ground
     drag.g.position.set(spot.x, groundHeight(area) + 0.5, spot.z); // lifted a little while it's carried
     if (selectedId === drag.id) selRing.position.set(spot.x, drag.g.position.y + 0.22, spot.z);
     if (e.pointerType === "mouse") canvas.style.cursor = "grabbing";
@@ -755,7 +872,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
       drag = null;
       if (d.moved && e.type === "pointerup") {
         const x = tenth(-d.g.position.x), z = tenth(d.g.position.z);
-        d.g.position.y = groundHeight(areaAt(layout, x, z));
+        d.g.position.y = d.g.userData.structure ? 0 : groundHeight(areaAt(layout, x, z));
         onDrop?.(d.id, { x, z });
       } else if (d.moved) putBack(d);
       if (e.pointerType === "mouse") canvas.style.cursor = "grab";
@@ -810,7 +927,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
       if (spot) onPlace?.({ x: tenth(-spot.x), z: tenth(spot.z) });
       return;
     }
-    const hit = screenRay(e.clientX, e.clientY).intersectObjects(hitTargets, false)[0];
+    const hit = screenRay(e.clientX, e.clientY).intersectObjects(editing ? [...hitTargets, ...structHits] : hitTargets, false)[0];
     onPick(hit ? hit.object.userData.plantId : null);
   });
   canvas.addEventListener("dblclick", (e) => { zoomAt(e.clientX, e.clientY, 0.5); onMove?.(); }); // mice (touch is handled above)
@@ -858,5 +975,5 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
   }
   requestAnimationFrame(frame);
 
-  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn, updatePlant, setEditing, setPlacing };
+  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn, updatePlant, setEditing, setPlacing, setArches };
 }

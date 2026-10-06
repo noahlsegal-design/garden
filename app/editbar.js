@@ -3,10 +3,12 @@
 // last change. Dragging a plant to move
 // it happens in the yard itself (scene.js). main.js decides what the bar shows; this only draws it.
 //
-// `view` is "note" (can't edit right now, and why), "idle", "plant" (one is picked), "adding" (the kind and
-// name form) or "placing" (waiting for a tap in the yard).
+// `view` is "note" (can't edit right now, and why), "idle", "plant" (one is picked), "arch" (an arch trellis is
+// picked: its shape, size and direction), "adding" (the kind and name form) or "placing" (waiting for a tap in
+// the yard).
 
 import { esc } from "./data.js";
+import { ARCH_SHAPES, ARCH_LIMITS } from "./arches.js";
 
 // Heights and widths in feet. The sliders stretch the small end, where most plants are: halfway along is
 // about 2.5 ft. The boxes take any value in range, to a tenth of a foot.
@@ -76,10 +78,30 @@ export function renderEditBar(el, o) {
         ${undo}
       </div>
       <p class="ebhelp">Drag it in the yard to move it.</p>`;
+  } else if (o.view === "arch") {
+    const a = o.arch;
+    const row = (f, label, unit, step) => `
+      <label for="eb-${f}">${label}</label>
+      <input type="range" id="eb-${f}-slider" min="${ARCH_LIMITS[f][0]}" max="${ARCH_LIMITS[f][1]}" step="${step}" value="${a[f]}" aria-label="${label}" aria-valuetext="${a[f]} ${unit}">
+      <span class="ebnum"><input type="number" id="eb-${f}" inputmode="decimal" min="${ARCH_LIMITS[f][0]}" max="${ARCH_LIMITS[f][1]}" step="${step}" value="${a[f]}" enterkeyhint="done"><span>${unit === "degrees" ? "°" : "ft"}</span></span>`;
+    body = `
+      <div class="ebhead">
+        <div class="ebplant"><p class="ebtitle">${esc(a.name)}</p><span>Arch trellis</span></div>
+        <button type="button" class="close" id="ebClose" aria-label="Done with the arch">✕</button>
+      </div>
+      <div class="ebshapes" role="radiogroup" aria-label="Shape of the top">
+        ${ARCH_SHAPES.map((sh) => `<button type="button" class="pill" role="radio" aria-checked="${sh.id === a.shape}" data-shape="${sh.id}" title="${esc(sh.about)}">${esc(sh.name)}</button>`).join("")}
+      </div>
+      <div class="ebsize">
+        ${row("width", "Width", "feet", 0.1)}${row("height", "Height", "feet", 0.1)}${row("depth", "Depth", "feet", 0.1)}${row("turn", "Turn", "degrees", 1)}
+        <p class="ebnote">Depth 0 is a single hoop. Drag the arch in the yard to move it; vines on it follow.</p>
+      </div>
+      ${message}
+      ${undo ? `<div class="ebbtns">${undo}</div>` : ""}`;
   } else {
     body = `
       <div class="ebhead"><p class="ebtitle">Edit mode</p></div>
-      <p class="ebhelp">Drag a plant to move it. Tap one to change its width or height, or remove it.</p>
+      <p class="ebhelp">Drag a plant or the arch to move it. Tap a plant to change its width or height, or remove it. Tap the arch to change its shape, size or direction.</p>
       ${message}
       <div class="ebbtns">
         <button type="button" class="pill primary" id="ebAdd">${icon("add")}Add a plant</button>
@@ -98,7 +120,7 @@ export function renderEditBar(el, o) {
   q("#ebCard")?.addEventListener("click", o.onCard);
   // The plant grows and shrinks in the yard as you slide or type; the new size is saved when you let go of the
   // slider or leave the box. A box left empty or out of range goes back to what it was.
-  for (const [f, word] of [["height", "tall"], ["width", "across"]]) {
+  for (const [f, word] of o.view === "plant" ? [["height", "tall"], ["width", "across"]] : []) {
     const slider = q(`#eb-${f}-slider`), box = q(`#eb-${f}`);
     if (!slider) continue;
     const show = (v) => slider.setAttribute("aria-valuetext", `${ft(v)} feet ${word}`);
@@ -111,6 +133,23 @@ export function renderEditBar(el, o) {
       if (v == null) { box.value = ft(o.plant[f]); slider.value = toSlider(o.plant[f]); return o.onMeasure({ [f]: o.plant[f] }, false); }
       if (v !== o.plant[f]) o.onMeasure({ [f]: v }, true);
     });
+  }
+  // The arch's sliders and boxes work the same way, in plain feet (and degrees for turn).
+  if (o.view === "arch") {
+    for (const f of ["width", "height", "depth", "turn"]) {
+      const slider = q(`#eb-${f}-slider`), box = q(`#eb-${f}`), unit = f === "turn" ? "degrees" : "feet";
+      const tidy = (v) => (f === "turn" ? Math.round(v) : Math.round(v * 10) / 10);
+      const ok = (v) => Number.isFinite(v) && v >= ARCH_LIMITS[f][0] && v <= ARCH_LIMITS[f][1];
+      slider.addEventListener("input", () => { const v = tidy(Number(slider.value)); box.value = v; slider.setAttribute("aria-valuetext", `${v} ${unit}`); o.onArch({ [f]: v }, false); });
+      slider.addEventListener("change", () => o.onArch({ [f]: tidy(Number(slider.value)) }, true));
+      box.addEventListener("input", () => { const v = tidy(Number(box.value)); if (box.value !== "" && ok(v)) { slider.value = v; o.onArch({ [f]: v }, false); } });
+      box.addEventListener("change", () => {
+        const v = tidy(Number(box.value));
+        if (box.value === "" || !ok(v)) { box.value = o.arch[f]; slider.value = o.arch[f]; return o.onArch({ [f]: o.arch[f] }, false); }
+        if (v !== o.arch[f]) o.onArch({ [f]: v }, true);
+      });
+    }
+    for (const b of el.querySelectorAll("[data-shape]")) b.addEventListener("click", () => { if (b.dataset.shape !== o.arch.shape) o.onArch({ shape: b.dataset.shape }, true); });
   }
   const stems = q("#eb-stems");
   stems?.addEventListener("change", () => {

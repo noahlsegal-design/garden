@@ -5,11 +5,13 @@ import { createYard } from "./scene.js";
 import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
 import { cloudReady, cloudBackend, account, signIn, signOut } from "./cloud.js";
-import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant, newPlant, newPlantId } from "./edits.js";
+import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant, newPlant, newPlantId,
+  STRUCTURE, isStructureEdit, structureBase, withStructureEdits, unsavedStructureEdits, staleStructureEdits } from "./edits.js";
 import { renderTasks } from "./tasklist.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
-import { plantHeight, plantRadius } from "./look.js";
+import { plantHeight, plantRadius, isVine, SUPPORTS, SHAPES, LOOK } from "./look.js";
+import { isArch, archOf } from "./arches.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -34,8 +36,9 @@ const undoStack = []; // Edit mode changes made on this device, newest last: { l
 // Plants that show in the yard, the bloom timeline and This week.
 const inYard = (p) => !p.finished && !p.removed;
 let garden, yard, byId, areaOrder, store, bloomBar;
-// data/plants.json as it is, before the plant changes made in the app (edits.js) go on top.
-let filePlants, fileById;
+// data/plants.json as it is, before the plant changes made in the app (edits.js) go on top, and layout.json's
+// structures (the arch trellises can be changed in Edit mode too).
+let filePlants, fileById, fileStructures;
 let editsDrawn = null; // the plant changes the yard was last drawn with
 let kinds = []; // every kind of plant, for "Confirm ID": [id, name, still a placeholder for an unidentified plant]
 // This copy's plants.json is the Mac's own (the Mac copy, or a phone opening it over Wi-Fi), not the website's.
@@ -55,6 +58,7 @@ async function start() {
   byId = new Map(garden.plants.map((p) => [p.id, p]));
   filePlants = garden.plants;
   fileById = byId;
+  fileStructures = garden.layout.structures;
   kinds = [...garden.species.values()]
     .map((s) => [s.id, s.commonName, /unconfirmed/i.test(s.commonName) || s.id.startsWith("unknown")])
     .sort((a, b) => a[1].localeCompare(b[1]));
@@ -83,8 +87,9 @@ async function start() {
     $("status").style.pointerEvents = "none";
     $("status").style.background = "transparent";
     has3d = false;
-    yard = { setPlants() {}, setMonth() {}, setBloom() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {}, updatePlant() {}, setEditing() {}, setPlacing() {} };
+    yard = { setPlants() {}, setMonth() {}, setBloom() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {}, updatePlant() {}, setEditing() {}, setPlacing() {}, setArches() {} };
   }
+  yard.setArches(archesNow());
   const growing = garden.plants.filter(inYard);
   yard.setPlants(growing, garden.species, state.month);
   yard.setMonth(state.month);
@@ -133,7 +138,8 @@ async function start() {
 
 // Keeps the address in step with what's open, so a bookmark or refresh comes back to it.
 function syncHash() {
-  const h = !$("tasksPanel").hidden ? "#tasks" : state.selectedId ? `#plant=${encodeURIComponent(state.selectedId)}` : "";
+  const plant = state.selectedId && !isStructureEdit(state.selectedId) ? state.selectedId : null;
+  const h = !$("tasksPanel").hidden ? "#tasks" : plant ? `#plant=${encodeURIComponent(plant)}` : "";
   history.replaceState(null, "", location.pathname + location.search + h);
 }
 
@@ -266,12 +272,13 @@ function applyEdits() {
   editsDrawn = sig;
   garden.plants = withEdits(filePlants, store.checks.edits, garden.species, ON_MAC);
   byId = new Map(garden.plants.map((p) => [p.id, p]));
+  yard.setArches(archesNow());
   const growing = garden.plants.filter(inYard);
   yard.setPlants(growing, garden.species, state.month);
   bloomBar.setCounts(bloomCounts(growing, garden.species));
   updateBloomBar();
   // A plant picked in Edit mode that's no longer in the yard (removed, say) is let go.
-  if (editMode.on && state.selectedId && !state.card && !(byId.has(state.selectedId) && inYard(byId.get(state.selectedId)))) {
+  if (editMode.on && state.selectedId && !state.card && !isStructureEdit(state.selectedId) && !(byId.has(state.selectedId) && inYard(byId.get(state.selectedId)))) {
     state.selectedId = null;
     yard.select(null);
   }
@@ -313,10 +320,28 @@ function editControls(p) {
   if (!access) return null;
   return {
     ...access, kinds, today: ymd(today()),
+    supports: isVine(p) ? SUPPORTS : null,
+    shapes: SHAPES, defaultShape: LOOK[p.speciesId]?.shape || "mound", // a custom shape stays when the kind changes
     changes: describeEdits(base, store.checks.edits, garden.species, ON_MAC, account(), garden.areaNames),
     onSave: (values) => saveValues(p.id, values),
     onUndo: (fields) => store.change({ edits: { [p.id]: Object.fromEntries(fields.map((f) => [f, null])) } }),
   };
+}
+
+// ---------- arch trellises ----------
+// The arches as the yard draws them: layout.json with Edit mode's changes, each with the ID its changes go under.
+function archesNow() {
+  return withStructureEdits(fileStructures, store?.checks.edits, ON_MAC).filter(isArch).map((s) => ({ ...archOf(s), hitId: STRUCTURE + s.id }));
+}
+const archById = (id) => archesNow().find((a) => a.hitId === id);
+// Saves new values for an arch's details, like saveValues for a plant.
+function saveArch(id, values, undoLabel) {
+  const file = fileStructures.find((s) => STRUCTURE + s.id === id);
+  if (!file) return;
+  const base = structureBase(file), at = new Date().toISOString(), edits = store.checks.edits;
+  const fields = Object.fromEntries(Object.entries(values).map(([f, v]) => [f, editFor(base, edits, f, v, at)]));
+  if (undoLabel) undoStack.push({ label: undoLabel, id, before: Object.fromEntries(Object.keys(values).map((f) => [f, edits[id]?.[f] ?? null])) });
+  store.change({ edits: { [id]: fields } });
 }
 
 // ---------- Edit mode: add, move, resize and remove plants ----------
@@ -357,6 +382,7 @@ function pickToEdit(id) {
   $("sheet").hidden = true;
   editMode.message = "";
   yard.select(id);
+  if (id && isStructureEdit(id)) yard.focus(id); // bring the arch into view above its controls
   drawEditBar();
   syncHash();
 }
@@ -364,9 +390,10 @@ function drawEditBar() {
   if (!editMode.on) return;
   const access = editAccess("edit the yard");
   const last = undoStack.at(-1);
-  const p = state.selectedId && byId.get(state.selectedId);
+  const arch = state.selectedId && isStructureEdit(state.selectedId) ? archById(state.selectedId) : null;
+  const p = !arch && state.selectedId && byId.get(state.selectedId);
   const sp = p && garden.species.get(p.speciesId);
-  const view = !access?.can ? "note" : editMode.step !== "idle" ? editMode.step : p && !state.card ? "plant" : "idle";
+  const view = !access?.can ? "note" : editMode.step !== "idle" ? editMode.step : arch ? "arch" : p && !state.card ? "plant" : "idle";
   if (yardEditing !== (view !== "note")) {
     yardEditing = view !== "note";
     yard.setEditing(yardEditing);
@@ -378,6 +405,13 @@ function drawEditBar() {
     plant: p && {
       name: p.name, stems: p.stems ?? null, ...measured(p, sp), estimated: p.width == null && p.height == null,
       where: [sp?.commonName, garden.areaNames.get(p.area) || p.area].filter(Boolean).join(" · "),
+    },
+    arch,
+    // An arch's shape, size and direction: it changes in the yard as you slide, and is saved when you let go.
+    onArch: (change, done) => {
+      if (!done) return yard.setArches(archesNow().map((a) => (a.hitId === arch.hitId ? { ...a, ...change } : a)));
+      editMode.message = "";
+      saveArch(arch.hitId, change, change.shape ? "Undo shape" : change.turn != null ? "Undo turn" : "Undo resize");
     },
     focus: view === "adding" ? "#addKind" : null,
     onAdd: () => { editMode.step = "adding"; editMode.draft = { kind: "", name: "" }; editMode.message = ""; pickToEditQuietly(null); drawEditBar(); },
@@ -425,6 +459,13 @@ function cancelAdding() {
 }
 // A plant was dragged and let go somewhere new. Moving it into a different bed changes its bed too.
 function movedPlant(id, position) {
+  if (isStructureEdit(id)) {
+    editMode.message = "";
+    pickToEditQuietly(id);
+    saveArch(id, { position }, "Undo move");
+    drawEditBar();
+    return;
+  }
   const p = byId.get(id);
   if (!p) return;
   const values = { position };
@@ -459,7 +500,7 @@ function undoLast() {
   const fields = u.added ? Object.fromEntries(Object.keys(store.checks.edits[u.id] || {}).map((f) => [f, null])) : u.before;
   if (u.added && state.selectedId === u.id) pickToEditQuietly(null);
   store.change({ edits: { [u.id]: fields } });
-  if (!u.added && byId.has(u.id) && inYard(byId.get(u.id))) pickToEditQuietly(u.id);
+  if (!u.added && (isStructureEdit(u.id) || (byId.has(u.id) && inYard(byId.get(u.id))))) pickToEditQuietly(u.id);
   drawEditBar();
 }
 
@@ -469,7 +510,7 @@ const clearing = new Set();
 function clearOldEdits() {
   if (ON_MAC || !cloudReady || store.checks.status !== "saved") return;
   const edits = {};
-  for (const [id, field] of staleEdits(filePlants, store.checks.edits)) {
+  for (const [id, field] of [...staleEdits(filePlants, store.checks.edits), ...staleStructureEdits(fileStructures, store.checks.edits)]) {
     if (clearing.has(`${id}|${field}`)) continue;
     clearing.add(`${id}|${field}`);
     (edits[id] ??= {})[field] = null;
@@ -489,16 +530,18 @@ function closeSaveEdits() {
 }
 function drawSaveEdits() {
   renderSaveEdits($("savePanel"), {
-    rows: unsavedEdits(filePlants, store.checks.edits, garden.species), species: garden.species, areaNames: garden.areaNames, cloud: cloudReady, ...saving,
+    rows: unsavedRows(), species: garden.species, areaNames: garden.areaNames, cloud: cloudReady, ...saving,
     onSave: saveEditsIntoFiles, onClose: closeSaveEdits,
   });
 }
+// Every change not in the files yet: plants (plants.json), then arches (layout.json).
+const unsavedRows = () => [...unsavedEdits(filePlants, store.checks.edits, garden.species), ...unsavedStructureEdits(fileStructures, store.checks.edits)];
 async function saveEditsIntoFiles() {
-  const rows = unsavedEdits(filePlants, store.checks.edits, garden.species);
+  const rows = unsavedRows();
   const toFile = {};
   for (const r of rows) {
     if (r.field === "added") { if (!r.dropped) toFile[r.id] = { added: r.to }; }
-    else if (r.plant) (toFile[r.id] ??= {})[r.field] = r.to;
+    else if (r.plant || r.structure) (toFile[r.id] ??= {})[r.field] = r.to;
   }
   Object.assign(saving, { phase: "saving", message: "" });
   drawSaveEdits();
@@ -515,6 +558,7 @@ async function saveEditsIntoFiles() {
   const fresh = await loadGarden();
   filePlants = fresh.plants;
   fileById = new Map(filePlants.map((p) => [p.id, p]));
+  fileStructures = fresh.layout.structures;
   // Online, each change stays in Supabase marked "saved" until the website has the new file. With no garden
   // account, the file is all there is, so they're simply cleared.
   const at = new Date().toISOString(), change = {};
@@ -535,7 +579,7 @@ async function saveEditsIntoFiles() {
     if (had && r.field in had) {
       written++;
       (change[r.id] ??= {})[r.field] = cloudReady ? { v: r.to, at, saved: true, fileHad: had[r.field] ?? null } : null;
-    } else if (!r.plant) { cleared++; (change[r.id] ??= {})[r.field] = null; }
+    } else if (!r.plant && !r.structure) { cleared++; (change[r.id] ??= {})[r.field] = null; }
   }
   editsDrawn = "";
   undoStack.length = 0; // what's in the file now can't be undone from here
@@ -562,7 +606,7 @@ function drawList() {
   renderList($("listPanel"), {
     plants: garden.plants, species: garden.species, areaNames: garden.areaNames, areaOrder,
     month: state.month, filters: state.filters,
-    unsaved: MAC_ITSELF ? unsavedEdits(filePlants, store.checks.edits, garden.species).length : 0, onSaveEdits: openSaveEdits,
+    unsaved: MAC_ITSELF ? unsavedRows().length : 0, onSaveEdits: openSaveEdits,
     onFilters: (f) => { state.filters = f; drawList(); },
     onPick: (id) => { closeList(); if (editMode.on) setEditing(false); selectPlant(id, { focus: true }); },
     onShowInYard: (ids) => { closeList(); setHighlight(ids, describeFilters(state.filters), filterColor(state.filters)); },
