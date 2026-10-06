@@ -19,6 +19,8 @@ If the app ever shows an older version after an update, pull down on the page (o
 
 The online copy comes from this folder: it's uploaded to GitHub, which publishes it as a website. After you change something here (a plant name in `data/`, say), ask Claude to "publish the garden", and the website updates about a minute later.
 
+Before publishing, Claude runs `node stamp-version.mjs`. It gives the app's files a new version tag in `index.html` whenever any of them changed, so phones and computers fetch all the new files together instead of mixing new ones with old ones they kept from before (which can stop the app from starting). There's nothing for you to do: `tests/version.test.mjs` fails until it's been run. If a phone does open a copy kept from just before a publish, the app reloads itself once to pick up the new version.
+
 ### Costs and privacy
 
 GitHub and Supabase are both free at this size. The website is public like any web page: anyone with the link can see the yard and plants, but only the two of you can sign in, check things off and change plants. Changes made in the app (renames, confirmed IDs, finished plants, and plants added, moved, resized or removed) only show when you're signed in; the public site shows what's in `data/plants.json`. Your original photos and videos, and `NEXT-STEPS.md`, stay on this Mac and are never uploaded (the list is in `.gitignore`).
@@ -88,10 +90,11 @@ They can then sign in on their phone. An account that hasn't been added sees a n
 | `vendor/three/` | three.js, the free 3D library the app uses (MIT license) |
 | `Source/` | Your original photos, videos and reference files. The app never changes these |
 | `Start Garden.command` | Double-click to run the app |
+| `stamp-version.mjs` | Puts the app's version tag into `index.html` before publishing (see above) |
 | `serve.py` | The tiny web server that `Start Garden.command` runs. It makes browsers check for updated files so you never get a stale version. It also does **Save app edits into files**, and with no garden account connected, it saves check-offs on the Mac |
 | `supabase/setup.sql` | The setup for your garden in Supabase: who shares it, where check-offs and plant changes are stored, and the rules that keep them private. Safe to run again |
 | `.gitignore` | The list of what stays on this Mac and is never uploaded |
-| `tests/` | Automatic checks Claude runs after changes (`node tests/tasks.test.mjs`, and the same for `store`, `cloud`, `edits` and `serve`) |
+| `tests/` | Automatic checks Claude runs after changes (`node tests/tasks.test.mjs`, and the same for `store`, `cloud`, `edits`, `serve`, `shapes` and `version`) |
 | `NEXT-STEPS.md` | Your plan and ready-to-paste prompts for future Claude sessions. Stays on this Mac |
 
 After editing a file in `data/`, refresh your Mac copy to see it. The online copy updates once it's published.
