@@ -29,6 +29,14 @@ const LEAF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-1
 const BUG = `<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="14" rx="5" ry="6"/><path d="M12 8V20M9 6l-2-2M15 6l2-2M7 12H3M7 16l-3 2M17 12h4M17 16l3 2"/></svg>`;
 const SPARK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/></svg>`;
 
+// A photo as a file the phone's share sheet can hand to the Claude app (or save to the photo library), or null
+// where sharing files isn't possible (most computers).
+function shareable(blob) {
+  if (!blob || !navigator.canShare) return null;
+  const file = new File([blob], "garden-photo.jpg", { type: "image/jpeg" });
+  try { return navigator.canShare({ files: [file] }) ? file : null; } catch { return null; }
+}
+
 // Copies text, with the browser's clipboard where it's allowed, or the old way.
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch { /* not allowed here */ }
@@ -86,20 +94,30 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
   const plantName = (id) => garden().plants.find((p) => p.id === id)?.name || "";
 
   // ---------- the prompt for a check ----------
-  async function promptFor(c) {
+  // Made straight away (no waiting), so it can be copied in the same tap as the button: phones only allow
+  // copying during a tap. It uses the plant's notes as already loaded; warmNotes() loads them ahead.
+  function promptFor(c) {
     const g = garden();
     const plant = c.plantId ? g.plants.find((p) => p.id === c.plantId) : null;
-    let log = [];
-    if (plant && notes) {
-      await notes.load(plant.id).catch(() => {});
-      log = notes.notesFor(plant.id);
-    }
+    const log = plant && notes ? notes.notesFor(plant.id) : [];
     const kinds = c.kind === "bug" ? [...new Set(g.plants.filter(g.inYard).map((p) => g.species.get(p.speciesId)?.commonName).filter(Boolean))].sort() : [];
     const context = gardenContext({
       today: today(), site: g.site, plant, species: plant && g.species.get(plant.speciesId),
       areaName: plant ? g.areaNames.get(plant.area) || plant.area : "", notes: log, kinds,
     });
     return claudePrompt({ kind: c.kind, id: c.id, plantId: plant ? plant.id : null, note: c.note, context });
+  }
+
+  const warmNotes = (plantId) => { if (plantId && notes) notes.load(plantId).catch(() => {}); };
+  // Photos of waiting checks, ready to share again (sharing has to start in the tap, with the file at hand).
+  const photoFiles = new Map(); // check id -> File
+  function readyToShare(c) {
+    if (!c.photo || photoFiles.has(c.id)) return;
+    photoFiles.set(c.id, null);
+    backend.photo(c.photo).then((url) => fetch(url)).then((r) => r.blob()).then((blob) => {
+      photoFiles.set(c.id, shareable(blob));
+      draw();
+    }).catch(() => photoFiles.delete(c.id));
   }
 
   // ---------- starting a check ----------
@@ -126,6 +144,10 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
     const id = newId();
     const c = { id, kind: which, plantId: s.plantId || null, date: today(), note: s.note.trim() };
     if (s.pic) Object.assign(c, { photo: `${id}.jpg`, w: s.pic.w, h: s.pic.h, bytes: s.pic.photo.size + s.pic.thumb.size });
+    // The prompt is copied now, during the tap on Next, so it's ready to paste whichever way it reaches Claude.
+    s.prompt = promptFor(c);
+    s.copied = false;
+    copyText(s.prompt).then((ok) => { s.copied = ok; });
     Object.assign(s, { phase: "saving", error: "" });
     draw();
     try {
@@ -136,7 +158,6 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
       }
       data.checks = [saved, ...data.checks.filter((x) => x.id !== saved.id)];
       s.check = saved;
-      s.prompt = await promptFor(saved);
       s.phase = "ready";
     } catch (err) {
       Object.assign(s, { phase: "idle", error: `The check wasn't saved. ${why(err)}` });
@@ -230,16 +251,28 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
         <div class="formbtns"><button type="button" class="btn" data-show="${esc(done.id)}">See the answer</button><button type="button" class="linkbtn" data-new="${which}">Check another</button></div></div>`;
     }
     const links = claudeLinks(s.prompt);
-    return `<div class="claudestep">
-      <p class="stitle">2. Ask Claude</p>
+    const file = s.pic && shareable(s.pic.photo);
+    // With a photo on a phone: the share sheet sends the photo itself to the Claude app. Otherwise the link opens
+    // Claude with the prompt filled in, and the photo is attached there.
+    const how = file ? `
       <ol class="steps">
-        <li>Tap <b>Open Claude</b>. The prompt is copied, and it may already be filled in.</li>
-        <li>If it isn't, paste it. Attach the ${s.pic ? "same " : ""}photo and send.</li>
+        <li>Tap <b>Send photo to Claude</b> and pick <b>Claude</b> in the share sheet. (To keep the photo, pick <b>Save Image</b> there first.)</li>
+        <li>If the message is empty, paste: the prompt is copied. Send it.</li>
+        <li>Come back here. The answer shows up once Claude has saved it.</li>
+      </ol>
+      <div class="formbtns"><button type="button" class="btn" data-share="${which}">${SPARK}Send photo to Claude</button>
+        <button type="button" class="linkbtn" data-copy="${which}">${s.copied ? "Prompt copied ✓" : "Copy the prompt"}</button></div>
+      <p class="small">Or <a href="${esc(links.app)}" data-claude="${which}">open Claude with the prompt filled in</a> and attach the photo there (it needs to be in your photo library).</p>` : `
+      <ol class="steps">
+        <li>Tap <b>Open Claude</b>. The prompt is filled in, or copied to paste.</li>
+        <li>${s.pic ? "Attach the same photo" : "Attach a photo"} and send.</li>
         <li>Come back here. The answer shows up once Claude has saved it.</li>
       </ol>
       <div class="formbtns"><a class="btn" href="${esc(links.app)}" data-claude="${which}">${SPARK}Open Claude</a>
-        <button type="button" class="linkbtn" data-copy="${which}">${s.copied ? "Copied ✓" : "Copy the prompt"}</button></div>
-      <p class="small">No Claude app on this device? <a href="${esc(links.web)}" target="_blank" rel="noopener" data-claude="${which}">Open Claude in the browser</a>.</p>
+        <button type="button" class="linkbtn" data-copy="${which}">${s.copied ? "Prompt copied ✓" : "Copy the prompt"}</button></div>
+      <p class="small">No Claude app on this device? <a href="${esc(links.web)}" target="_blank" rel="noopener" data-claude="${which}">Open Claude in the browser</a>.</p>`;
+    return `<div class="claudestep">
+      <p class="stitle">2. Ask Claude</p>${how}
       <details class="promptbox"><summary>See the prompt</summary><pre>${esc(s.prompt)}</pre></details>
       <div class="formbtns"><button type="button" class="linkbtn" data-new="${which}">Start a different check</button></div>
     </div>`;
@@ -261,8 +294,7 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
       ${open ? `<div class="checkbody">
         ${c.note ? `<p class="small"><b>Your note:</b> ${esc(c.note)}</p>` : ""}
         ${c.photo ? `<button type="button" class="notepic" data-pic="${esc(c.id)}" aria-label="Open the photo"${c.w && c.h ? ` style="aspect-ratio:${c.w} / ${c.h}"` : ""}><img alt="" data-thumb="${esc(c.photo)}"></button>` : ""}
-        ${waiting ? `<p class="small">Send the photo to Claude with this check's prompt. The answer fills in here once Claude saves it.</p>
-          <div class="formbtns"><a class="btn" href="#" data-reclaude="${esc(c.id)}">${SPARK}Open Claude again</a></div>`
+        ${waiting ? waitingHtml(c)
           : `<div class="report">${c.kind === "plant" ? plantReportHtml(c.report) : bugReportHtml(c.report)}</div>`}
         <label class="growson small">${c.kind === "plant" ? "Plant" : "Found on"} <select data-move="${esc(c.id)}">${plantOptions(c.plantId || "", "No plant")}</select></label>
         ${view.asking === c.id ? `<div class="noteask" role="group" aria-label="Delete this check?"><span>Delete this check${c.photo ? " and its photo" : ""}?</span>
@@ -271,6 +303,15 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
         ${view.problem[c.id] ? `<p class="notewait" role="status">${esc(view.problem[c.id])}</p>` : ""}
       </div>` : ""}
     </li>`;
+  }
+
+  // A check still waiting: send it to Claude again, with its photo where the phone can share it.
+  function waitingHtml(c) {
+    readyToShare(c);
+    const file = photoFiles.get(c.id);
+    return `<p class="small">Send the photo to Claude with this check's prompt. The answer fills in here once Claude saves it.</p>
+      <div class="formbtns">${file ? `<button type="button" class="btn" data-reshare="${esc(c.id)}">${SPARK}Send photo to Claude</button>` : ""}
+        <a class="${file ? "linkbtn" : "btn"}" href="${esc(claudeLinks(promptFor(c)).app)}" data-reclaude="${esc(c.id)}">${file ? "Open Claude" : `${SPARK}Open Claude again`}</a></div>`;
   }
 
   const loadNote = () => (data.status && !["saved", "loading"].includes(data.status) && !data.checks.length ? `<p class="small">${esc(WHY[data.status] || WHY.offline)}</p>` : "");
@@ -371,7 +412,7 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
     root.querySelector(".close")?.addEventListener("click", close);
     root.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => { st.tab = b.dataset.tab; draw(); }));
     root.querySelectorAll("[data-photo]").forEach((i) => i.addEventListener("change", (e) => pickPhoto(i.dataset.photo, e.target.files?.[0])));
-    root.querySelectorAll("[data-plant]").forEach((sel) => (sel.onchange = () => { st[sel.dataset.plant].plantId = sel.value; }));
+    root.querySelectorAll("[data-plant]").forEach((sel) => (sel.onchange = () => { st[sel.dataset.plant].plantId = sel.value; warmNotes(sel.value); }));
     root.querySelectorAll("[data-note]").forEach((t) => (t.oninput = () => { st[t.dataset.note].note = t.value; }));
     root.querySelectorAll("[data-form]").forEach((f) => (f.onsubmit = (e) => { e.preventDefault(); start(f.dataset.form); }));
     // Opening Claude copies the prompt on the way (the link itself opens the app).
@@ -402,14 +443,22 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
       view.expanded.has(id) ? view.expanded.delete(id) : view.expanded.add(id);
       draw();
     }));
-    // A waiting check can be sent to Claude again: its prompt is made again and copied.
-    root.querySelectorAll("[data-reclaude]").forEach((a) => (a.onclick = async (e) => {
-      e.preventDefault();
+    // The share sheet, with the photo and the prompt (the prompt is also on the clipboard, for apps that only
+    // take the photo). It has to start right in the tap.
+    const share = (file, text) => navigator.share({ files: [file], text }).catch(() => { /* closed without picking */ });
+    root.querySelectorAll("[data-share]").forEach((b) => (b.onclick = () => {
+      const s = st[b.dataset.share];
+      const file = s.pic && shareable(s.pic.photo);
+      if (file) share(file, s.prompt);
+    }));
+    // A waiting check can be sent to Claude again: its prompt is made again (and copied on the way).
+    root.querySelectorAll("[data-reshare]").forEach((b) => (b.onclick = () => {
+      const c = data.checks.find((x) => x.id === b.dataset.reshare), file = photoFiles.get(b.dataset.reshare);
+      if (c && file) share(file, promptFor(c));
+    }));
+    root.querySelectorAll("[data-reclaude]").forEach((a) => a.addEventListener("click", () => {
       const c = data.checks.find((x) => x.id === a.dataset.reclaude);
-      if (!c) return;
-      const prompt = await promptFor(c);
-      await copyText(prompt);
-      location.href = claudeLinks(prompt).app;
+      if (c) copyText(promptFor(c));
     }));
     root.querySelectorAll("[data-filter]").forEach((b) => (b.onclick = () => { view.filter = b.dataset.filter; draw(); }));
     root.querySelectorAll("[data-bugfilter]").forEach((b) => (b.onclick = () => { view.bugFilter = b.dataset.bugfilter; draw(); }));
@@ -474,6 +523,7 @@ export function createChecks({ backend, notes, today, garden, access, onPlant, o
       st[tab].plantId = plantId;
     }
     if (group) view.open = group;
+    warmNotes(st[tab].plantId);
     panel = document.getElementById("checksPanel");
     panel.hidden = false;
     if (access()?.can) load(true);
