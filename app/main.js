@@ -4,8 +4,9 @@ import { loadGarden, MONTH_NAMES, esc, areaAt, seasonOverride } from "./data.js"
 import { createYard } from "./scene.js";
 import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
-import { cloudReady, cloudBackend, notesBackend, thumbOf, account, signIn, signOut } from "./cloud.js";
+import { cloudReady, cloudBackend, notesBackend, checksBackend, thumbOf, account, signIn, signOut } from "./cloud.js";
 import { createNotes } from "./notes.js";
+import { createChecks } from "./checks.js";
 import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant, newPlant, newPlantId,
   STRUCTURE, isStructureEdit, structureBase, withStructureEdits, unsavedStructureEdits, staleStructureEdits } from "./edits.js";
 import { renderTasks } from "./tasklist.js";
@@ -42,6 +43,16 @@ const withSeasons = (plants) => plants.map((p) => (p.season ? { ...p, seasonNow:
 let garden, yard, byId, areaOrder, store, bloomBar;
 // Each plant's notes and photos, kept in the shared garden on Supabase (none without a garden account).
 const notes = cloudReady ? createNotes({ backend: notesBackend, thumbOf, today: () => ymd(today()), onPhoto: openLightbox }) : null;
+// Photo checks answered in the Claude app (Plant health, Friend or foe): the health timeline and the bug
+// catalog, also in the shared garden.
+const checks = cloudReady ? createChecks({
+  backend: checksBackend, notes, today: () => ymd(today()), onPhoto: openLightbox,
+  garden: () => ({ plants: garden.plants.filter((p) => !p.removed), inYard, species: garden.species, areaNames: garden.areaNames, areaOrder, site: garden.layout.site || {} }),
+  access: () => editAccess("use photo checks"),
+  onPlant: (id) => { if (editMode.on) setEditing(false); selectPlant(id, { focus: true }); },
+  onShowInYard: (ids, label, color) => setHighlight(ids, label, color),
+  onClose: () => $("checksBtn").focus({ preventScroll: true }),
+}) : null;
 // data/plants.json as it is, before the plant changes made in the app (edits.js) go on top, and layout.json's
 // structures (the arch trellises can be changed in Edit mode too).
 let filePlants, fileById, fileStructures;
@@ -85,6 +96,7 @@ async function start() {
     if (document.visibilityState !== "visible") return;
     store.refresh();
     notes?.refresh();
+    checks?.refresh();
   });
 
   let has3d = true;
@@ -126,10 +138,13 @@ async function start() {
   }).observe($("editBar"));
   $("listBtn").onclick = openList;
   $("tasksBtn").onclick = openTasks;
+  $("checksBtn").hidden = !checks;
+  $("checksBtn").onclick = () => openChecks();
   updateTaskCount();
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || !$("lightbox").hidden) return;
     if (!$("savePanel").hidden) closeSaveEdits();
+    else if (checks?.isOpen) checks.close();
     else if (!$("viewsMenu").hidden) { showViews(false); $("viewsBtn").focus(); }
     else if (!$("tasksPanel").hidden) closeTasks();
     else if (!$("listPanel").hidden) closeList();
@@ -264,6 +279,7 @@ function showCard() {
     areaName: garden.areaNames.get(p.area) || p.area, edit: editControls(p),
     onClose: closeCard, onPhoto: openLightbox,
     onNotes: notes && ((el) => notes.draw(el, p.id, editAccess("see and add notes and photos"))),
+    onChecks: checks && ((el) => checks.drawCard(el, p, editAccess("use photo checks"))),
   });
 }
 function closeCard() {
@@ -604,9 +620,17 @@ async function saveEditsIntoFiles() {
   drawSaveEdits();
 }
 
+// ---------- photo checks ----------
+function openChecks(options) {
+  closeTasks({ restoreFocus: false });
+  $("listPanel").hidden = true;
+  checks.open(options);
+}
+
 // ---------- list ----------
 function openList() {
   closeTasks({ restoreFocus: false });
+  checks?.close();
   drawList();
   $("listPanel").querySelector("#listSearch")?.focus({ preventScroll: true });
 }
@@ -631,6 +655,7 @@ const weekFor = (monday) => buildWeek(garden, { weekStart: monday, frosts: store
 
 function openTasks() {
   $("listPanel").hidden = true;
+  checks?.close();
   state.taskWeek = mondayOf(today());
   drawTasks();
   store.refresh();
@@ -655,7 +680,7 @@ function drawTasks() {
       await signIn(email, password); // shows its own message if it doesn't work
       await store.refresh();
     },
-    onSignOut: () => { signOut(); store.forget(); notes?.forget(); },
+    onSignOut: () => { signOut(); store.forget(); notes?.forget(); checks?.forget(); },
     areaNames: garden.areaNames, areaOrder,
     onToggle: (keys, on) => {
       // Dated no earlier than the week shown, so a job ticked off ahead of time stays visible in that week.

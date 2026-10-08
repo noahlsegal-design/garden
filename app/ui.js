@@ -1,5 +1,6 @@
 // Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): month buttons, the plant card
-// (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js), the all-plants
+// (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js, its photo checks by
+// checks.js), the all-plants
 // list, "Save app edits into files", and the photo viewer.
 
 import {
@@ -116,7 +117,7 @@ function seasonHtml(p, sp, month, edit) {
       ${on ? `<p class="small">Tap it again to go back to the calendar.</p>` : ""}`;
 }
 
-export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes }) {
+export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes, onChecks }) {
   // Keep what's typed in an open form, and the scroll position, when the same card redraws.
   const same = lastCardId === p.id;
   if (!same) editing = null;
@@ -162,6 +163,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
         : p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
     </div>
 
+    <section class="notes" id="cardChecks" aria-labelledby="checksCardTitle" hidden></section>
     <section class="notes" id="cardNotes" aria-labelledby="notesTitle" hidden></section>
 
     ${unsure ? `<p class="small" style="margin-top:10px">Care shown is for the best guess. It depends on confirming the ID${p.alsoPossible?.length ? `. It could also be: ${esc(p.alsoPossible.join("; "))}` : ""}.</p>` : ""}
@@ -204,6 +206,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     </details>
   `;
   sheet.hidden = false;
+  onChecks?.(sheet.querySelector("#cardChecks"));
   onNotes?.(sheet.querySelector("#cardNotes"));
   sheet.scrollTop = scroll;
   sheet.querySelector(".close").onclick = onClose;
@@ -211,7 +214,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
   if (!edit?.can) return;
 
   const redraw = (focus) => {
-    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes });
+    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes, onChecks });
     if (focus) sheet.querySelector(focus)?.focus();
   };
   const name = sheet.querySelector("#editName"), kind = sheet.querySelector("#editKind");

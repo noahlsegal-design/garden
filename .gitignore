@@ -17,3 +17,6 @@ data/checkoffs.json
 # Mac and Python clutter.
 .DS_Store
 __pycache__/
+
+# The skill bundles to upload to claude.ai (rebuilt from skills/*/SKILL.md).
+skills/*.zip

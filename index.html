@@ -20,26 +20,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap" rel="stylesheet">
 <!-- The ?v=… on each app file is the app's version, so after a publish browsers fetch all the new files together
      instead of mixing old and new. Don't edit it by hand: "node stamp-version.mjs" updates it. -->
-<link rel="stylesheet" href="app/styles.css?v=542937b97f">
+<link rel="stylesheet" href="app/styles.css?v=617a095610">
 <script type="importmap">
 { "imports": {
     "three": "./vendor/three/three.module.js",
     "three/addons/": "./vendor/three/addons/",
-    "./app/arches.js": "./app/arches.js?v=542937b97f",
-    "./app/bloom.js": "./app/bloom.js?v=542937b97f",
-    "./app/cloud.js": "./app/cloud.js?v=542937b97f",
-    "./app/config.js": "./app/config.js?v=542937b97f",
-    "./app/data.js": "./app/data.js?v=542937b97f",
-    "./app/editbar.js": "./app/editbar.js?v=542937b97f",
-    "./app/edits.js": "./app/edits.js?v=542937b97f",
-    "./app/look.js": "./app/look.js?v=542937b97f",
-    "./app/main.js": "./app/main.js?v=542937b97f",
-    "./app/notes.js": "./app/notes.js?v=542937b97f",
-    "./app/scene.js": "./app/scene.js?v=542937b97f",
-    "./app/shapes.js": "./app/shapes.js?v=542937b97f",
-    "./app/tasklist.js": "./app/tasklist.js?v=542937b97f",
-    "./app/tasks.js": "./app/tasks.js?v=542937b97f",
-    "./app/ui.js": "./app/ui.js?v=542937b97f"
+    "./app/arches.js": "./app/arches.js?v=617a095610",
+    "./app/bloom.js": "./app/bloom.js?v=617a095610",
+    "./app/checks.js": "./app/checks.js?v=617a095610",
+    "./app/cloud.js": "./app/cloud.js?v=617a095610",
+    "./app/config.js": "./app/config.js?v=617a095610",
+    "./app/data.js": "./app/data.js?v=617a095610",
+    "./app/editbar.js": "./app/editbar.js?v=617a095610",
+    "./app/edits.js": "./app/edits.js?v=617a095610",
+    "./app/look.js": "./app/look.js?v=617a095610",
+    "./app/main.js": "./app/main.js?v=617a095610",
+    "./app/notes.js": "./app/notes.js?v=617a095610",
+    "./app/reports.js": "./app/reports.js?v=617a095610",
+    "./app/scene.js": "./app/scene.js?v=617a095610",
+    "./app/shapes.js": "./app/shapes.js?v=617a095610",
+    "./app/tasklist.js": "./app/tasklist.js?v=617a095610",
+    "./app/tasks.js": "./app/tasks.js?v=617a095610",
+    "./app/ui.js": "./app/ui.js?v=617a095610"
 } }
 </script>
 </head>
@@ -50,6 +52,7 @@
     <div class="topbtns">
       <button class="ghostbtn primary" id="tasksBtn" aria-haspopup="dialog">This week<span class="count" id="tasksCount" hidden></span></button>
       <button class="ghostbtn" id="listBtn" aria-haspopup="dialog">All plants</button>
+      <button class="ghostbtn" id="checksBtn" aria-haspopup="dialog" hidden>Photo check</button>
     </div>
   </div>
   <nav class="months" id="months" aria-label="Month"></nav>
@@ -83,6 +86,7 @@
 
 <section class="listpanel" id="listPanel" role="dialog" aria-modal="true" aria-labelledby="listTitle" hidden></section>
 <section class="listpanel taskpanel" id="tasksPanel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle" hidden></section>
+<section class="listpanel" id="checksPanel" role="dialog" aria-modal="true" aria-labelledby="checksTitle" hidden></section>
 <section class="listpanel" id="savePanel" role="dialog" aria-modal="true" aria-labelledby="saveTitle" hidden></section>
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo" hidden></div>
 

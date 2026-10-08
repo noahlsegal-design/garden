@@ -393,6 +393,87 @@ details[open] > summary::after{content:"–"}
 .sdate{font-weight:700; font-size:.9rem; color:var(--moss)}
 .sbody{display:grid; gap:4px; font-size:.9rem; line-height:1.4}
 
+/* ---------- photo checks: Plant health, Friend or foe, the bug catalog (checks.js, reports.js) ---------- */
+.checks .lead{margin:14px 0 4px; font-size:.95rem; line-height:1.5}
+.checktabs .toggle{display:inline-flex; align-items:center; gap:6px; font-size:.9rem; padding:7px 13px}
+.checktabs svg, .checkbtns svg, .checks .btn svg, .checkbody .btn svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round}
+.checkbtns svg{stroke:var(--moss)}
+.checkform{border-left-color:var(--bloom)}
+.checkform textarea{font:inherit; font-size:1rem; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); resize:vertical}
+.checkform select:disabled, .checkform textarea:disabled{opacity:.6}
+.checks .btn, .checkbody .btn{display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+.checkpick{flex-wrap:wrap}
+.checkpick img{height:120px; max-width:180px}
+.checkpick .pill{min-height:44px; cursor:pointer}
+.checkpick .pill.primary svg{stroke:currentColor}
+.checkpick label.linkbtn{cursor:pointer}
+.checkpick label:focus-within{outline:2px solid var(--bloom); outline-offset:2px}
+.checkform > .stitle, .claudestep > .stitle{margin:0; font-weight:700; font-size:1rem}
+.claudestep{margin-top:12px; padding:12px 14px; border-radius:12px; background:var(--chip); border-left:4px solid var(--bloom); display:grid; gap:6px}
+.claudestep.done{border-left-color:var(--ok); background:var(--ok-bg)}
+.claudestep p{margin:0; font-size:.93rem; line-height:1.45}
+.claudestep .formbtns .btn{margin-top:0}
+.steps{margin:2px 0 4px; padding-left:20px; font-size:.93rem; line-height:1.45}
+.steps li + li{margin-top:4px}
+.promptbox summary{font-size:.85rem; font-weight:700; color:var(--moss); min-height:32px; cursor:pointer}
+.promptbox pre{margin:4px 0 0; padding:10px; border-radius:8px; background:var(--paper); font-size:.78rem; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere; max-height:240px; overflow:auto}
+.checkitem.waiting .checkline b{color:var(--muted)}
+.buglist .checkline[aria-expanded="true"]{border-bottom-color:transparent}
+.checkbody{padding:10px 2px 14px; border-bottom:1px solid var(--line); display:grid; gap:8px}
+.checkbody > p.small{margin:0}
+.checkbody .notepic{margin-top:0}
+.checkbody .formbtns .btn{margin-top:0}
+.checkbody .growson{margin-top:0}
+.checkbody > .linkbtn{justify-self:start}
+.checks > .stitle, .buggroup .stitle, .notes .buglist + .stitle{margin:14px 0 4px; font-weight:700; font-size:.9rem}
+.checkcost{margin:22px 0 0}
+.checkbtns{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+
+/* An answer from Claude, in the skill's sections */
+.report{display:grid; gap:4px}
+.rsec{padding:12px 14px; border-radius:12px; background:var(--chip)}
+.rsec + .rsec{margin-top:4px}
+.rsec h4{margin:0 0 6px; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700}
+.rsec p{margin:6px 0 0; font-size:.95rem; line-height:1.5}
+.rsec h4 + p, .rsec .rid:first-child, .rsec .badge + .rid{margin-top:0}
+.rsec ul{margin:6px 0 0; padding-left:20px; font-size:.95rem; line-height:1.5}
+.rsec li + li{margin-top:4px}
+.rid{font-size:1.05rem}
+.rid i{color:var(--muted); font-size:.92rem; margin-left:2px}
+.rhealthy{color:var(--ok); font-weight:600}
+.rdx + .rdx, .rtx + .rtx{margin-top:12px; padding-top:10px; border-top:1px dashed var(--line)}
+.rdx p:first-child{margin-top:0}
+.rtx .stitle{margin:0; font-weight:700}
+.rchem{margin-top:10px; padding:8px 10px; border-radius:10px; background:var(--paper); border-left:3px solid var(--warn)}
+.rchem p:first-child{margin-top:0}
+.rsafety{color:var(--warn)}
+.rnote{margin:6px 2px 0; font-size:.92rem; line-height:1.5}
+.rtrust{margin:6px 2px 0}
+.rtrust .conf{margin-top:4px}
+.rtrust p.small{margin:6px 0 0}
+.rbughead .badge.verdict{margin-bottom:8px; font-size:1rem; padding:6px 14px}
+.badge.verdict{font-size:.82rem; padding:4px 10px}
+.badge.verdict:not(.safe):not(.toxic){background:var(--paper); border:1px solid var(--line)}
+
+/* The bug catalog */
+.buglist{list-style:none; margin:8px 0 0; padding:0}
+.buglist .checkline{width:100%; text-align:left; border:0; border-bottom:1px solid var(--line); background:transparent; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:4px 12px; align-items:center; padding:10px 2px; min-height:56px}
+.bugthumb{position:relative; width:52px; height:52px; border-radius:10px; overflow:hidden; background:var(--chip); display:grid; place-items:center}
+.bugthumb svg{width:24px; height:24px; fill:none; stroke:var(--muted); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.bugthumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.bugthumb img:not([src]){visibility:hidden}
+.bugname{display:grid; gap:2px; line-height:1.3; font-size:.98rem}
+.bugname i{color:var(--muted); font-size:.85rem}
+.bugname .small{font-size:.8rem}
+.buggroup{padding-top:6px}
+.buggroup > .linkbtn{margin-bottom:6px}
+.buggroup > .stitle, .bugplants .stitle{margin:16px 0 6px; font-weight:700}
+.bugplants .chips{margin-bottom:4px}
+.bugplants .pill{min-height:36px; padding:4px 12px}
+.checkbody .growson{font-size:.85rem; flex-wrap:nowrap}
+.checkbody .growson select{flex:1; min-width:0}
+.notes .stitle{margin:12px 0 0; font-weight:700; font-size:.9rem}
+
 /* ---------- photo lightbox ---------- */
 .lightbox{position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.92); display:grid; grid-template-rows:auto 1fr auto; color:#fff}
 .lightbox[hidden]{display:none}

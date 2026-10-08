@@ -1,5 +1,6 @@
 // Talks to Supabase, the online database that keeps the shared garden once the app is on the internet: signing
-// in, and loading and saving check-offs, first-frost dates, plant changes, and each plant's notes and photos.
+// in, and loading and saving check-offs, first-frost dates, plant changes, each plant's notes and photos, and the
+// photo checks (health checks and bugs) that Claude saves from the Claude app.
 // Everyone listed as a garden member shares the same ones. It uses Supabase's plain web addresses, so no extra library is needed. The tables and
 // security rules are in supabase/setup.sql.
 
@@ -236,14 +237,23 @@ async function listNotes(plantId) {
   return rows.map((r) => noteOf(r, names));
 }
 
+// Sends a photo and its small copy to the private folder. Safe to repeat: one already there is left as it is.
+async function sendPhoto(name, photo, thumb) {
+  const headers = { "Content-Type": "image/jpeg", "cache-control": "max-age=31536000", "x-upsert": "false" };
+  await storage(`object/${BUCKET}/${thumbOf(name)}`, { method: "POST", body: thumb, headers });
+  await storage(`object/${BUCKET}/${name}`, { method: "POST", body: photo, headers });
+}
+// Deletes a photo and its small copy.
+async function deletePhoto(name) {
+  const paths = [name, thumbOf(name)];
+  await storage(`object/${BUCKET}`, { method: "DELETE", body: JSON.stringify({ prefixes: paths }), headers: { "Content-Type": "application/json" } });
+  dropCached(paths);
+}
+
 // Saves a note, sending its photo and small copy first. Safe to repeat: a photo or note that already got there
 // last time is left as it is.
 async function addNote(note, photo, thumb) {
-  if (photo) {
-    const headers = { "Content-Type": "image/jpeg", "cache-control": "max-age=31536000", "x-upsert": "false" };
-    await storage(`object/${BUCKET}/${thumbOf(note.photo)}`, { method: "POST", body: thumb, headers });
-    await storage(`object/${BUCKET}/${note.photo}`, { method: "POST", body: photo, headers });
-  }
+  if (photo) await sendPhoto(note.photo, photo, thumb);
   const row = {
     id: note.id, plant_id: note.plantId, noted_on: note.date, body: note.body, photo: note.photo,
     photo_w: note.w, photo_h: note.h, photo_bytes: note.bytes || 0,
@@ -255,11 +265,7 @@ async function addNote(note, photo, thumb) {
 
 // Deletes a note and its photos (the photos first, so none are ever left behind with no note).
 async function removeNote(note) {
-  if (note.photo) {
-    const paths = [note.photo, thumbOf(note.photo)];
-    await storage(`object/${BUCKET}`, { method: "DELETE", body: JSON.stringify({ prefixes: paths }), headers: { "Content-Type": "application/json" } });
-    dropCached(paths);
-  }
+  if (note.photo) await deletePhoto(note.photo);
   await rest(`plant_notes?id=${eq(note.id)}`, { method: "DELETE", prefer: "return=minimal" });
 }
 
@@ -299,13 +305,54 @@ function forgetPhotos() {
   globalThis.caches?.delete(PHOTO_CACHE).catch(() => {});
 }
 
-// How many photos the garden has and how much room they take, against the free plan's 1 GB.
+// How many photos the garden has and how much room they take, against the free plan's 1 GB: notes' photos and
+// the photo checks'.
 async function photoUse() {
   const rows = await all("plant_notes?select=photo_bytes&photo=not.is.null&order=id");
-  return { count: rows.length, bytes: rows.reduce((t, r) => t + (r.photo_bytes || 0), 0) };
+  const checks = await all("photo_checks?select=photo_bytes&photo=not.is.null&order=id").catch(() => []);
+  const both = [...rows, ...checks];
+  return { count: both.length, bytes: both.reduce((t, r) => t + (r.photo_bytes || 0), 0) };
 }
 
 // The name shown on your own notes.
 const myName = async () => (await peopleNames()).get(session?.user) || "";
 
 export const notesBackend = { list: listNotes, add: addNote, remove: removeNote, photo: photoAddress, keepPhoto, use: photoUse, me: myName };
+
+// ---------- photo checks: Plant health and Friend or foe ----------
+// The app saves a check as "waiting" (with its photo), then you send the photo to Claude in the Claude app. Your
+// Claude skill fills in the answer through the Supabase connector (private.record_check in setup.sql), and the
+// check becomes "done". kind is "plant" or "bug"; report is Claude's whole answer.
+const checkOf = (r, names) => ({
+  id: r.id, kind: r.kind, plantId: r.plant_id || null, date: r.checked_on, status: r.status, note: r.note || "",
+  report: r.report || null, photo: r.photo || null, w: r.photo_w || null, h: r.photo_h || null, bytes: r.photo_bytes || 0,
+  at: r.created_at, doneAt: r.done_at || null, by: names.get(r.user_id) || "", mine: r.user_id === session?.user,
+});
+// Every check, newest first.
+async function listChecks() {
+  const rows = await all("photo_checks?select=*&order=checked_on.desc,created_at.desc");
+  const names = await peopleNames();
+  return rows.map((r) => checkOf(r, names));
+}
+// Saves a new check as waiting for Claude, its photo first. Safe to repeat.
+async function addCheck(c, photo, thumb) {
+  if (photo) await sendPhoto(c.photo, photo, thumb);
+  const row = {
+    id: c.id, kind: c.kind, plant_id: c.plantId || null, checked_on: c.date, note: c.note || "",
+    photo: c.photo || null, photo_w: c.w || null, photo_h: c.h || null, photo_bytes: c.bytes || 0,
+  };
+  await rest("photo_checks", { method: "POST", body: [row], prefer: "resolution=ignore-duplicates,return=minimal" });
+  const names = await peopleNames().catch(() => new Map());
+  return checkOf({ ...row, status: "waiting", user_id: session?.user, created_at: new Date().toISOString() }, names);
+}
+// Deletes a check and its photos.
+async function removeCheck(c) {
+  if (c.photo) await deletePhoto(c.photo);
+  await rest(`photo_checks?id=${eq(c.id)}`, { method: "DELETE", prefer: "return=minimal" });
+}
+// Moves a check to another plant, or to none.
+async function moveCheck(c, plantId) {
+  await rest(`photo_checks?id=${eq(c.id)}`, { method: "PATCH", body: { plant_id: plantId || null }, prefer: "return=minimal" });
+}
+
+export const checksBackend = { list: listChecks, add: addCheck, remove: removeCheck, move: moveCheck, photo: photoAddress, keepPhoto, use: photoUse };
