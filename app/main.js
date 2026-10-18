@@ -41,6 +41,7 @@ const inYard = (p) => !p.finished && !p.removed;
 // which the yard, the card and the list draw it by.
 const withSeasons = (plants) => plants.map((p) => (p.season ? { ...p, seasonNow: seasonOverride(p.season, today()) } : p));
 let garden, yard, byId, areaOrder, store, bloomBar;
+let blooms = []; // how many plants in the yard flower in each month, Jan..Dec
 // Each plant's notes and photos, kept in the shared garden on Supabase (none without a garden account).
 const notes = cloudReady ? createNotes({ backend: notesBackend, thumbOf, today: () => ymd(today()), onPhoto: openLightbox }) : null;
 // Photo checks answered in the Claude app (Plant health, Friend or foe): the health timeline and the bug
@@ -62,6 +63,8 @@ let kinds = []; // every kind of plant, for "Confirm ID": [id, name, still a pla
 const ON_MAC = servedByMac();
 // "Save app edits into files" writes into this Mac's files, so it's offered only in a browser on the Mac itself.
 const MAC_ITSELF = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+// Which screen the tab bar shows (today, calendar or plants), and whether Today has stepped aside for the Yard view.
+const nav = { screen: "today", yard: false };
 let playTimer = null; // set while the bloom timeline is playing
 let hintDone = false; // the how-to-move hint goes away once you've moved the view
 
@@ -103,10 +106,10 @@ async function start() {
   try {
     yard = createYard($("yard"), {
       layout: garden.layout, onMove: movedView, onDrop: movedPlant, onPlace: placePlant,
-      onPick: (id) => (editMode.on ? pickToEdit(id) : id ? selectPlant(id) : closeCard()),
+      onPick: (id) => (editMode.on ? pickToEdit(id) : id ? selectPlant(id) : tappedEmpty()),
     });
   } catch (err) {
-    $("status").innerHTML = `<div><p><b>3D view couldn't start on this device.</b></p><p>You can still browse everything with the <b>All plants</b> and <b>This week</b> buttons.</p><pre>${String(err.message).replace(/</g, "&lt;")}</pre></div>`;
+    $("status").innerHTML = `<div><p><b>3D view couldn't start on this device.</b></p><p>You can still browse everything on the <b>Plants</b> tab and in <b>This week</b>.</p><pre>${String(err.message).replace(/</g, "&lt;")}</pre></div>`;
     $("status").style.pointerEvents = "none";
     $("status").style.background = "transparent";
     has3d = false;
@@ -119,16 +122,18 @@ async function start() {
   editsDrawn = JSON.stringify({});
   if (has3d) $("status").hidden = true;
 
-  renderMonthsBar();
+  blooms = bloomCounts(growing, garden.species);
   bloomBar = createBloomBar($("bloomBar"), {
-    counts: bloomCounts(growing, garden.species),
+    counts: blooms,
     onScrub: (m) => { stopPlaying(); setBloom(true); setMonth(m); },
     onPlay: () => (playTimer ? stopPlaying() : playYear()),
     onOff: () => { stopPlaying(); setBloom(false); },
   });
   updateBloomBar();
+  drawMonths();
   updateHint();
   setUpMapButtons();
+  setUpScreens();
   $("editBtn").dataset.no3d = has3d ? "" : "1"; // dragging and placing plants need the 3D yard
   $("editBtn").onclick = () => setEditing(!editMode.on);
   updateEditButton();
@@ -136,7 +141,6 @@ async function start() {
   new ResizeObserver(() => {
     if (editMode.on) $("stage").style.setProperty("--bloombar", `${$("editBar").offsetHeight}px`);
   }).observe($("editBar"));
-  $("listBtn").onclick = openList;
   $("tasksBtn").onclick = openTasks;
   $("checksBtn").hidden = !checks;
   $("checksBtn").onclick = () => openChecks();
@@ -147,35 +151,96 @@ async function start() {
     else if (checks?.isOpen) checks.close();
     else if (!$("viewsMenu").hidden) { showViews(false); $("viewsBtn").focus(); }
     else if (!$("tasksPanel").hidden) closeTasks();
-    else if (!$("listPanel").hidden) closeList();
     else if (state.card) closeCard();
     else if (editMode.on && editMode.step !== "idle") cancelAdding();
     else if (editMode.on && state.selectedId) pickToEdit(null);
     else if (editMode.on) setEditing(false);
     else if (state.bloom) { stopPlaying(); setBloom(false); }
+    else if (nav.yard) setYardView(false);
   });
 
-  // Open straight to a plant (address ends in #plant=pb-05) or to This week (#tasks). Handy for bookmarks.
+  // Open straight to a plant (address ends in #plant=pb-05), to This week (#tasks), or to the Calendar or Plants
+  // screen (#calendar, #plants). Handy for bookmarks.
   const hash = new URLSearchParams(location.hash.slice(1));
   const fromHash = hash.get("plant");
   if (fromHash && byId.has(fromHash)) selectPlant(fromHash, { focus: true });
   else if (hash.has("tasks")) openTasks();
+  else if (hash.has("calendar")) showScreen("calendar");
+  else if (hash.has("plants")) showScreen("plants");
 }
 
 // Keeps the address in step with what's open, so a bookmark or refresh comes back to it.
 function syncHash() {
   const plant = state.selectedId && !isStructureEdit(state.selectedId) ? state.selectedId : null;
-  const h = !$("tasksPanel").hidden ? "#tasks" : plant ? `#plant=${encodeURIComponent(plant)}` : "";
+  const h = !$("tasksPanel").hidden ? "#tasks" : plant ? `#plant=${encodeURIComponent(plant)}` : nav.screen !== "today" ? `#${nav.screen}` : "";
   history.replaceState(null, "", location.pathname + location.search + h);
 }
 
-function renderMonthsBar() {
-  renderMonths($("months"), state.month, TODAY, (m) => { stopPlaying(); setMonth(m); });
+// ---------- screens: Today, Calendar and Plants (the tab bar), and the Yard view ----------
+function setUpScreens() {
+  $("tabBar").onclick = (e) => {
+    const tab = e.target.closest("[data-tab]");
+    if (tab) showScreen(tab.dataset.tab);
+  };
+  $("searchBtn").onclick = () => {
+    showScreen("plants");
+    $("listSearch")?.focus({ preventScroll: true });
+  };
+  $("yardBack").onclick = () => setYardView(false);
+  $("todayDate").textContent = today().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  document.body.dataset.screen = nav.screen;
+}
+function showScreen(name) {
+  setYardView(false);
+  if (name === nav.screen) return;
+  nav.screen = name;
+  document.body.dataset.screen = name;
+  if (state.card) closeCard(); // the card belongs to the yard, which is only behind the veil on the other screens
+  $("todayScreen").hidden = name !== "today";
+  $("calendarScreen").hidden = name !== "calendar";
+  if (name === "plants") drawList();
+  else $("listPanel").hidden = true;
+  if (name === "calendar") drawMonths();
+  $("tabBar").querySelectorAll("[data-tab]").forEach((t) => {
+    if (t.dataset.tab === name) t.setAttribute("aria-current", "page");
+    else t.removeAttribute("aria-current");
+  });
+  syncHash();
+}
+// The Yard view: Today's panels step aside and the yard's own controls show. (For now it's Today without its
+// panels; the full Yard view comes later.) Leaving it ends Edit mode and the bloom view, whose controls live there.
+function setYardView(on) {
+  if (nav.yard === on) return;
+  nav.yard = on;
+  document.body.classList.toggle("yardview", on);
+  if (!on) {
+    if (editMode.on) setEditing(false);
+    stopPlaying();
+    setBloom(false);
+    showViews(false);
+  }
+}
+// A tap on the yard that missed every plant: closes the card if one is open, otherwise Today opens the Yard view.
+function tappedEmpty() {
+  if (state.card) closeCard();
+  else if (nav.screen === "today" && !nav.yard) setYardView(true);
+}
+
+// The Calendar's months, and the notes on Calendar and Today saying which month the yard shows.
+function drawMonths() {
+  renderMonths($("months"), state.month, TODAY, blooms, (m) => { stopPlaying(); setMonth(m); });
+  const back = `<button type="button" class="linkbtn" data-month-back>Back to ${MONTH_NAMES[TODAY]}</button>`;
+  $("monthNote").innerHTML = state.month === TODAY
+    ? `The yard shows <b>${MONTH_NAMES[TODAY]}</b>, this month. Pick another month to see how it looks then.`
+    : `The yard shows <b>${MONTH_NAMES[state.month]}</b>. ${back}`;
+  $("todayMonth").innerHTML = `The yard shows <b>${MONTH_NAMES[state.month]}</b> · ${back}`;
+  $("todayMonth").hidden = state.month === TODAY;
+  for (const b of document.querySelectorAll("[data-month-back]")) b.onclick = () => { stopPlaying(); setMonth(TODAY); };
 }
 
 function setMonth(m) {
   state.month = m;
-  renderMonthsBar();
+  drawMonths();
   yard.setMonth(m);
   if (state.card) showCard();
   if (!$("listPanel").hidden) drawList();
@@ -259,6 +324,7 @@ function showViews(open) {
 
 // ---------- card ----------
 function selectPlant(id, { focus = false } = {}) {
+  if (nav.screen !== "today") showScreen("today");
   state.selectedId = id;
   state.card = true;
   yard.select(id);
@@ -303,8 +369,10 @@ function applyEdits() {
   yard.setArches(archesNow());
   const growing = garden.plants.filter(inYard);
   yard.setPlants(growing, garden.species, state.month);
-  bloomBar.setCounts(bloomCounts(growing, garden.species));
+  blooms = bloomCounts(growing, garden.species);
+  bloomBar.setCounts(blooms);
   updateBloomBar();
+  drawMonths();
   // A plant picked in Edit mode that's no longer in the yard (removed, say) is let go.
   if (editMode.on && state.selectedId && !state.card && !isStructureEdit(state.selectedId) && !(byId.has(state.selectedId) && inYard(byId.get(state.selectedId)))) {
     state.selectedId = null;
@@ -623,30 +691,18 @@ async function saveEditsIntoFiles() {
 // ---------- photo checks ----------
 function openChecks(options) {
   closeTasks({ restoreFocus: false });
-  $("listPanel").hidden = true;
   checks.open(options);
 }
 
-// ---------- list ----------
-function openList() {
-  closeTasks({ restoreFocus: false });
-  checks?.close();
-  drawList();
-  $("listPanel").querySelector("#listSearch")?.focus({ preventScroll: true });
-}
-function closeList() {
-  $("listPanel").hidden = true;
-  $("listBtn").focus();
-}
+// ---------- the Plants screen ----------
 function drawList() {
   renderList($("listPanel"), {
     plants: garden.plants, species: garden.species, areaNames: garden.areaNames, areaOrder,
     month: state.month, filters: state.filters,
     unsaved: MAC_ITSELF ? unsavedRows().length : 0, onSaveEdits: openSaveEdits,
     onFilters: (f) => { state.filters = f; drawList(); },
-    onPick: (id) => { closeList(); if (editMode.on) setEditing(false); selectPlant(id, { focus: true }); },
-    onShowInYard: (ids) => { closeList(); setHighlight(ids, describeFilters(state.filters), filterColor(state.filters)); },
-    onClose: closeList,
+    onPick: (id) => selectPlant(id, { focus: true }),
+    onShowInYard: (ids) => setHighlight(ids, describeFilters(state.filters), filterColor(state.filters)),
   });
 }
 
@@ -654,7 +710,6 @@ function drawList() {
 const weekFor = (monday) => buildWeek(garden, { weekStart: monday, frosts: store.checks.frosts, done: store.checks.done, areaOrder });
 
 function openTasks() {
-  $("listPanel").hidden = true;
   checks?.close();
   state.taskWeek = mondayOf(today());
   drawTasks();
@@ -715,6 +770,8 @@ function describeFilters(f) {
 const filterColor = (f) => (f.toxic ? "#e0402f" : f.attention ? "#f0a020" : f.unconfirmed ? "#f2c94c" : "#3b82f6");
 
 function setHighlight(ids, label, color) {
+  showScreen("today");
+  setYardView(true);
   stopPlaying();
   setBloom(false);
   yard.setHighlight({ ids, color });

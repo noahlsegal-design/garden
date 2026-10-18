@@ -1,7 +1,6 @@
-// Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): month buttons, the plant card
+// Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): the Calendar's months, the plant card
 // (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js, its photo checks by
-// checks.js), the all-plants
-// list, "Save app edits into files", and the photo viewer.
+// checks.js), the Plants list, "Save app edits into files", and the photo viewer.
 
 import {
   MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, isDogRisk, TOX_INFO,
@@ -12,16 +11,17 @@ import { acrossText, tallText, stemsText } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
 
-// ---------- month buttons ----------
-export function renderMonths(el, month, today, onChange) {
+// ---------- month buttons (the Calendar screen) ----------
+// One tile per month, with its season's colour and how many plants flower then. `blooms` is the count per month.
+export function renderMonths(el, month, today, blooms, onChange) {
   el.innerHTML = MONTHS.map((m, i) =>
     `<button type="button" data-m="${i}" aria-pressed="${i === month}" class="${i === today ? "today" : ""}"
-      style="--c:${seasonOf(i).color}" aria-label="${MONTH_NAMES[i]}${i === today ? " (this month)" : ""}">${m}</button>`).join("");
+      style="--c:${seasonOf(i).color}" aria-label="${MONTH_NAMES[i]}${i === today ? " (this month)" : ""}, ${blooms[i]} in bloom">
+      <b>${MONTH_NAMES[i]}</b><span>${blooms[i] ? `${blooms[i]} in bloom` : "No blooms"}</span></button>`).join("");
   el.onclick = (e) => {
     const b = e.target.closest("button[data-m]");
     if (b) onChange(Number(b.dataset.m));
   };
-  el.querySelector(`[data-m="${month}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
 }
 
 // ---------- small building blocks ----------
@@ -354,8 +354,8 @@ export function renderList(panel, { plants: everything, species, areaNames, area
   panel.innerHTML = `
     <div class="listhead">
       <div class="row">
-        <h2 id="listTitle">All plants <span class="small">(${plants.length})</span></h2>
-        <button class="close" type="button" aria-label="Close list">✕</button>
+        <h2 id="listTitle">Plants <span class="small">(${plants.length})</span></h2>
+        ${onClose ? `<button class="close" type="button" aria-label="Close list">✕</button>` : ""}
       </div>
       <input class="search" id="listSearch" type="search" placeholder="Search by name, number or kind…" value="${esc(filters.q)}" aria-label="Search plants" autocomplete="off">
       <div class="filters">
@@ -404,7 +404,7 @@ export function renderList(panel, { plants: everything, species, areaNames, area
     </div>`;
   panel.hidden = false;
 
-  panel.querySelector(".close").onclick = onClose;
+  if (onClose) panel.querySelector(".close").onclick = onClose;
   const search = panel.querySelector("#listSearch");
   search.oninput = () => onFilters({ ...filters, q: search.value });
   if (focusId === "listSearch") { search.focus(); search.setSelectionRange(search.value.length, search.value.length); }

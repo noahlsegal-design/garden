@@ -20,48 +20,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..800&family=Newsreader:opsz,wght@6..72,500..600&display=swap" rel="stylesheet">
 <!-- The ?v=… on each app file is the app's version, so after a publish browsers fetch all the new files together
      instead of mixing old and new. Don't edit it by hand: "node stamp-version.mjs" updates it. -->
-<link rel="stylesheet" href="app/styles.css?v=6fc97ee67e">
+<link rel="stylesheet" href="app/styles.css?v=2114148815">
 <script type="importmap">
 { "imports": {
     "three": "./vendor/three/three.module.js",
     "three/addons/": "./vendor/three/addons/",
-    "./app/arches.js": "./app/arches.js?v=6fc97ee67e",
-    "./app/bloom.js": "./app/bloom.js?v=6fc97ee67e",
-    "./app/checks.js": "./app/checks.js?v=6fc97ee67e",
-    "./app/cloud.js": "./app/cloud.js?v=6fc97ee67e",
-    "./app/config.js": "./app/config.js?v=6fc97ee67e",
-    "./app/data.js": "./app/data.js?v=6fc97ee67e",
-    "./app/editbar.js": "./app/editbar.js?v=6fc97ee67e",
-    "./app/edits.js": "./app/edits.js?v=6fc97ee67e",
-    "./app/look.js": "./app/look.js?v=6fc97ee67e",
-    "./app/main.js": "./app/main.js?v=6fc97ee67e",
-    "./app/notes.js": "./app/notes.js?v=6fc97ee67e",
-    "./app/reports.js": "./app/reports.js?v=6fc97ee67e",
-    "./app/scene.js": "./app/scene.js?v=6fc97ee67e",
-    "./app/shapes.js": "./app/shapes.js?v=6fc97ee67e",
-    "./app/tasklist.js": "./app/tasklist.js?v=6fc97ee67e",
-    "./app/tasks.js": "./app/tasks.js?v=6fc97ee67e",
-    "./app/ui.js": "./app/ui.js?v=6fc97ee67e"
+    "./app/arches.js": "./app/arches.js?v=2114148815",
+    "./app/bloom.js": "./app/bloom.js?v=2114148815",
+    "./app/checks.js": "./app/checks.js?v=2114148815",
+    "./app/cloud.js": "./app/cloud.js?v=2114148815",
+    "./app/config.js": "./app/config.js?v=2114148815",
+    "./app/data.js": "./app/data.js?v=2114148815",
+    "./app/editbar.js": "./app/editbar.js?v=2114148815",
+    "./app/edits.js": "./app/edits.js?v=2114148815",
+    "./app/look.js": "./app/look.js?v=2114148815",
+    "./app/main.js": "./app/main.js?v=2114148815",
+    "./app/notes.js": "./app/notes.js?v=2114148815",
+    "./app/reports.js": "./app/reports.js?v=2114148815",
+    "./app/scene.js": "./app/scene.js?v=2114148815",
+    "./app/shapes.js": "./app/shapes.js?v=2114148815",
+    "./app/tasklist.js": "./app/tasklist.js?v=2114148815",
+    "./app/tasks.js": "./app/tasks.js?v=2114148815",
+    "./app/ui.js": "./app/ui.js?v=2114148815"
 } }
 </script>
 </head>
 <body>
-<header class="top">
-  <div class="titlebar">
-    <h1>Noah's Garden</h1>
-    <div class="topbtns">
-      <button class="ghostbtn primary" id="tasksBtn" aria-haspopup="dialog">This week<span class="count" id="tasksCount" hidden></span></button>
-      <button class="ghostbtn" id="listBtn" aria-haspopup="dialog">All plants</button>
-      <button class="ghostbtn" id="checksBtn" aria-haspopup="dialog" hidden>Photo check</button>
-    </div>
-  </div>
-  <nav class="months" id="months" aria-label="Month"></nav>
-</header>
-
+<!-- The live 3D yard fills the whole screen, behind everything else. Its own controls (views, zoom, bloom
+     timeline, Edit) show in the Yard view; the plant card opens over any screen. -->
 <main class="stage" id="stage">
-  <canvas id="yard" tabindex="0" aria-label="3D model of the garden. Drag to move around, pinch or scroll to zoom, and use the arrow keys to slide the view. The All plants button lists every plant."></canvas>
+  <canvas id="yard" tabindex="0" aria-label="3D model of the garden. Drag to move around, pinch or scroll to zoom, and use the arrow keys to slide the view. The Plants tab lists every plant."></canvas>
   <div class="mapbar">
     <div class="mapnotes">
+      <button type="button" class="yardback glass" id="yardBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Today</button>
       <span class="hint" id="hintText"></span>
     </div>
     <div class="mapbtns">
@@ -80,11 +71,47 @@
   </div>
   <div class="bloombar" id="bloomBar" role="group" aria-label="Bloom timeline"></div>
   <div class="edittray" id="editBar" role="group" aria-label="Edit the yard" hidden></div>
-  <section class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetTitle" hidden></section>
   <div class="overlay" id="status" role="status">Loading your garden…</div>
 </main>
 
-<section class="listpanel" id="listPanel" role="dialog" aria-modal="true" aria-labelledby="listTitle" hidden></section>
+<!-- On Calendar and Plants the yard shows through, blurred. -->
+<div class="veil" id="veil" aria-hidden="true"></div>
+
+<!-- Today: panels floating over the live yard. Tapping an empty spot of the yard opens the Yard view. -->
+<section class="screen today" id="todayScreen" aria-labelledby="todayTitle">
+  <div class="todaypanels" id="todayPanels">
+    <div class="todaycard glass">
+      <p class="todaydate" id="todayDate"></p>
+      <h1 id="todayTitle">Noah's Garden</h1>
+      <p class="todaymonth" id="todayMonth" hidden></p>
+      <div class="todaybtns">
+        <button class="ghostbtn primary" id="tasksBtn" aria-haspopup="dialog">This week<span class="count" id="tasksCount" hidden></span></button>
+        <button class="ghostbtn" id="checksBtn" aria-haspopup="dialog" hidden>Photo check</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="calendarScreen" aria-labelledby="calendarTitle" hidden>
+  <div class="screenhead"><h1 id="calendarTitle">Calendar</h1></div>
+  <nav class="months" id="months" aria-label="Month"></nav>
+  <p class="monthnote" id="monthNote"></p>
+</section>
+
+<section class="screen listpanel" id="listPanel" aria-labelledby="listTitle" hidden></section>
+
+<!-- The tab bar and the search button float at the bottom of every screen. -->
+<div class="tabdock">
+  <nav class="tabbar glass" id="tabBar" aria-label="Screens">
+    <button type="button" class="tab" data-tab="today" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg><span>Today</span></button>
+    <button type="button" class="tab" data-tab="calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+    <button type="button" class="tab" data-tab="plants"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-8"/><path d="M12 13c0-5 3-8 8-8 0 5-3 8-8 8z"/><path d="M12 15c0-4-2.5-6.5-7-6.5 0 4 2.5 6.5 7 6.5z"/></svg><span>Plants</span></button>
+  </nav>
+  <button type="button" class="searchbtn glass" id="searchBtn" aria-label="Search plants"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button>
+</div>
+
+<!-- The plant card: a sheet from the bottom on phones (over the tab bar), a side panel on wide screens. -->
+<section class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetTitle" hidden></section>
 <section class="listpanel taskpanel" id="tasksPanel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle" hidden></section>
 <section class="listpanel" id="checksPanel" role="dialog" aria-modal="true" aria-labelledby="checksTitle" hidden></section>
 <section class="listpanel" id="savePanel" role="dialog" aria-modal="true" aria-labelledby="saveTitle" hidden></section>
