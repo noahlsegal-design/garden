@@ -202,6 +202,59 @@ export function openCount(week) {
   return week.jobs.filter((j) => !j.done).length + week.rounds.filter((r) => r.items.some((i) => !i.done)).length;
 }
 
+// ---------- jobs by day (the Calendar) ----------
+// The same jobs as This week and Today, laid out on days from `from` to `to`. A day before today holds what was
+// checked off on it. Today holds what was checked off today plus everything still open this week (as on Today),
+// except a job whose stretch starts later, which waits for that day. In later weeks a one-time job is on the day
+// its stretch starts and the weekly rounds are on the week's first day (Monday, or when they start).
+// Returns a Map from "YYYY-MM-DD" to that day's list: { key, job, plants: [indexes into job.plants] } for one-time
+// jobs, { key: "round:<id>", round, items } for weekly rounds, each holding only what was done or is due that day.
+const later = (...days) => new Date(Math.max(...days));
+export function jobsByDay(garden, { from, to, today, frosts = {}, done = {}, areaOrder = [] }) {
+  const days = new Map();
+  const dayList = (d) => {
+    const k = ymd(d);
+    if (!days.has(k)) days.set(k, new Map());
+    return days.get(k);
+  };
+  const inRange = (d) => d && d >= from && d <= to;
+  function addJob(day, j, i) {
+    if (!inRange(day)) return;
+    const list = dayList(day);
+    if (!list.has(j.key)) list.set(j.key, { key: j.key, job: j, plants: [] });
+    const e = list.get(j.key);
+    if (!e.plants.includes(i)) e.plants.push(i);
+  }
+  function addRound(day, r, it) {
+    if (!inRange(day)) return;
+    const list = dayList(day), key = `round:${r.id}`;
+    if (!list.has(key)) list.set(key, { key, round: r, items: [] });
+    const e = list.get(key);
+    if (!e.items.some((x) => x.key === it.key)) e.items.push(it);
+  }
+
+  const placed = new Set(); // one-time jobs already put on the day they're due
+  for (let monday = mondayOf(from); monday <= to; monday = addDays(monday, 7)) {
+    const week = buildWeek(garden, { weekStart: monday, frosts, done, areaOrder });
+    // What was checked off, on the day it was.
+    for (const j of [...week.jobs, ...week.earlier]) j.plantKeys.forEach((k, i) => { if (done[k]) addJob(parseYmd(done[k]), j, i); });
+    for (const r of week.rounds) for (const it of r.items) if (it.done) addRound(parseYmd(it.done), r, it);
+    if (week.weekEnd < today) continue;
+    // What's still to do.
+    for (const j of week.jobs) {
+      if (j.done || placed.has(j.key)) continue;
+      placed.add(j.key);
+      const day = later(today, j.window.from);
+      j.plantKeys.forEach((k, i) => { if (!done[k]) addJob(day, j, i); });
+    }
+    for (const r of week.rounds) for (const it of r.items) if (!it.done) addRound(later(today, monday, it.window.from), r, it);
+  }
+
+  const out = new Map();
+  for (const [k, list] of [...days].sort(([a], [b]) => a.localeCompare(b))) out.set(k, [...list.values()]);
+  return out;
+}
+
 // What the frost note at the top of "This week" should say on a given day, or null for none.
 export function frostStatus(site, day, frosts = {}) {
   const year = day.getFullYear(), m = day.getMonth();

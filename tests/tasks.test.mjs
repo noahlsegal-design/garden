@@ -5,7 +5,7 @@
 
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
-import { buildWeek, openCount, mondayOf, parseYmd, ymd, addDays, repeatOf } from "../app/tasks.js";
+import { buildWeek, openCount, mondayOf, parseYmd, ymd, addDays, repeatOf, jobsByDay } from "../app/tasks.js";
 
 const read = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.url), "utf8"));
 const speciesFile = read("species.json"), plantsFile = read("plants.json"), layout = read("layout.json");
@@ -120,6 +120,45 @@ check("a whole year of weeks: no errors, nothing listed twice", [], () => {
     const ids = everything(w).map((x) => x.id);
     assert.equal(new Set(ids).size, ids.length, `duplicate in the week of ${ymd(d)}`);
   }
+});
+
+// The Calendar's days (jobsByDay): the same jobs as This week, each on one day.
+const keysOn = (list) => list.flatMap((e) => (e.job ? e.plants.map((i) => e.job.plantKeys[i]) : e.items.map((it) => it.key)));
+check("Calendar: this week's open jobs are on today, or on the day they start", ["dahlia"], () => {
+  const today = parseYmd("2026-10-19"), w = week("2026-10-19");
+  const days = jobsByDay(garden, { from: mondayOf(today), to: addDays(mondayOf(today), 6), today, areaOrder });
+  const all = [...days.values()].flat();
+  // Every open job and round on This week is somewhere this week, once.
+  const keys = keysOn(all);
+  assert.equal(new Set(keys).size, keys.length, "nothing twice");
+  for (const j of w.jobs) for (const k of j.plantKeys) assert(keys.includes(k), `${j.sp.id} ${j.care.type} is on a day`);
+  for (const r of w.rounds) for (const it of r.items) assert(keys.includes(it.key), `${it.sp.id} ${r.id} is on a day`);
+  // Nothing before today, and dahlia digging waits for a week after the typical frost.
+  assert([...days.keys()].every((d) => d >= "2026-10-19"));
+  assert(days.get("2026-10-22").some((e) => e.job?.sp.id === "dahlia" && e.job.care.type === "winter"));
+});
+
+check("Calendar: check-offs are on the day they were made, open jobs aren't shown on past days", ["peony"], () => {
+  const today = parseYmd("2026-10-21"), w = week("2026-10-19");
+  const job = find(w.jobs, "peony", "winter"), round = w.rounds[0];
+  const done = { [job.plantKeys[0]]: "2026-10-19", [round.items[0].key]: "2026-10-20" };
+  const days = jobsByDay(garden, { from: parseYmd("2026-10-19"), to: parseYmd("2026-10-25"), today, done, areaOrder });
+  assert.deepEqual(keysOn(days.get("2026-10-19")), [job.plantKeys[0]], "only the peony checked off on Monday");
+  assert.deepEqual(keysOn(days.get("2026-10-20")), [round.items[0].key], "only the round item checked off on Tuesday");
+  const rest = keysOn(days.get("2026-10-21"));
+  assert(job.plantKeys.slice(1).every((k) => rest.includes(k)) && !rest.includes(job.plantKeys[0]), "the other peonies are still due today");
+});
+
+check("Calendar: later weeks put rounds on Monday and nothing open from before", [], () => {
+  const today = parseYmd("2026-07-08");
+  const from = parseYmd("2026-07-13"), to = parseYmd("2026-07-19");
+  const days = jobsByDay(garden, { from, to, today, areaOrder });
+  const w = buildWeek(garden, { weekStart: from, areaOrder });
+  for (const [d, list] of days) for (const e of list) {
+    if (e.round) assert(e.items.every((it) => ymd(it.window.from > from ? it.window.from : from) === d), `${e.round.id} on its first day`);
+    else assert.equal(d, ymd(e.job.window.from), `${e.job.sp.id} ${e.job.care.type} on the day it starts`);
+  }
+  assert(w.rounds.every((r) => days.get("2026-07-13")?.some((e) => e.round?.id === r.id) || r.items.every((it) => it.window.from > from)));
 });
 
 console.log(`tasks: ${ran} checks passed${skipped ? `, ${skipped} skipped (those plants aren't in the garden now)` : ""}`);

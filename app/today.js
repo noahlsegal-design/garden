@@ -7,14 +7,14 @@ import { CARE_TYPES, esc, thumbUrl } from "./data.js";
 import { openCount, parseYmd } from "./tasks.js";
 import { SAVE_NOTE, footNote } from "./tasklist.js";
 
-const plainName = (sp) => sp.commonName.replace(/\s*\([^)]*\)/g, "").trim();
-const typeName = (t) => CARE_TYPES[t] || t;
+export const plainName = (sp) => sp.commonName.replace(/\s*\([^)]*\)/g, "").trim();
+export const typeName = (t) => CARE_TYPES[t] || t;
 // The start of a job's instructions: its first sentence, or two when the first is very short.
 export function firstSentence(text) {
   const [one, two] = (text || "").match(/[^.!?]+[.!?]+/g) || [text || ""];
   return one.trim().length < 24 && two ? `${one.trim()} ${two.trim()}` : one.trim();
 }
-const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg>`;
+export const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg>`;
 
 // A soft colour for a plant with no photo, the same every time for the same kind of plant.
 export function hueOf(s) {
@@ -64,16 +64,16 @@ function ordered(cards) {
 }
 
 // A plant's picture: its newest photo from its notes, else its first photo in plants.json, else null.
-function pictureOf(plants, notePhotos) {
+export function pictureOf(plants, notePhotos) {
   for (const p of plants) if (notePhotos.has(p.id)) return { note: notePhotos.get(p.id) };
   for (const p of plants) if (p.photos?.length) return { src: thumbUrl(p.photos[0]) };
   return null;
 }
-function placeholder(plant, cls = "") {
+export function placeholder(plant, cls = "") {
   return `<span class="placeholder ${cls}" style="--h:${hueOf(plant?.speciesId || plant?.name || "")}"><span>${esc(plant?.name || "")}</span></span>`;
 }
 // An <img> for a photo: straight away for the garden's own photos, once fetched for photos from notes.
-const imgTag = (pic, alt) => pic.src
+export const imgTag = (pic, alt) => pic.src
   ? `<img src="${esc(pic.src)}" alt="${esc(alt)}" loading="lazy">`
   : `<img alt="${esc(alt)}" data-note-thumb="${esc(pic.note.photo)}">`;
 
@@ -133,7 +133,7 @@ const viewerItems = (list, load) => list.map((ph) => (ph.note
   : ph.src));
 
 // Fills in the photos from notes, which are fetched while signed in.
-function loadNoteThumbs(el, thumb) {
+export function loadNoteThumbs(el, thumb) {
   el.querySelectorAll("img[data-note-thumb]").forEach((img) => {
     thumb(img.dataset.noteThumb).then((url) => { img.src = url; }).catch(() => img.classList.add("missing"));
   });

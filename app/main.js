@@ -2,7 +2,8 @@
 
 import { loadGarden, MONTH_NAMES, esc, areaAt, seasonOverride } from "./data.js";
 import { createYard } from "./scene.js";
-import { renderMonths, renderCard, renderSaveEdits, openLightbox } from "./ui.js";
+import { renderCard, renderSaveEdits, openLightbox } from "./ui.js";
+import { renderCalendar } from "./calendar.js";
 import { renderPlantList, NO_FILTERS, CHIPS, TYPES, ONLY } from "./plantlist.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
 import { cloudReady, cloudBackend, notesBackend, checksBackend, thumbOf, account, signIn, signOut } from "./cloud.js";
@@ -68,6 +69,7 @@ const MAC_ITSELF = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostnam
 const nav = { screen: "today", yard: false };
 let playTimer = null; // set while the bloom timeline is playing
 let notePhotos = []; // the newest notes with photos, across every plant (Today's job cards and Latest photos)
+let myName = ""; // your name in the shared garden, for the initials on jobs you checked off (Calendar)
 let hintDone = false; // the how-to-move hint goes away once you've moved the view
 
 async function start() {
@@ -97,6 +99,7 @@ async function start() {
     if (!$("tasksPanel").hidden) drawTasks();
     if (!$("settingsPanel").hidden) drawSettings();
     drawToday();
+    if (nav.screen === "calendar") drawCalendar();
     setTimeout(clearOldEdits);
   });
   store.refresh();
@@ -211,7 +214,7 @@ function showScreen(name) {
   $("calendarScreen").hidden = name !== "calendar";
   if (name === "plants") drawList();
   else $("listPanel").hidden = true;
-  if (name === "calendar") drawMonths();
+  if (name === "calendar") drawCalendar();
   $("tabBar").querySelectorAll("[data-tab]").forEach((t) => {
     if (t.dataset.tab === name) t.setAttribute("aria-current", "page");
     else t.removeAttribute("aria-current");
@@ -237,13 +240,9 @@ function tappedEmpty() {
   else if (nav.screen === "today" && !nav.yard) setYardView(true);
 }
 
-// The Calendar's months, and the notes on Calendar and Today saying which month the yard shows.
+// The note on Today saying which month the yard shows, when it isn't this month.
 function drawMonths() {
-  renderMonths($("months"), state.month, TODAY, blooms, (m) => { stopPlaying(); setMonth(m); });
   const back = `<button type="button" class="linkbtn" data-month-back>Back to ${MONTH_NAMES[TODAY]}</button>`;
-  $("monthNote").innerHTML = state.month === TODAY
-    ? `The yard shows <b>${MONTH_NAMES[TODAY]}</b>, this month. Pick another month to see how it looks then.`
-    : `The yard shows <b>${MONTH_NAMES[state.month]}</b>. ${back}`;
   $("todayMonth").innerHTML = `Showing <b>${MONTH_NAMES[state.month]}</b> · ${back}`;
   $("todayMonth").hidden = state.month === TODAY;
   for (const b of document.querySelectorAll("[data-month-back]")) b.onclick = () => { stopPlaying(); setMonth(TODAY); };
@@ -334,9 +333,8 @@ function showViews(open) {
 }
 
 // ---------- card ----------
-// From the Plants screen the card opens over it, and closing the card goes back to it.
+// From the Calendar and Plants screens the card opens over them, and closing the card goes back to them.
 function selectPlant(id, { focus = false } = {}) {
-  if (nav.screen === "calendar") showScreen("today");
   state.selectedId = id;
   state.card = true;
   yard.select(id);
@@ -815,7 +813,9 @@ async function signInHere(email, password) {
 function signOutHere() {
   signOut(); store.forget(); notes?.forget(); checks?.forget();
   notePhotos = [];
+  myName = "";
   drawToday();
+  if (nav.screen === "calendar") drawCalendar();
 }
 
 // ---------- Today ----------
@@ -836,15 +836,30 @@ function drawToday() {
     onChecks: () => openChecks(),
   });
 }
+// ---------- Calendar ----------
+function drawCalendar() {
+  if (!garden || !store) return;
+  const now = today();
+  const { done, doneBy, frosts, status } = store.checks;
+  const signedIn = cloudReady && account() && status !== "signed-out";
+  renderCalendar($("calendarScreen"), {
+    garden, today: now, done, doneBy: signedIn ? doneBy : {}, frosts, areaOrder, me: signedIn ? myName : "",
+    notePhotos, thumb: (photo) => notesBackend.photo(thumbOf(photo)),
+    onToggle: (keys, on) => store.change(on ? { set: Object.fromEntries(keys.map((k) => [k, ymd(now)])) } : { unset: keys }),
+    onPlant: (id) => selectPlant(id),
+  });
+}
+
 // The newest notes with photos, fetched again when coming back to the app or after a card closes.
 let fetchingPhotos = null;
 function refreshPhotos() {
   if (!cloudReady || !account() || fetchingPhotos) return;
+  if (!myName) notesBackend.me().then((name) => { myName = name; if (name && nav.screen === "calendar") drawCalendar(); }).catch(() => {});
   fetchingPhotos = notesBackend.latest()
     .then((list) => {
       const changed = JSON.stringify(list.map((n) => n.id)) !== JSON.stringify(notePhotos.map((n) => n.id));
       notePhotos = list;
-      if (changed) { drawToday(); if (!$("photosPanel").hidden) drawPhotos(); if (!$("listPanel").hidden) drawList(); if (state.card) showCard(); }
+      if (changed) { drawToday(); if (!$("photosPanel").hidden) drawPhotos(); if (!$("listPanel").hidden) drawList(); if (nav.screen === "calendar") drawCalendar(); if (state.card) showCard(); }
     })
     .catch(() => {}) // not signed in, offline or not in the garden: the garden's own photos still show
     .finally(() => { fetchingPhotos = null; });

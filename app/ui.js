@@ -1,4 +1,4 @@
-// Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): the Calendar's months, the plant card
+// Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): the plant card
 // (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js, its photo checks by
 // checks.js), "Save app edits into files", and the photo viewer.
 
@@ -12,19 +12,6 @@ import { dateText, fieldText, spotText } from "./edits.js";
 import { acrossText, tallText, stemsText } from "./look.js";
 
 const $ = (id) => document.getElementById(id);
-
-// ---------- month buttons (the Calendar screen) ----------
-// One tile per month, with its season's colour and how many plants flower then. `blooms` is the count per month.
-export function renderMonths(el, month, today, blooms, onChange) {
-  el.innerHTML = MONTHS.map((m, i) =>
-    `<button type="button" data-m="${i}" aria-pressed="${i === month}" class="${i === today ? "today" : ""}"
-      style="--c:${seasonOf(i).color}" aria-label="${MONTH_NAMES[i]}${i === today ? " (this month)" : ""}, ${blooms[i]} in bloom">
-      <b>${MONTH_NAMES[i]}</b><span>${blooms[i] ? `${blooms[i]} in bloom` : "No blooms"}</span></button>`).join("");
-  el.onclick = (e) => {
-    const b = e.target.closest("button[data-m]");
-    if (b) onChange(Number(b.dataset.m));
-  };
-}
 
 // ---------- small building blocks ----------
 // Over the photo: the ID and whether it needs attention. (Dog safety has its own tile.)
