@@ -17,6 +17,8 @@ import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
 import { plantHeight, plantRadius, isVine, SUPPORTS, SHAPES, LOOK } from "./look.js";
 import { isArch, archOf } from "./arches.js";
+import { createLabels, renderPeek, hidePeek } from "./yardview.js";
+import { plainName } from "./today.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,8 +33,8 @@ const HINT = matchMedia("(pointer: coarse)").matches
   ? "Drag to move around · Pinch to zoom · Twist two fingers to turn · Tap a plant"
   : "Drag to move around · Scroll to zoom · Shift-drag or right-drag to turn · Click a plant";
 // selectedId is the plant picked in the yard; card says whether its card is open (in Edit mode a plant can be
-// picked without opening its card).
-const state = { month: TODAY, bloom: false, selectedId: null, card: false, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
+// picked without opening its card). peek is the plant whose small card is up in the Yard view.
+const state = { month: TODAY, bloom: false, selectedId: null, card: false, peek: null, filters: { ...NO_FILTERS }, highlight: null, taskWeek: mondayOf(today()) };
 // Edit mode: `step` is "idle", "adding" (choosing the kind and name) or "placing" (waiting for a tap in the yard).
 const editMode = { on: false, step: "idle", draft: null, message: "" };
 let yardEditing = false; // whether the yard lets plants be dragged and placed (Edit mode, and allowed to save)
@@ -42,7 +44,7 @@ const inYard = (p) => !p.finished && !p.removed;
 // Each plant with "Still growing" or "Dead" from its card worked out as the months it covers this year (seasonNow),
 // which the yard, the card and the list draw it by.
 const withSeasons = (plants) => plants.map((p) => (p.season ? { ...p, seasonNow: seasonOverride(p.season, today()) } : p));
-let garden, yard, byId, areaOrder, store, bloomBar;
+let garden, yard, byId, areaOrder, store, bloomBar, labels;
 let blooms = []; // how many plants in the yard flower in each month, Jan..Dec
 // Each plant's notes and photos, kept in the shared garden on Supabase (none without a garden account).
 const notes = cloudReady ? createNotes({ backend: notesBackend, thumbOf, today: () => ymd(today()), onPhoto: openLightbox }) : null;
@@ -100,6 +102,7 @@ async function start() {
     if (!$("settingsPanel").hidden) drawSettings();
     drawToday();
     if (nav.screen === "calendar") drawCalendar();
+    updateYardView();
     setTimeout(clearOldEdits);
   });
   store.refresh();
@@ -117,15 +120,15 @@ async function start() {
   let has3d = true;
   try {
     yard = createYard($("yard"), {
-      layout: garden.layout, onMove: movedView, onDrop: movedPlant, onPlace: placePlant,
-      onPick: (id) => (editMode.on ? pickToEdit(id) : id ? selectPlant(id) : tappedEmpty()),
+      layout: garden.layout, onMove: movedView, onDrop: movedPlant, onPlace: placePlant, onRender: placeLabels,
+      onPick: (id, at) => (editMode.on ? pickToEdit(id) : pickedInYard((labelsShown() && labels.hit(at.x, at.y)) || id)),
     });
   } catch (err) {
     $("status").innerHTML = `<div><p><b>3D view couldn't start on this device.</b></p><p>You can still browse everything on the <b>Plants</b> tab and in <b>This week</b>.</p><pre>${String(err.message).replace(/</g, "&lt;")}</pre></div>`;
     $("status").style.pointerEvents = "none";
     $("status").style.background = "transparent";
     has3d = false;
-    yard = { setPlants() {}, setMonth() {}, setBloom() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {}, updatePlant() {}, setEditing() {}, setPlacing() {}, setArches() {} };
+    yard = { setPlants() {}, setMonth() {}, setBloom() {}, select() {}, focus() {}, resetView() {}, setHighlight() {}, fitTo() {}, views: () => [], goTo() {}, zoomBy() {}, turn() {}, updatePlant() {}, setEditing() {}, setPlacing() {}, setArches() {}, spots: () => [] };
   }
   yard.setArches(archesNow());
   const growing = garden.plants.filter(inYard);
@@ -142,6 +145,7 @@ async function start() {
     onOff: () => { stopPlaying(); setBloom(false); },
   });
   updateBloomBar();
+  labels = createLabels($("yardLabels"), { onPick: (id) => pickedInYard(id) });
   drawMonths();
   updateHint();
   setUpMapButtons();
@@ -168,6 +172,7 @@ async function start() {
     else if (editMode.on && editMode.step !== "idle") cancelAdding();
     else if (editMode.on && state.selectedId) pickToEdit(null);
     else if (editMode.on) setEditing(false);
+    else if (state.peek) closePeek();
     else if (state.bloom) { stopPlaying(); setBloom(false); }
     else if (nav.yard) setYardView(false);
   });
@@ -180,12 +185,13 @@ async function start() {
   else if (hash.has("tasks")) openTasks();
   else if (hash.has("calendar")) showScreen("calendar");
   else if (hash.has("plants")) showScreen("plants");
+  else if (hash.has("yard")) setYardView(true);
 }
 
 // Keeps the address in step with what's open, so a bookmark or refresh comes back to it.
 function syncHash() {
   const plant = state.selectedId && !isStructureEdit(state.selectedId) ? state.selectedId : null;
-  const h = !$("tasksPanel").hidden ? "#tasks" : plant ? `#plant=${encodeURIComponent(plant)}` : nav.screen !== "today" ? `#${nav.screen}` : "";
+  const h = !$("tasksPanel").hidden ? "#tasks" : plant ? `#plant=${encodeURIComponent(plant)}` : nav.screen !== "today" ? `#${nav.screen}` : nav.yard ? "#yard" : "";
   history.replaceState(null, "", location.pathname + location.search + h);
 }
 
@@ -221,8 +227,9 @@ function showScreen(name) {
   });
   syncHash();
 }
-// The Yard view: Today's panels step aside and the yard's own controls show. (For now it's Today without its
-// panels; the full Yard view comes later.) Leaving it ends Edit mode and the bloom view, whose controls live there.
+// The Yard view: the live yard full screen (no tab bar), with a round back button, the month switcher and
+// Views at the top, labels over the plants with jobs this week, and a small card that slides up for a plant.
+// Leaving it ends Edit mode and the bloom view, whose controls live there.
 function setYardView(on) {
   if (nav.yard === on) return;
   nav.yard = on;
@@ -232,20 +239,104 @@ function setYardView(on) {
     stopPlaying();
     setBloom(false);
     showViews(false);
+    closePeek();
   }
+  updateYardView();
+  syncHash();
 }
-// A tap on the yard that missed every plant: closes the card if one is open, otherwise Today opens the Yard view.
-function tappedEmpty() {
-  if (state.card) closeCard();
-  else if (nav.screen === "today" && !nav.yard) setYardView(true);
+// A tap on the yard (or on a label): on Today it opens the Yard view, and in the Yard view a plant's small card
+// slides up. A tap that missed every plant closes whatever card is open.
+function pickedInYard(id) {
+  if (state.card) return id ? selectPlant(id) : closeCard(); // the side panel on wide screens leaves the yard in view
+  if (!nav.yard) {
+    if (nav.screen !== "today") return;
+    setYardView(true);
+  }
+  if (id) showPeek(id);
+  else closePeek();
 }
 
-// The note on Today saying which month the yard shows, when it isn't this month.
+// ----- the small card -----
+function showPeek(id) {
+  const p = byId.get(id);
+  if (!p) return closePeek();
+  state.peek = id;
+  yard.select(id);
+  labels.setActive(id);
+  drawPeek();
+  document.body.classList.add("peeking");
+}
+function drawPeek() {
+  const p = state.peek && byId.get(state.peek);
+  if (!p) return;
+  renderPeek($("peek"), {
+    plant: p, species: garden.species.get(p.speciesId), areaName: garden.areaNames.get(p.area) || p.area,
+    month: state.month, thisMonth: state.month === TODAY, jobs: jobsByPlant().get(p.id) || [],
+    notePhotos: newestNotePhotos(), thumb: (photo) => notesBackend.photo(thumbOf(photo)),
+    onOpen: () => selectPlant(p.id),
+    onClose: closePeek,
+  });
+}
+function closePeek() {
+  if (!state.peek) return;
+  state.peek = null;
+  if (!state.card) yard.select(null);
+  labels?.setActive(null);
+  hidePeek($("peek"));
+  document.body.classList.remove("peeking");
+}
+// Each plant's newest note with a photo.
+function newestNotePhotos() {
+  const out = new Map();
+  for (const n of notePhotos) if (!out.has(n.plantId)) out.set(n.plantId, n);
+  return out;
+}
+
+// ----- the labels -----
+// They show in the Yard view for this month, and step aside for Edit mode, the bloom view, rings from
+// "Show in the yard" and an open plant card.
+const labelsShown = () => nav.yard && !editMode.on && !state.bloom && !state.card && state.month === TODAY && $("highlightChip").hidden;
+function updateYardView() {
+  if (!labels) return;
+  const show = labelsShown();
+  $("yardLabels").hidden = !show;
+  if (show) {
+    const items = [];
+    for (const [id, jobs] of jobsByPlant()) {
+      const p = byId.get(id);
+      if (p && inYard(p)) items.push({ id, name: plainName(garden.species.get(p.speciesId)), count: jobs.length });
+    }
+    labels.set(items);
+    placeLabels();
+  }
+  if (state.peek) {
+    if (!byId.has(state.peek) || !inYard(byId.get(state.peek))) closePeek();
+    else drawPeek();
+  }
+}
+// Called after every redraw of the yard, so the labels follow the plants as you move around. They stay in the
+// band between the top bar (and the how-to-move note) and the bloom timeline or the small card.
+function placeLabels() {
+  if (!labels || $("yardLabels").hidden) return;
+  const above = $("hintText").hidden ? $("yardBack") : $("hintText");
+  const below = $("peek").hidden ? $("bloomBar") : $("peek");
+  labels.place(yard.spots(labels.ids()), {
+    top: above.getBoundingClientRect().bottom + 6, bottom: below.getBoundingClientRect().top - 6, width: $("stage").clientWidth,
+  });
+}
+
+// The month switcher at the top of the Yard view (tapping the month's name goes back to this month), and the
+// note on Today saying which month the yard shows, when it isn't this month.
 function drawMonths() {
   const back = `<button type="button" class="linkbtn" data-month-back>Back to ${MONTH_NAMES[TODAY]}</button>`;
   $("todayMonth").innerHTML = `Showing <b>${MONTH_NAMES[state.month]}</b> · ${back}`;
   $("todayMonth").hidden = state.month === TODAY;
   for (const b of document.querySelectorAll("[data-month-back]")) b.onclick = () => { stopPlaying(); setMonth(TODAY); };
+  const name = $("monthName");
+  const away = state.month !== TODAY;
+  name.innerHTML = `${MONTH_NAMES[state.month]}${away ? `<span class="monthnow">Back to ${MONTH_NAMES[TODAY]}</span>` : ""}`;
+  name.disabled = !away;
+  name.setAttribute("aria-label", away ? `Showing ${MONTH_NAMES[state.month]}. Back to ${MONTH_NAMES[TODAY]}` : `Showing ${MONTH_NAMES[state.month]}, this month`);
 }
 
 function setMonth(m) {
@@ -256,6 +347,7 @@ function setMonth(m) {
   if (!$("listPanel").hidden) drawList();
   updateHint();
   updateBloomBar();
+  updateYardView();
 }
 
 // ---------- bloom timeline ----------
@@ -267,6 +359,7 @@ function setBloom(on) {
   state.bloom = on;
   yard.setBloom(on);
   updateBloomBar();
+  updateYardView();
 }
 // Plays one lap of the year, a month at a time, and stops back on the month it started from.
 function playYear() {
@@ -287,9 +380,10 @@ function stopPlaying() {
 }
 
 // ---------- moving around the yard ----------
-// The note in the top-left corner: how to move around until you've done it once, and which month is showing.
+// The note under the top bar: how to move around, until you've done it once. (The month switcher says which
+// month is showing.)
 function updateHint() {
-  const text = editMode.on ? (state.month !== TODAY ? `Editing · ${MONTH_NAMES[state.month]}` : "") : state.month !== TODAY ? `Showing ${MONTH_NAMES[state.month]}` : hintDone ? "" : HINT;
+  const text = editMode.on || hintDone ? "" : HINT;
   $("hintText").textContent = text;
   $("hintText").hidden = !text;
 }
@@ -300,7 +394,10 @@ function movedView() {
 }
 function setUpMapButtons() {
   const act = (fn) => () => { movedView(); fn(); };
-  $("resetBtn").onclick = act(() => yard.resetView());
+  const step = (d) => () => { stopPlaying(); setMonth((state.month + d + 12) % 12); };
+  $("monthPrev").onclick = step(-1);
+  $("monthNext").onclick = step(1);
+  $("monthName").onclick = () => { stopPlaying(); setMonth(TODAY); };
   $("zoomInBtn").onclick = act(() => yard.zoomBy(0.6));
   $("zoomOutBtn").onclick = act(() => yard.zoomBy(1 / 0.6));
   $("turnLeftBtn").onclick = act(() => yard.turn(-Math.PI / 4)); // the yard swings counterclockwise, like the icon
@@ -311,15 +408,15 @@ function setUpMapButtons() {
     const list = views.filter((v) => v.group === g);
     return list.length ? `<h3>${title}</h3>${list.map((v) => `<button type="button" data-view="${esc(v.id)}">${esc(v.name)}${v.note ? `<span>${esc(v.note)}</span>` : ""}</button>`).join("")}` : "";
   };
-  $("viewsMenu").innerHTML = group("look", "Look from") + group("zoom", "Zoom to");
-  $("viewsBtn").hidden = !views.length;
+  $("viewsMenu").innerHTML = `<button type="button" data-view="reset">Reset view<span>Where it starts</span></button>` + group("look", "Look from") + group("zoom", "Zoom to");
   $("viewsBtn").onclick = () => showViews($("viewsMenu").hidden);
   $("viewsMenu").onclick = (e) => {
     const b = e.target.closest("[data-view]");
     if (!b) return;
     showViews(false);
     movedView();
-    yard.goTo(b.dataset.view);
+    if (b.dataset.view === "reset") yard.resetView();
+    else yard.goTo(b.dataset.view);
   };
   // A tap anywhere else closes the menu.
   document.addEventListener("pointerdown", (e) => {
@@ -341,6 +438,7 @@ function selectPlant(id, { focus = false } = {}) {
   if (focus) yard.focus(id);
   showCard();
   syncHash();
+  updateYardView();
 }
 // After the plants or the account change: redraws the open card and the edit bar.
 function refreshSelection() {
@@ -383,8 +481,9 @@ function checkOffsFor(p, week) {
 function closeCard() {
   state.selectedId = null;
   state.card = false;
-  yard.select(null);
+  yard.select(state.peek); // back to the Yard view's small card, if it was up
   $("sheet").hidden = true;
+  updateYardView();
   syncHash();
   if (editMode.on) drawEditBar();
   refreshPhotos(); // a photo may have just been added on the card
@@ -412,6 +511,7 @@ function applyEdits() {
     yard.select(null);
   }
   refreshSelection();
+  updateYardView();
   if (!$("listPanel").hidden) drawList();
   if (!$("savePanel").hidden && saving.phase === "review") drawSaveEdits();
   return true;
@@ -493,6 +593,7 @@ function setEditing(on) {
   if (on) {
     stopPlaying();
     setBloom(false);
+    closePeek();
     if (state.card) { state.card = false; $("sheet").hidden = true; } // the plant stays picked, with its controls in the bar
     if (state.selectedId && !inYard(byId.get(state.selectedId) || {})) { state.selectedId = null; yard.select(null); }
     drawEditBar();
@@ -502,6 +603,7 @@ function setEditing(on) {
     if (state.selectedId && !state.card) { state.selectedId = null; yard.select(null); }
   }
   updateHint();
+  updateYardView();
   syncHash();
 }
 function pickToEdit(id) {
@@ -740,15 +842,16 @@ function drawList() {
   });
 }
 
-// How many of this week's to-dos are still open for each plant (one-time jobs and weekly rounds).
-function todosByPlant() {
+// This week's to-dos still open for each plant (one-time jobs, then weekly rounds): plant ID -> [{ type, text }].
+function jobsByPlant() {
   const week = weekFor(mondayOf(today()));
   const out = new Map();
-  const add = (id) => out.set(id, (out.get(id) || 0) + 1);
-  for (const j of week.jobs) j.plants.forEach((p, i) => { if (!store.checks.done[j.plantKeys[i]]) add(p.id); });
-  for (const r of week.rounds) for (const it of r.items) if (!it.done) for (const p of it.plants) add(p.id);
+  const add = (id, c) => (out.get(id) || out.set(id, []).get(id)).push({ type: c.type, text: c.text });
+  for (const j of week.jobs) j.plants.forEach((p, i) => { if (!store.checks.done[j.plantKeys[i]]) add(p.id, j.care); });
+  for (const r of week.rounds) for (const it of r.items) if (!it.done) for (const p of it.plants) add(p.id, it.care);
   return out;
 }
+const todosByPlant = () => new Map([...jobsByPlant()].map(([id, jobs]) => [id, jobs.length]));
 // When each plant added in the app was added: from its "added" change, or, once that's been saved into
 // plants.json, from the time in its ID (see newPlantId). Plants that were in plants.json from the start have none.
 function addedDates() {
@@ -859,7 +962,7 @@ function refreshPhotos() {
     .then((list) => {
       const changed = JSON.stringify(list.map((n) => n.id)) !== JSON.stringify(notePhotos.map((n) => n.id));
       notePhotos = list;
-      if (changed) { drawToday(); if (!$("photosPanel").hidden) drawPhotos(); if (!$("listPanel").hidden) drawList(); if (nav.screen === "calendar") drawCalendar(); if (state.card) showCard(); }
+      if (changed) { drawToday(); if (!$("photosPanel").hidden) drawPhotos(); if (!$("listPanel").hidden) drawList(); if (nav.screen === "calendar") drawCalendar(); if (state.card) showCard(); if (state.peek) drawPeek(); }
     })
     .catch(() => {}) // not signed in, offline or not in the garden: the garden's own photos still show
     .finally(() => { fetchingPhotos = null; });
@@ -921,10 +1024,12 @@ function setHighlight(ids, label, color) {
   chip.hidden = false;
   chip.querySelector("button").onclick = clearHighlight;
   yard.fitTo(ids);
+  updateYardView();
 }
 function clearHighlight() {
   yard.setHighlight(null);
   $("highlightChip").hidden = true;
+  updateYardView();
 }
 
 start();

@@ -406,7 +406,7 @@ const PLACES = [
 const GROUND = new THREE.Plane(V(0, 1, 0), 0);
 
 // ---------- public ----------
-export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) {
+export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace, onRender }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -928,9 +928,33 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
       return;
     }
     const hit = screenRay(e.clientX, e.clientY).intersectObjects(editing ? [...hitTargets, ...structHits] : hitTargets, false)[0];
-    onPick(hit ? hit.object.userData.plantId : null);
+    onPick(hit ? hit.object.userData.plantId : null, { x: e.clientX, y: e.clientY });
   });
   canvas.addEventListener("dblclick", (e) => { zoomAt(e.clientX, e.clientY, 0.5); onMove?.(); }); // mice (touch is handled above)
+
+  // ----- where plants are on screen -----
+  // For labels floating over plants: each plant's top as a point on the canvas (CSS pixels), how far it is from
+  // the camera, and whether it's in front of the camera at all.
+  const spot = V(0, 0, 0);
+  function spots(ids) {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    camera.updateMatrixWorld(); // in case the yard hasn't been drawn since the camera moved
+    const out = [];
+    for (const id of ids) {
+      const g = groups.get(id);
+      if (!g) continue;
+      if (g.userData.top == null) { // the top of what's drawn (a dug-up dahlia is only a box on the ground)
+        g.updateMatrixWorld(true); // it may not have been drawn yet
+        const box = new THREE.Box3().setFromObject(g.children[0]);
+        g.userData.top = box.isEmpty() ? 0.4 : Math.max(0.4, box.max.y - g.position.y);
+      }
+      spot.set(g.position.x, g.position.y + g.userData.top + 0.25, g.position.z);
+      const dist = spot.distanceTo(camera.position);
+      spot.project(camera);
+      out.push({ id, x: ((spot.x + 1) / 2) * w, y: ((1 - spot.y) / 2) * h, dist, front: spot.z < 1 });
+    }
+    return out;
+  }
 
   // ----- sizing & drawing -----
   function resize() {
@@ -970,10 +994,11 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace }) 
       fadeTrees();
       renderer.render(scene, camera);
       needsRender = false;
+      onRender?.();
     }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
-  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn, updatePlant, setEditing, setPlacing, setArches };
+  return { setPlants, setMonth, setBloom, select, focus, resetView, setHighlight, fitTo, views, goTo, zoomBy, turn, updatePlant, setEditing, setPlacing, setArches, spots };
 }

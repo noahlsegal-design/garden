@@ -44,7 +44,8 @@
     "./app/tasklist.js": "./app/tasklist.js?v=0f86166c70",
     "./app/tasks.js": "./app/tasks.js?v=0f86166c70",
     "./app/today.js": "./app/today.js?v=0f86166c70",
-    "./app/ui.js": "./app/ui.js?v=0f86166c70"
+    "./app/ui.js": "./app/ui.js?v=0f86166c70",
+    "./app/yardview.js": "./app/yardview.js?v=0f86166c70"
 } }
 </script>
 </head>
@@ -53,27 +54,33 @@
      timeline, Edit) show in the Yard view; the plant card opens over any screen. -->
 <main class="stage" id="stage">
   <canvas id="yard" tabindex="0" aria-label="3D model of the garden. Drag to move around, pinch or scroll to zoom, and use the arrow keys to slide the view. The Plants tab lists every plant."></canvas>
+  <!-- The Yard view's top bar: back to Today, the month the yard shows, and Views (with Edit under it). -->
   <div class="mapbar">
-    <div class="mapnotes">
-      <button type="button" class="yardback glass" id="yardBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Today</button>
-      <span class="hint" id="hintText"></span>
+    <button type="button" class="yardback glass onsky" id="yardBack" aria-label="Back to Today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
+    <div class="monthswitch glass onsky" role="group" aria-label="Month the yard shows">
+      <button type="button" id="monthPrev" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6L8.5 12l6 6"/></svg></button>
+      <button type="button" class="monthname" id="monthName" aria-live="polite"></button>
+      <button type="button" id="monthNext" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
     </div>
     <div class="mapbtns">
-      <button type="button" class="mapbtn" id="editBtn" aria-pressed="false" aria-controls="editBar" hidden>Edit</button>
-      <button type="button" class="mapbtn" id="viewsBtn" aria-expanded="false" aria-controls="viewsMenu">Views</button>
-      <button type="button" class="mapbtn" id="resetBtn">Reset view</button>
+      <button type="button" class="mapbtn glass onsky" id="viewsBtn" aria-expanded="false" aria-controls="viewsMenu">Views</button>
+      <button type="button" class="mapbtn glass onsky" id="editBtn" aria-pressed="false" aria-controls="editBar" hidden>Edit</button>
     </div>
   </div>
+  <p class="hint glass onsky" id="hintText" hidden></p>
+  <!-- Labels over plants with jobs this week, and the card that slides up for a plant (app/yardview.js). -->
+  <div class="ylabels" id="yardLabels" hidden></div>
   <div class="viewsmenu" id="viewsMenu" role="group" aria-label="Views" hidden></div>
   <div class="highlightchip" id="highlightChip" hidden></div>
   <div class="mapctl" role="group" aria-label="Move the view">
-    <button type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button type="button" id="zoomOutBtn" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
-    <button type="button" id="turnLeftBtn" class="gap" aria-label="Turn left" title="Turn left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 9.5A8 8 0 1 1 5 15"/><path d="M4 4.5v5h5"/></svg></button>
-    <button type="button" id="turnRightBtn" aria-label="Turn right" title="Turn right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 9.5A8 8 0 1 0 19 15"/><path d="M20 4.5v5h-5"/></svg></button>
+    <button type="button" class="glass onsky" id="zoomInBtn" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button type="button" class="glass onsky" id="zoomOutBtn" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+    <button type="button" id="turnLeftBtn" class="gap glass onsky" aria-label="Turn left" title="Turn left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 9.5A8 8 0 1 1 5 15"/><path d="M4 4.5v5h5"/></svg></button>
+    <button type="button" class="glass onsky" id="turnRightBtn" aria-label="Turn right" title="Turn right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 9.5A8 8 0 1 0 19 15"/><path d="M20 4.5v5h-5"/></svg></button>
   </div>
-  <div class="bloombar" id="bloomBar" role="group" aria-label="Bloom timeline"></div>
+  <div class="bloombar glass onsky" id="bloomBar" role="group" aria-label="Bloom timeline"></div>
   <div class="edittray" id="editBar" role="group" aria-label="Edit the yard" hidden></div>
+  <section class="peek glass" id="peek" aria-label="Plant" hidden></section>
   <div class="overlay" id="status" role="status">Loading your garden…</div>
 </main>
 

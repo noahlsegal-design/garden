@@ -195,10 +195,10 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 .setrow b{overflow-wrap:anywhere}
 @media (prefers-reduced-motion: reduce){ .jobopen img, .jobdone, .jobdone svg{transition:none} }
 
-/* The Yard view: Today's panels step aside and the yard's own controls appear, with a way back. */
+/* The Yard view (styled further down, with the yard's controls): Today's panels step aside and the yard's own
+   controls appear. */
 body.yardview .todaypanels{display:none}
-body:not(.yardview) .stage :is(.mapbar, .viewsmenu, .mapctl, .bloombar, .edittray){display:none !important}
-.yardback{pointer-events:auto; display:inline-flex; align-items:center; gap:2px; border-radius:var(--radius-pill); padding:0 14px 0 8px; min-height:40px; font-size:.9rem; font-weight:700; color:var(--text-onsky); --glass-bg:rgba(255,255,255,.6)}
+body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .edittray, .ylabels, .peek){display:none !important}
 
 /* ---------- Calendar and Plants: a screen over the blurred yard ---------- */
 .screen:not(.today){overflow-y:auto; overscroll-behavior:contain; padding:calc(var(--safe-top) + 14px) max(16px, (100% - 640px) / 2) calc(var(--dock-space) + 16px)}
@@ -334,31 +334,89 @@ button.wday{background:var(--lens)}
 canvas{display:block; width:100%; height:100%; touch-action:none; outline:none}
 canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 
-/* Things floating over the yard: notes top left, view buttons top right, zoom and turn buttons bottom right.
-   They stay light in dark mode because they sit on the light 3D sky. */
-.mapbar{position:absolute; left:12px; right:12px; top:calc(var(--safe-top) + 10px); display:flex; justify-content:space-between; align-items:flex-start; gap:8px; pointer-events:none}
-.mapnotes{display:grid; grid-template-columns:minmax(0,1fr); justify-items:start; gap:8px; min-width:0}
-.hint{max-width:290px; background:rgba(255,255,255,.88); color:var(--text-onsky); font-size:.8rem; line-height:1.4; padding:6px 10px; border-radius:8px}
-.mapbtns{display:flex; gap:6px; flex:none; pointer-events:auto}
-.mapbtn, .mapctl button{background:rgba(255,255,255,.93); color:var(--text-onsky); border:0; border-radius:var(--radius-pill); box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.mapbtn{font-size:.85rem; font-weight:600; padding:8px 12px; min-height:38px}
-.mapbtn[aria-expanded="true"]{background:var(--text-onsky); color:#fff}
+/* ---------- the Yard view: the live yard full screen ----------
+   The top bar (round back button, month switcher, Views with Edit under it), the how-to-move note under it, the
+   zoom and turn buttons bottom right, the bloom timeline along the bottom, labels over plants with jobs this week
+   and the small plant card. Glass over the yard stays light in dark mode too ("onsky"), since it sits on the
+   light 3D sky. */
+.onsky{--glass-bg:rgba(255,255,255,.6); --glass-border:rgba(255,255,255,.75); --glass-highlight:rgba(255,255,255,.85); --glass-solid:#F6F8F2; color:var(--text-onsky)}
+.mapbar{position:absolute; left:12px; right:12px; top:calc(var(--safe-top) + 10px); display:grid; grid-template-columns:1fr auto 1fr; align-items:start; gap:8px; pointer-events:none}
+.mapbar > *{pointer-events:auto}
+.yardback, .monthswitch, .mapbtn, .mapctl button, .hint{box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 18px rgba(0,0,0,.14)}
+.yardback{justify-self:start; width:44px; height:44px; border-radius:50%; padding:0; display:grid; place-items:center}
+.yardback:active, .mapctl button:active, .monthswitch button:active{transform:scale(.94)}
+.monthswitch{display:flex; align-items:center; height:44px; border-radius:var(--radius-pill); padding:0 2px}
+.monthswitch button{border:0; background:transparent; color:inherit; padding:0}
+.monthswitch button:not(.monthname){width:40px; height:40px; border-radius:50%; display:grid; place-items:center}
+.monthswitch svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.monthname{min-width:96px; height:40px; display:grid; place-content:center; text-align:center; font-family:var(--font-head); font-weight:600; font-size:1.12rem; line-height:1; letter-spacing:-.005em; border-radius:var(--radius-pill)}
+.monthname:disabled{cursor:default; opacity:1}
+.monthnow{display:block; margin-top:2px; font-family:var(--font-body); font-size:.62rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--accent-onsky)}
+.mapbtns{justify-self:end; display:grid; justify-items:end; gap:6px}
+.mapbtn{border-radius:var(--radius-pill); font-size:.88rem; font-weight:700; padding:0 15px; min-height:44px}
+.mapbtn[aria-expanded="true"]{background:var(--text-onsky); color:#fff; border-color:transparent}
+.hint{position:absolute; left:50%; top:calc(var(--safe-top) + 62px); transform:translateX(-50%); width:max-content; max-width:calc(100% - 24px); margin:0; border-radius:var(--radius-pill); padding:7px 14px; font-size:.78rem; line-height:1.35; text-align:center; pointer-events:none}
+.hint[hidden]{display:none}
 .highlightchip{position:absolute; left:12px; bottom:calc(var(--dock-space) + 4px); max-width:calc(100% - 80px); display:flex; align-items:center; gap:6px; background:var(--text-onsky); color:#fff; border-radius:var(--radius-pill); padding:4px 4px 4px 12px; font-size:.85rem; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .highlightchip span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .highlightchip button{flex:none; border:0; background:rgba(255,255,255,.18); color:#fff; border-radius:var(--radius-pill); width:30px; height:30px}
 .mapctl{position:absolute; right:12px; display:grid; gap:6px}
-.mapctl button{width:44px; height:44px; padding:0; display:grid; place-items:center}
+.mapctl button{width:44px; height:44px; border-radius:50%; padding:0; display:grid; place-items:center}
 .mapctl button.gap{margin-top:8px}
 .mapctl svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+/* Full screen: the tab bar steps aside, so everything at the bottom sits just above the home bar. */
+body.yardview .tabdock{display:none}
+body.yardview{--dock-space:calc(var(--dock-bottom) + 4px)}
+
+/* Labels over plants with jobs this week. Touches go through them to the yard (main.js matches a tap to a
+   label), so dragging, pinching and twisting work over them too. */
+.ylabels{position:absolute; inset:0; overflow:hidden; pointer-events:none}
+.ylabels[hidden]{display:none}
+.ylabel{position:absolute; left:0; top:0; display:flex; align-items:center; gap:5px; max-width:150px; height:28px; padding:0 10px; border-radius:var(--radius-pill); font-size:.76rem; font-weight:700; white-space:nowrap; pointer-events:none; will-change:transform;
+  --glass-blur:blur(12px) saturate(170%); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 3px 10px rgba(0,0,0,.16); transition:opacity .18s}
+.ylabel::after{content:""; position:absolute; left:50%; bottom:-6px; width:2px; height:6px; margin-left:-1px; border-radius:1px; background:rgba(255,255,255,.85)}
+.ylname{overflow:hidden; text-overflow:ellipsis}
+.ylcount{flex:none; min-width:17px; height:17px; padding:0 4px; border-radius:var(--radius-pill); display:grid; place-items:center; background:var(--accent-onsky); color:#fff; font-size:.66rem; font-weight:800}
+.ylabel.on{background:var(--text-onsky); color:#fff; border-color:transparent}
+.ylabel.on::after{background:var(--text-onsky)}
+.ylabel.off{opacity:0; visibility:hidden; transition:none}
+
+/* The small plant card that slides up: photo, name, where it is, what's happening now, and a pink arrow to the
+   full card. A swipe down or a tap on the yard puts it away. */
+.peek{position:absolute; z-index:4; left:12px; right:12px; bottom:var(--dock-space); margin:0 auto; max-width:460px; display:flex; align-items:center; gap:4px; padding:14px 12px 12px; border-radius:20px; color:var(--text); touch-action:none;
+  --glass-bg:color-mix(in srgb, var(--glass-solid) 70%, transparent);
+  box-shadow:inset 0 1px 0 var(--glass-highlight), 0 12px 34px rgba(0,0,0,.22); animation:peekin .28s cubic-bezier(.2,.9,.3,1.05)}
+.peek[hidden]{display:none}
+.peek.out{animation:peekout .2s ease-in forwards}
+@keyframes peekin{from{transform:translateY(calc(100% + 24px)); opacity:.4}}
+@keyframes peekout{to{transform:translateY(calc(100% + 24px)); opacity:0}}
+.peekgrab{position:absolute; top:5px; left:50%; width:36px; height:4px; margin-left:-18px; border-radius:2px; background:color-mix(in srgb, var(--text) 22%, transparent)}
+.peekmain{flex:1; min-width:0; display:flex; align-items:center; gap:12px; border:0; background:transparent; padding:0; text-align:left; color:inherit; border-radius:12px}
+.peekpic{position:relative; flex:none; width:76px; height:76px; border-radius:12px; overflow:hidden; background:var(--chip)}
+.peekpic img{width:100%; height:100%; object-fit:cover; display:block}
+.peekpic img.missing{visibility:hidden}
+.peekpic .placeholder{padding:8px}
+.peekpic .placeholder span{font-size:.78rem}
+.peektext{min-width:0; display:grid; gap:2px}
+.peekname{font-family:var(--font-head); font-weight:600; font-size:1.18rem; line-height:1.12; letter-spacing:-.005em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.peekwhere{font-size:.78rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.peeknow{margin-top:2px; font-size:.82rem; line-height:1.32; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.peekeyebrow{font-weight:800; color:var(--accent)}
+.peekgo{flex:none; width:46px; height:46px; margin-left:6px; border:0; border-radius:50%; padding:0; display:grid; place-items:center; background:var(--accent); color:#fff; box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent)}
+.peekgo svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round}
+.peekgo:active{transform:scale(.94)}
+body.peeking .stage .bloombar{visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .peek, .peek.out{animation:none} .ylabel{transition:none} }
+
 /* Bloom timeline along the bottom, just above the tab bar; the zoom buttons and ring chip sit above it. */
 .stage{--bloombar:104px}
 .mapctl, body.yardview .highlightchip{bottom:calc(var(--dock-space) + var(--bloombar) + 10px)}
-.bloombar{--thumb:26px; position:absolute; left:12px; right:12px; bottom:var(--dock-space); height:var(--bloombar); background:rgba(255,255,255,.93); color:var(--text-onsky); border-radius:var(--radius); box-shadow:0 1px 4px rgba(0,0,0,.18); padding:8px 10px 6px 8px; display:grid; grid-template-rows:auto 1fr; gap:2px}
+.bloombar{--thumb:26px; position:absolute; left:12px; right:12px; bottom:var(--dock-space); height:var(--bloombar); border-radius:var(--radius); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 18px rgba(0,0,0,.14); padding:8px 10px 6px 8px; display:grid; grid-template-rows:auto 1fr; gap:2px}
 .bloomhead{display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:28px; padding-left:4px}
 .bloomlabel{font-size:.85rem; color:#5A6955; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .bloomlabel b{color:var(--text-onsky)}
 .bloombar.on .bloomlabel b{color:var(--accent-onsky)}
-.bloomoff{flex:none; border:0; background:#E3EBD6; color:var(--text-onsky); border-radius:var(--radius-pill); width:28px; height:28px; font-size:.85rem; line-height:1}
+.bloomoff{flex:none; border:0; background:rgba(255,255,255,.7); color:var(--text-onsky); border-radius:var(--radius-pill); width:28px; height:28px; font-size:.85rem; line-height:1}
 .bloomrow{display:flex; align-items:center; gap:8px; min-height:0}
 .bloomplay{flex:none; width:44px; height:44px; border:0; border-radius:50%; background:var(--accent-onsky); color:#fff; display:grid; place-items:center; padding:0}
 .bloomplay svg{width:20px; height:20px; fill:currentColor}
@@ -377,7 +435,7 @@ canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 @media (min-width:900px){
   .bloombar{right:auto; width:min(520px, calc(100% - 468px))}
 }
-.viewsmenu{position:absolute; top:calc(var(--safe-top) + 58px); right:12px; z-index:3; width:min(250px, calc(100% - 24px)); max-height:calc(100% - var(--safe-top) - var(--dock-space) - 70px); overflow-y:auto; overscroll-behavior:contain; background:var(--sheet); color:var(--ink); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.25); padding:4px 6px 6px}
+.viewsmenu{position:absolute; top:calc(var(--safe-top) + 62px); right:12px; z-index:3; width:min(250px, calc(100% - 24px)); max-height:calc(100% - var(--safe-top) - var(--dock-space) - 70px); overflow-y:auto; overscroll-behavior:contain; background:var(--sheet); color:var(--ink); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.25); padding:4px 6px 6px}
 .viewsmenu h3{margin:10px 10px 2px; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
 .viewsmenu button{display:flex; width:100%; justify-content:space-between; align-items:baseline; gap:10px; text-align:left; border:0; background:transparent; border-radius:9px; padding:10px; min-height:44px; font-size:.95rem; font-weight:600}
 .viewsmenu button:hover{background:var(--chip)}
