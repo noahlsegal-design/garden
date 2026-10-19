@@ -246,6 +246,8 @@ function writeLocal(key, value) {
 function applyChange(checks, change) {
   Object.assign(checks.done, change.set || {});
   for (const k of change.unset || []) delete checks.done[k];
+  // A check-off made or taken back on this device is no longer someone else's.
+  for (const k of [...Object.keys(change.set || {}), ...(change.unset || [])]) delete checks.doneBy[k];
   for (const [year, date] of Object.entries(change.frosts || {})) {
     if (date) checks.frosts[year] = date;
     else delete checks.frosts[year];
@@ -269,11 +271,12 @@ function combine(a, b) {
   return out;
 }
 const isEmpty = (c) => !c || (!Object.keys(c.set || {}).length && !(c.unset || []).length && !Object.keys(c.frosts || {}).length && !Object.keys(c.edits || {}).length);
-// `shared` is false when Supabase still has the setup from before the garden was shared, and `sharedWith`
-// lists everyone else in the garden.
+// `shared` is false when Supabase still has the setup from before the garden was shared, `sharedWith` lists
+// everyone else in the garden (their emails, and in `partners` their names), and `doneBy` names who made each
+// check-off that someone else made.
 const copyOf = (state) => ({
   done: { ...(state?.done || {}) }, frosts: { ...(state?.frosts || {}) }, edits: { ...(state?.edits || {}) },
-  shared: state?.shared ?? null, sharedWith: state?.sharedWith || [],
+  doneBy: { ...(state?.doneBy || {}) }, shared: state?.shared ?? null, sharedWith: state?.sharedWith || [], partners: state?.partners || [],
 });
 
 // True when the app is being served by the Mac itself (serve.py) rather than from the internet.
@@ -318,7 +321,7 @@ function splitOldJobChecks(done, plants) {
 // copy. `status` is "loading", "saved", or why saving isn't possible right now: "offline", "signed-out",
 // "not-member", "old-server" or "setup".
 export function createCheckStore(plants, backend, onUpdate) {
-  const checks = { done: {}, frosts: {}, edits: {}, status: "loading" };
+  const checks = { done: {}, frosts: {}, edits: {}, doneBy: {}, status: "loading" };
   let saved = copyOf(readLocal(COPY_KEY));
   let waiting = readLocal(WAITING_KEY);
   const old = readLocal(OLD_KEY);

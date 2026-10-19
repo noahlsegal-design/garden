@@ -85,7 +85,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 a{color:var(--moss)}
 h1, h2, h3, h4{font-family:var(--font-head); font-weight:600}
 /* small all-caps labels stay in the body font */
-.viewsmenu h3, .box h3, .plist h3, .tlist h3, .rsec h4{font-family:var(--font-body); font-weight:700}
+.viewsmenu h3, .plist h3, .tlist h3, .rsec h4{font-family:var(--font-body); font-weight:700}
 
 /* ---------- the layers, back to front ----------
    The 3D yard fills the screen (.stage). On Calendar and Plants a blurred veil covers it. The screens sit on top,
@@ -108,20 +108,92 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 .searchbtn{flex:none; width:var(--tabbar-h); height:var(--tabbar-h); border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text)}
 @media (prefers-reduced-motion: reduce){ .tab{transition:none} }
 
-/* ---------- Today: panels over the live yard (touches between them reach the yard) ---------- */
+/* ---------- Today: over the live yard (touches between the panels reach the yard) ----------
+   The count sits at the top on a soft blurred fade; the jobs, the other person's line and the photos sit at the
+   bottom above the tab bar. On short screens the whole lot scrolls. */
 .screen.today{pointer-events:none}
-.todaypanels{position:absolute; left:16px; right:16px; top:calc(var(--safe-top) + 12px); display:grid; gap:10px; justify-items:start}
-.todaycard{pointer-events:auto; width:min(100%, 420px); border-radius:var(--radius); padding:14px 16px 16px; box-shadow:inset 0 1px 0 var(--glass-highlight), 0 8px 28px rgba(0,0,0,.12)}
-.todaydate{margin:0; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
-.todaycard h1{margin:2px 0 0; font-size:1.7rem; line-height:1.1; letter-spacing:-.01em}
-.todaymonth{margin:6px 0 0; font-size:.9rem; color:var(--muted)}
-.todaymonth b{color:var(--text)}
-.todaymonth .linkbtn{min-height:0; padding:0}
-.todaybtns{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
-.ghostbtn{background:transparent; border:1px solid var(--line); border-radius:var(--radius-pill); padding:8px 14px; font-size:.9rem; font-weight:600; white-space:nowrap; min-height:40px}
-.todaycard .ghostbtn:not(.primary){border-color:var(--glass-border); background:var(--lens)}
-.ghostbtn.primary{background:var(--ink); color:var(--paper); border-color:var(--ink); display:inline-flex; align-items:center; gap:6px}
-.ghostbtn .count{display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 6px; border-radius:var(--radius-pill); background:var(--bloom); color:var(--sheet); font-size:.75rem; font-weight:700}
+.todaypanels{position:absolute; inset:0; display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; padding:calc(var(--safe-top) + 12px) 0 calc(var(--dock-space) + 12px)}
+.todaypanels::-webkit-scrollbar{display:none}
+.todayhead{position:relative; isolation:isolate; padding:0 16px 8px; color:var(--text)}
+.todayhead::before{content:""; position:absolute; z-index:-1; left:0; right:0; bottom:-36px; top:calc(-12px - var(--safe-top)); pointer-events:none;
+  background:linear-gradient(to bottom, var(--paper) 0%, color-mix(in srgb, var(--paper) 70%, transparent) 55%, transparent 100%);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  -webkit-mask-image:linear-gradient(to bottom, #000 60%, transparent); mask-image:linear-gradient(to bottom, #000 60%, transparent)}
+.todaytop{display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:44px}
+.todaydate{margin:0; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted)}
+.gearbtn{pointer-events:auto; flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,.12)}
+.gearbtn svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+/* The big number: a line height of 1 keeps its glyphs inside its own box, and the gap above keeps it clear of the date. */
+.todaycount{pointer-events:auto; display:inline-flex; align-items:flex-end; gap:12px; margin-top:10px; padding:0; border:0; background:transparent; color:var(--text); text-align:left; border-radius:var(--radius)}
+.bignum{font-family:var(--font-head); font-weight:500; font-size:104px; line-height:1; letter-spacing:-.04em; font-variant-numeric:lining-nums; font-optical-sizing:auto}
+.numlabel{font-family:var(--font-head); font-weight:500; font-size:1.45rem; line-height:1.05; padding-bottom:.62em; color:var(--text)}
+.todaymonth{pointer-events:auto; width:fit-content; margin:4px 0 0; border-radius:var(--radius-pill); padding:4px 4px 4px 12px; font-size:.86rem; color:var(--text); display:flex; align-items:center; gap:6px}
+.todaymonth .linkbtn{min-height:30px; padding:0 8px}
+
+.todaybottom{margin-top:auto; padding:10px 16px 0; display:grid; grid-template-columns:minmax(0,1fr); gap:10px; width:100%; max-width:600px}
+.todaybottom > *{pointer-events:auto}
+#todayJobs{pointer-events:none; margin:0 -16px}
+.jobstrip{pointer-events:auto; list-style:none; margin:0; padding:4px 16px 10px; display:flex; gap:10px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scroll-padding:0 16px; scrollbar-width:none}
+.jobstrip::-webkit-scrollbar{display:none}
+.jobcard{position:relative; flex:none; width:168px; height:212px; border-radius:var(--radius); overflow:hidden; scroll-snap-align:start; background:var(--chip); box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.jobopen{position:absolute; inset:0; width:100%; padding:0; border:0; background:transparent; text-align:left; border-radius:inherit; overflow:hidden}
+.jobopen:focus-visible{outline-offset:-3px}
+.jobopen img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .2s, filter .2s}
+.jobopen img.missing{display:none}
+.jobopen::after{content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(10,14,10,.86) 0%, rgba(10,14,10,.55) 34%, rgba(10,14,10,0) 62%)}
+.jobtext{position:absolute; z-index:1; left:12px; right:12px; bottom:12px; display:grid; gap:4px; color:#fff}
+.jobtext b{font-family:var(--font-head); font-weight:600; font-size:1.22rem; line-height:1.08; letter-spacing:-.005em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.jobtext span{font-size:.76rem; line-height:1.3; color:rgba(255,255,255,.86); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.jobdone{position:absolute; z-index:2; top:10px; right:10px; width:34px; height:34px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid rgba(255,255,255,.92); background:rgba(0,0,0,.2); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); color:#fff; transition:background-color .15s, border-color .15s}
+.jobdone::before{content:""; position:absolute; inset:-6px; border-radius:50%} /* a bigger target for fingers */
+.jobdone svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s}
+.jobdone[aria-checked="true"]{background:var(--accent-onsky); border-color:var(--accent-onsky)}
+.jobdone[aria-checked="true"] svg{opacity:1}
+.jobdone[aria-checked="mixed"]{border-color:var(--accent-onsky); background:rgba(0,0,0,.28)}
+.jobdone[aria-checked="mixed"]::after{content:""; width:12px; height:2.5px; border-radius:2px; background:#fff}
+.jobcard.done img{opacity:.6; filter:saturate(.5)}
+.jobcard.more{background:var(--glass-bg); -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur); border:1px solid var(--glass-border); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 8px 22px rgba(0,0,0,.12)}
+.jobcard.more .jobopen{display:flex; flex-direction:column; justify-content:flex-end; gap:6px; padding:14px; color:var(--text); font-family:var(--font-head); font-weight:600; font-size:1.25rem; line-height:1.1}
+.jobcard.more .jobopen::after{content:none}
+.jobcard.more .jobopen span{font-family:var(--font-body); font-weight:400; font-size:.78rem; line-height:1.35; color:var(--muted)}
+/* A plant with no photo: a soft colour of its own, with its name. */
+.placeholder{position:absolute; inset:0; display:block; padding:14px 50px 0 14px; background:hsl(var(--h) 40% 82%); color:hsl(var(--h) 32% 28%)}
+.placeholder span{font-family:var(--font-head); font-style:italic; font-weight:500; font-size:1.15rem; line-height:1.15; opacity:.75}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .placeholder{background:hsl(var(--h) 22% 30%); color:hsl(var(--h) 40% 84%)} }
+:root[data-theme="dark"] .placeholder{background:hsl(var(--h) 22% 30%); color:hsl(var(--h) 40% 84%)}
+.nojobs{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 16px; border-radius:var(--radius); padding:10px 14px; color:var(--text)}
+.nojobs .linkbtn{min-height:32px; padding:0}
+
+/* The other person's latest check-off, with their initial. */
+.partnerline{display:flex; align-items:center; gap:10px; min-height:54px; padding:8px 16px 8px 9px; border-radius:var(--radius-pill); color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.1)}
+.initial{flex:none; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; background:var(--accent); color:var(--sheet); font-family:var(--font-head); font-weight:600; font-size:1.15rem; line-height:1}
+.ptext{display:grid; min-width:0}
+.ptext b{font-size:.9rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ptext span{font-size:.78rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* Latest photos */
+.photospanel{border-radius:var(--radius); padding:10px 14px 14px; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.1)}
+.photoshead{display:flex; align-items:center; gap:8px; min-height:36px}
+.photoshead h2{flex:1; margin:0; font-size:1.15rem; letter-spacing:-.005em}
+.photocheck{display:inline-flex; align-items:center; gap:5px; border:0; border-radius:var(--radius-pill); background:var(--lens); padding:0 11px 0 9px; min-height:32px; font-size:.8rem; font-weight:700}
+.photocheck svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linejoin:round}
+.photoshead .linkbtn{color:var(--accent); text-decoration:none; padding:0 4px; min-height:36px; font-size:.92rem}
+.phototiles{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin-top:6px}
+.phototiles button{aspect-ratio:1; padding:0; border:0; border-radius:10px; overflow:hidden; background:var(--chip)}
+.phototiles img, .photogrid .pgpic img{width:100%; height:100%; object-fit:cover; display:block}
+.phototiles img.missing, .photogrid img.missing{visibility:hidden}
+.photospanel > p.small{margin:6px 0 0}
+
+/* Every photo ("All"), and Settings */
+.photogrid{list-style:none; margin:0; padding:14px 0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px 10px}
+.photogrid li{display:grid; gap:4px; min-width:0}
+.photogrid .pgpic{aspect-ratio:3/4; padding:0; border:0; border-radius:10px; overflow:hidden; background:var(--chip)}
+.photogrid .pgname{border:0; background:transparent; padding:0; text-align:left; font-size:.8rem; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.settings p{line-height:1.5; margin:6px 0}
+.setrow{display:grid; gap:1px; padding:8px 0; border-bottom:1px solid var(--line)}
+.setrow span{font-size:.82rem; color:var(--muted)}
+.setrow b{overflow-wrap:anywhere}
+@media (prefers-reduced-motion: reduce){ .jobopen img, .jobdone, .jobdone svg{transition:none} }
 
 /* The Yard view: Today's panels step aside and the yard's own controls appear, with a way back. */
 body.yardview .todaypanels{display:none}
@@ -239,23 +311,131 @@ canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 .overlay[hidden]{display:none}
 .overlay pre{white-space:pre-wrap; text-align:left; background:var(--chip); padding:10px 12px; border-radius:8px; color:var(--ink); font-size:.8rem; max-width:60ch}
 
-/* ---------- plant card (bottom sheet on phones, side panel on wide screens) ---------- */
+/* ---------- plant card (full screen on phones, a side panel on wide screens) ----------
+   The plant's photo across the top with its name over a dark fade, then glass panels over a soft blur of the
+   same photo: Now, the Water / Feed / Dog safety tiles, its year as a colour strip, and the folding sections. */
 .sheet{
-  position:fixed; left:0; right:0; bottom:0; max-height:62%; overflow-y:auto; overscroll-behavior:contain;
-  background:var(--sheet); border-top:1px solid var(--line); border-radius:var(--radius) var(--radius) 0 0;
-  padding:8px 18px calc(env(safe-area-inset-bottom,0px) + 24px); box-shadow:0 -6px 24px rgba(0,0,0,.14);
-  animation:up .22s ease;
+  position:fixed; inset:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  background:var(--paper); padding:0 0 calc(env(safe-area-inset-bottom,0px) + 28px);
+  animation:cardin .24s ease;
+  /* the season strip's colours */
+  --st-rest:#CFC8B8; --st-up:#BFDD8F; --st-leaf:#4E8C45; --st-bloom:var(--accent); --st-crop:#E2A23B; --st-fade:#B86F35;
 }
-@keyframes up{from{transform:translateY(40px); opacity:0}}
+:root[data-theme="dark"] .sheet{--st-rest:#4A4C43; --st-up:#A3C474; --st-leaf:#3E7A3A}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .sheet{--st-rest:#4A4C43; --st-up:#A3C474; --st-leaf:#3E7A3A} }
+@keyframes cardin{from{transform:translateY(28px); opacity:0}}
 @media (prefers-reduced-motion: reduce){ .sheet{animation:none} }
 @media (min-width:900px){
-  .sheet{left:auto; top:calc(var(--safe-top) + 12px); right:12px; bottom:12px; width:420px; max-height:none; border:1px solid var(--line); border-radius:var(--radius)}
+  .sheet{left:auto; top:calc(var(--safe-top) + 12px); right:12px; bottom:12px; width:420px; border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 10px 40px rgba(0,0,0,.22)}
 }
-.grab{width:40px; height:4px; border-radius:2px; background:var(--line); margin:2px auto 10px}
-@media (min-width:900px){ .grab{display:none} }
-.sheethead{display:flex; justify-content:space-between; align-items:flex-start; gap:12px}
-.sheet h2{margin:0; font-size:1.35rem; line-height:1.15; font-weight:600}
-.where{margin:4px 0 0; font-size:.88rem; color:var(--muted)}
+
+/* the photo, the name and the two round buttons */
+.chero{position:relative; height:380px; overflow:hidden; color:#fff; background:hsl(var(--h) 30% 42%)}
+.chero.nophoto{background:linear-gradient(160deg, hsl(var(--h) 34% 52%), hsl(var(--h) 30% 30%))}
+.cheropic{position:absolute; inset:0; padding:0; border:0; background:none; display:block; width:100%; cursor:zoom-in}
+.cheropic img{display:block; width:100%; height:100%; object-fit:cover}
+.cheropic img:not([src]){visibility:hidden}
+.chero::after{content:""; position:absolute; inset:auto 0 0; height:68%; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(8,12,8,0), rgba(8,12,8,.38) 40%, rgba(8,12,8,.82))}
+.chero::before{content:""; position:absolute; inset:0 0 auto; height:120px; z-index:1; pointer-events:none; background:linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0))}
+.cherotop{position:absolute; z-index:2; top:calc(var(--safe-top) + 12px); left:14px; right:14px; display:flex; justify-content:space-between; pointer-events:none}
+@media (min-width:900px){ .cherotop{top:12px} }
+.cround{pointer-events:auto; width:44px; height:44px; border-radius:50%; padding:0; display:grid; place-items:center; color:#fff;
+  --glass-bg:rgba(20,26,20,.28); --glass-border:rgba(255,255,255,.34); --glass-highlight:rgba(255,255,255,.3);
+  box-shadow:inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,.18)}
+.cround svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.cardback svg{stroke-width:2.4}
+.cround:active{transform:scale(.94)}
+.cherotext{position:absolute; z-index:2; left:18px; right:18px; bottom:18px; pointer-events:none}
+.cherotext .badges{pointer-events:auto}
+.sheet .chero h2{margin:0; font-family:var(--font-head); font-weight:500; font-size:2.7rem; line-height:.98; letter-spacing:-.02em; text-wrap:balance; text-shadow:0 1px 12px rgba(0,0,0,.25)}
+.chero .where{margin:8px 0 0; font-size:.9rem; line-height:1.35; color:rgba(255,255,255,.86)}
+.chero .badges{margin-top:10px}
+.chero .badges .badge{background:rgba(20,26,20,.32); color:#fff; border:1px solid rgba(255,255,255,.3); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+.chero .badges .badge.unconfirmed{border-style:dashed; color:#FFE2A6}
+.chero .badges .badge.attention{color:#FFE2A6}
+.chero .badges .badge.safe{color:#C9F2C4}
+
+/* the panels, over a soft blur of the photo */
+.cbody{position:relative; padding:14px 14px 0; display:grid; gap:10px}
+.cbody > *{position:relative; min-width:0}
+.cglow{position:absolute !important; z-index:0; inset:0 0 auto; height:620px; background-color:hsl(var(--h, 100) 30% 60% / .2); background-size:cover; background-position:center;
+  filter:blur(48px) saturate(140%); opacity:.55; transform:scale(1.15); pointer-events:none;
+  -webkit-mask-image:linear-gradient(#000 30%, transparent); mask-image:linear-gradient(#000 30%, transparent)}
+.cpanel{border-radius:var(--radius); padding:14px 16px; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.06)}
+.eyebrow{display:block; margin:0; font-family:var(--font-body); font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.cpanel .status{margin-top:4px; font-family:var(--font-head); font-weight:600; font-size:1.45rem; line-height:1.1}
+.cpanel p{margin:6px 0 0; font-size:.95rem; line-height:1.5}
+
+/* Now: the stage this month, the care due with its done circles, and what's next */
+.nowbox .eyebrow{display:flex; align-items:center; gap:7px}
+.nowbox .eyebrow::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--c)}
+.nowcare{list-style:none; margin:12px 0 0; padding:0; display:grid; gap:2px}
+.nowcare li{display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); font-size:.95rem; line-height:1.45}
+.nowcare li:first-child{border-top:0; padding-top:2px}
+.nowcare li.done > span:last-child{color:var(--muted)}
+.cdone{position:relative; flex:none; width:30px; height:30px; margin-top:-2px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid var(--muted); background:transparent; color:#fff; transition:background-color .15s, border-color .15s}
+.cdone::before{content:""; position:absolute; inset:-7px; border-radius:50%}
+.cdone svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s}
+.cdone[aria-checked="true"]{background:var(--accent); border-color:var(--accent)}
+.cdone[aria-checked="true"] svg{opacity:1}
+.cdot{flex:none; width:30px; height:22px; display:grid; place-items:center}
+.cdot::after{content:""; width:7px; height:7px; border-radius:50%; background:var(--muted); opacity:.6}
+@media (prefers-reduced-motion: reduce){ .cdone, .cdone svg{transition:none} }
+.nowbox .seasonbtns{margin-top:12px}
+.nowbox .btn{margin-top:12px}
+.nextline{display:flex; flex-direction:column; gap:3px; width:calc(100% + 32px); margin:14px -16px -14px; padding:12px 16px 14px; border:0; border-top:1px solid var(--line); background:none; text-align:left; color:var(--text); font-size:.92rem; line-height:1.4; border-radius:0 0 var(--radius) var(--radius)}
+.nextline .more{color:var(--muted); white-space:nowrap}
+.nextline:active{background:var(--glass-highlight)}
+
+/* Water, Feed, Dog safety */
+.ctiles{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px}
+.ctile{display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-height:96px; padding:11px 12px 12px; border-radius:var(--radius); text-align:left; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.06)}
+.ctile b{font-family:var(--font-head); font-weight:600; font-size:1.18rem; line-height:1.08; margin-top:auto; overflow-wrap:anywhere}
+.ctile .tsub{font-size:.76rem; line-height:1.25; color:var(--muted)}
+.ctile.now .tsub{color:var(--ok); font-weight:700}
+.ctile[aria-expanded="true"]{outline:2px solid var(--text); outline-offset:-2px}
+.ctile.dog.toxic{--glass-bg:rgba(178,34,24,.9); --glass-border:rgba(255,160,150,.45); --glass-highlight:rgba(255,255,255,.25); color:#fff}
+.ctile.dog.toxic .eyebrow, .ctile.dog.toxic .tsub{color:rgba(255,255,255,.88)}
+.ctile.dog.toxic[aria-expanded="true"]{outline-color:#fff; outline-offset:-4px}
+.ctile.dog.caution b{color:var(--warn)}
+.ctile.dog.safe b{color:var(--ok)}
+.tilemore .tasks{margin-top:0}
+.tilemore.dog.toxic{border-left:4px solid var(--danger)}
+.tilemore.dog.toxic .status{color:var(--danger)}
+.tilemore.dog.caution{border-left:4px solid var(--warn)}
+
+/* its year */
+.seasonstrip{list-style:none; margin:10px 0 0; padding:0; display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); gap:3px}
+.seasonstrip li{display:grid; gap:5px; justify-items:center}
+.seasonstrip i{display:block; width:100%; height:30px; border-radius:6px; background:var(--sc)}
+.seasonstrip li:first-child i{border-radius:9px 6px 6px 9px}
+.seasonstrip li:last-child i{border-radius:6px 9px 9px 6px}
+.seasonstrip span{font-size:.72rem; font-weight:600; color:var(--muted)}
+.seasonstrip li.on i{outline:2.5px solid var(--text); outline-offset:2px}
+.seasonstrip li.on span{color:var(--text); font-weight:800}
+.seasonkey{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.78rem; color:var(--muted)}
+.seasonkey li{display:flex; align-items:center; gap:6px}
+.seasonkey i{width:10px; height:10px; border-radius:3px; background:var(--sc)}
+
+/* the folding sections */
+.sheet details.csec{margin:0; padding:14px 16px; border-top:1px solid var(--glass-border)}
+.csec > summary{min-height:54px; padding:0 16px; margin:-14px -16px; font-family:var(--font-head); font-weight:600; font-size:1.2rem; border-radius:var(--radius)}
+.csec > summary::after, .csec[open] > summary::after{content:none}
+.csec > summary svg{flex:none; width:20px; height:20px; fill:none; stroke:var(--muted); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:transform .2s}
+.csec[open] > summary svg{transform:rotate(180deg)}
+.csec[open] > summary{margin-bottom:0}
+.csecbody{padding:4px 0 2px}
+.csecbody > :first-child{margin-top:4px}
+.csec .notes{margin-top:12px; padding-left:0; font-size:inherit}
+.csec #cardNotes{margin-top:0; padding-top:0; border-top:0}
+.csec #cardNotes .noteshead h3{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap} /* the section's own title says it */
+.csec #cardNotes .noteshead{justify-content:flex-end}
+.csec #cardNotes .noteshead:not(:has(button)){display:none}
+.csec .stitle{margin:12px 0 0; font-weight:700}
+.csec .tag{background:var(--chip)}
+.csec .photos{margin:12px -16px 0; padding:0 16px 4px}
+@media (prefers-reduced-motion: reduce){ .csec > summary svg{transition:none} }
 .close{border:0; background:var(--chip); border-radius:50%; width:40px; height:40px; font-size:1.2rem; line-height:1; flex:none}
 .badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
 .badge{display:inline-flex; align-items:center; gap:4px; font-size:.78rem; font-weight:700; padding:4px 9px; border-radius:var(--radius-pill); background:var(--chip); color:var(--ink); white-space:nowrap}
@@ -267,14 +447,8 @@ canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 .photos{display:flex; gap:8px; overflow-x:auto; margin:14px -18px 0; padding:0 18px 4px; scroll-snap-type:x mandatory}
 .photos button{flex:none; border:0; padding:0; border-radius:10px; overflow:hidden; scroll-snap-align:start; background:var(--chip)}
 .photos img{display:block; height:130px; width:auto; min-width:98px}
-.box{margin-top:14px; padding:12px 14px; border-radius:var(--radius); background:var(--chip)}
-.box.now{border-left:4px solid var(--c, var(--moss))}
-.box.dog-toxic{background:var(--danger-bg); border-left:4px solid var(--danger)}
-.box.dog-caution{background:var(--warn-bg); border-left:4px solid var(--warn)}
-.box h3{margin:0 0 6px; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700}
-.box.dog-toxic h3{color:var(--danger)} .box.dog-caution h3{color:var(--warn)}
 .status{font-weight:700; font-size:1.02rem}
-.box p, .sheet p{margin:6px 0 0; font-size:.95rem; line-height:1.5}
+.sheet p{margin:6px 0 0; font-size:.95rem; line-height:1.5}
 .tasks{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:8px}
 .tasks li{font-size:.93rem; line-height:1.45}
 .tag{display:inline-block; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 6px; border-radius:5px; margin-right:6px; background:var(--sheet); color:var(--muted); vertical-align:1px}
@@ -315,7 +489,6 @@ details[open] > summary::after{content:"–"}
 .formbtns{display:flex; align-items:center; gap:16px; margin-top:4px}
 .formbtns .btn{margin-top:0}
 .formbtns .btn:disabled{opacity:.55; cursor:default}
-.box .btn{margin-top:12px}
 
 /* the card's notes and photos (notes.js) */
 .notes{margin-top:16px; padding-top:12px; border-top:1px solid var(--line)}
@@ -359,13 +532,89 @@ details[open] > summary::after{content:"–"}
 .listpanel{position:fixed; inset:0; z-index:10; background:var(--sheet); display:flex; flex-direction:column; animation:fadein .15s ease}
 @keyframes fadein{from{opacity:0}}
 @media (min-width:900px){ .listpanel:not(.screen){left:auto; width:480px; border-left:1px solid var(--line); box-shadow:-8px 0 30px rgba(0,0,0,.15)} }
-/* Plants: the list over the blurred yard. Its heading and filters stay put while the plants scroll under them. */
-.listpanel.screen{z-index:2; background:transparent; padding:0; overflow:hidden; animation:none}
-.listpanel.screen .listhead{padding:calc(var(--safe-top) + 14px) max(16px, (100% - 640px) / 2) 10px}
-.listpanel.screen .listhead h2{font-size:1.7rem; letter-spacing:-.01em}
-.listpanel.screen .plist{padding:0 max(16px, (100% - 640px) / 2) calc(var(--dock-space) + 16px)}
-.listpanel.screen .plist h3{background:var(--veil); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); margin:0 -8px; padding:12px 8px 6px}
-.listpanel.screen :is(.search, .filters select, .toggle:not([aria-pressed="true"])){background:var(--glass-bg)}
+/* ---------- the Plants screen: over the blurred yard ----------
+   The title, search and chips stay put while the cards scroll under them. --pg is the side gutter, which grows on
+   wide screens so the grid stays a comfortable width. */
+.listpanel.screen{z-index:2; background:transparent; padding:0; overflow:hidden; animation:none; --pg:max(16px, (100% - 720px) / 2)}
+.phead{position:relative; z-index:3; flex:none; display:grid; gap:12px; padding:calc(var(--safe-top) + 14px) var(--pg) 10px}
+.ptitle{display:flex; align-items:baseline; justify-content:space-between; gap:12px; min-height:52px}
+.ptitle h1{margin:0; font-weight:500; font-size:3rem; line-height:1; letter-spacing:-.035em; font-optical-sizing:auto}
+.pcount{margin:0; font-family:var(--font-head); font-size:1.2rem; color:var(--muted); font-variant-numeric:lining-nums tabular-nums; white-space:nowrap}
+.pcount b{font-weight:600; color:var(--text)}
+.psearch{display:flex; align-items:center; gap:8px; min-height:46px; padding:0 6px 0 14px; border-radius:var(--radius-pill); color:var(--muted); cursor:text; box-shadow:inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,.07)}
+.psearch:focus-within{outline:2px solid var(--accent); outline-offset:2px}
+.psearch svg{flex:none; width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round}
+.psearch input{flex:1; min-width:0; min-height:44px; border:0; background:transparent; padding:0; font:inherit; font-size:1rem; color:var(--text); outline:none}
+.psearch input::placeholder{color:var(--muted)}
+.pchips{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 4px}
+.pchips::-webkit-scrollbar{display:none}
+.pfilter{position:relative; flex:none; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text)}
+.pfilter svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round}
+.pfilter[aria-expanded="true"]{background:var(--lens)}
+.pfiltern{position:absolute; top:-4px; right:-4px; min-width:19px; height:19px; padding:0 5px; border-radius:10px; display:grid; place-items:center; background:var(--accent); color:#fff; font-size:.7rem; font-weight:800; line-height:1}
+.pchip{flex:none; min-height:40px; padding:0 15px; border-radius:var(--radius-pill); font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap}
+.pchip[aria-pressed="true"]{background:var(--text); color:var(--paper); border:1px solid var(--text)}
+
+/* The filter drop-down. The see-through layer behind it closes it when tapped. */
+.fscrim{position:fixed; inset:0; z-index:0}
+.fmenu{position:absolute; z-index:1; top:calc(100% - 4px); left:var(--pg); width:min(340px, 100% - 32px); display:flex; flex-direction:column;
+  max-height:calc(100dvh - var(--safe-top) - 190px - var(--dock-space)); border-radius:20px; color:var(--text);
+  --glass-bg:color-mix(in srgb, var(--sheet) 76%, transparent);
+  box-shadow:inset 0 1px 0 var(--glass-highlight), 0 18px 50px rgba(0,0,0,.24); animation:fmenuin .16s ease-out; transform-origin:24px 0}
+@keyframes fmenuin{from{opacity:0; transform:translateY(-6px) scale(.98)}}
+.fmenuscroll{overflow-y:auto; overscroll-behavior:contain; padding:4px 16px}
+.fmenu fieldset{border:0; margin:0; padding:12px 0; min-width:0}
+.fmenu fieldset + fieldset{border-top:1px solid var(--line)}
+.fmenu legend{float:left; width:100%; padding:0; margin-bottom:6px; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--muted)}
+.fmenu legend + *{clear:both}
+.fsorts{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.fsort, .fbox{position:relative; cursor:pointer}
+.fsort input, .fbox input{position:absolute; opacity:0; width:1px; height:1px; pointer-events:none}
+.fsort span{display:grid; place-items:center; min-height:38px; padding:0 8px; border-radius:var(--radius-pill); border:1px solid var(--line); font-size:.86rem; font-weight:700; text-align:center}
+.fsort input:checked + span{background:var(--text); color:var(--paper); border-color:var(--text)}
+.fsort input:focus-visible + span, .fbox input:focus-visible + .fmark{outline:2px solid var(--accent); outline-offset:2px}
+.fbox{display:flex; align-items:center; gap:11px; min-height:42px; font-size:.95rem}
+.fmark{flex:none; width:22px; height:22px; border-radius:7px; border:1.5px solid var(--muted); display:grid; place-items:center; transition:background-color .12s, border-color .12s}
+.fmark svg{width:15px; height:15px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0}
+.fbox input:checked + .fmark{background:var(--accent); border-color:var(--accent)}
+.fbox input:checked + .fmark svg{opacity:1}
+.fmenubtns{flex:none; display:flex; gap:8px; padding:12px 16px 14px; border-top:1px solid var(--line)}
+.fmenubtns .btn{margin:0; min-height:44px}
+.fmenubtns #filterApply{flex:1}
+.btn.ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+
+/* The cards: a photo with the name and what it's doing now, and tags at the top. */
+.presults{flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; overscroll-behavior:contain; padding:4px var(--pg) calc(var(--dock-space) + 16px)}
+.presults .editsnote{margin:0 0 12px}
+.pgrid{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+@media (min-width:600px){ .pgrid{grid-template-columns:repeat(3, minmax(0,1fr))} }
+.pcard{position:relative; display:block; width:100%; aspect-ratio:4/5; padding:0; border:0; border-radius:var(--radius); overflow:hidden; background:var(--chip); text-align:left; box-shadow:0 6px 18px rgba(0,0,0,.14); transition:transform .15s ease}
+.pcard:active{transform:scale(.97)}
+.pcard:focus-visible{outline-offset:3px}
+.pcard img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.pcard img.missing{display:none}
+.pcard::after{content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(10,14,10,.84) 0%, rgba(10,14,10,.5) 32%, rgba(10,14,10,0) 58%)}
+.pcardtext{position:absolute; z-index:1; left:11px; right:11px; bottom:11px; display:grid; gap:3px; color:#fff}
+.pcardtext b{font-family:var(--font-head); font-weight:600; font-size:1.14rem; line-height:1.08; letter-spacing:-.005em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.pcardtext span{font-size:.75rem; line-height:1.3; color:rgba(255,255,255,.86); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ptags{position:absolute; z-index:1; top:8px; left:8px; right:8px; display:flex; flex-wrap:wrap; gap:4px}
+.ptag{font-size:.68rem; font-weight:800; line-height:1; padding:5px 8px; border-radius:var(--radius-pill); color:#fff; background:rgba(20,26,20,.4); border:1px solid rgba(255,255,255,.28); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); white-space:nowrap}
+.ptag.toxic{background:rgba(180,35,24,.86); border-color:rgba(255,255,255,.2)}
+.ptag.caution{background:rgba(140,82,0,.82); border-color:rgba(255,255,255,.2)}
+.ptag.todo{background:rgba(255,255,255,.88); color:#10170F; border-color:transparent}
+.ptag.new{background:var(--accent-onsky); border-color:transparent; letter-spacing:.05em}
+.pgroup{display:flex; align-items:baseline; gap:8px; margin:22px 2px 10px; font-size:1.35rem; font-weight:500; letter-spacing:-.01em}
+.pgroup:first-child{margin-top:6px}
+.pgroup span{font-family:var(--font-body); font-size:.8rem; font-weight:700; color:var(--muted)}
+.pfoot{margin:16px 2px 0; font-size:.85rem; color:var(--muted)}
+.pfoot .linkbtn{min-height:0; padding:0}
+.presults .removedlist{margin-top:14px; border-radius:var(--radius); padding:4px 14px}
+.presults .removedlist summary{min-height:44px; display:flex; align-items:center; cursor:pointer}
+.presults .removedlist ul{list-style:none; margin:0; padding:0}
+.presults .removedlist li button{width:100%; min-height:44px; display:flex; justify-content:space-between; align-items:center; gap:10px; border:0; border-top:1px solid var(--line); background:transparent; padding:8px 0; text-align:left}
+.presults .removedlist .plabel{font-weight:400}
+.presults .removedlist .pstate{flex:none; font-size:.8rem; color:var(--muted)}
+@media (prefers-reduced-motion: reduce){ .pcard, .fmark{transition:none} .fmenu{animation:none} }
 .listhead{padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 10px; border-bottom:1px solid var(--line); display:grid; gap:10px}
 .listhead .row{display:flex; justify-content:space-between; align-items:center; gap:10px}
 .listhead h2{margin:0; font-size:1.25rem}

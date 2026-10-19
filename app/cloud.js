@@ -135,11 +135,17 @@ async function load() {
   const people = await members();
   if (people && !people.some((m) => m.user_id === session?.user)) throw fail("not-member");
   const cutoff = ymd(new Date(Date.now() - KEEP_DAYS * 86400000));
-  const done = {}, frosts = {}, edits = {};
+  const done = {}, frosts = {}, edits = {}, doneBy = {};
+  // Who's who, for Today's line about the other person's latest check-off: the name given in Supabase, or the
+  // start of their email.
+  const names = people ? await peopleNames().catch(() => new Map(people.map((m) => [m.user_id, m.email.split("@")[0]]))) : new Map();
   let stale = false;
-  for (const r of await all("checkoffs?select=key,done_on&order=key")) {
+  for (const r of await all("checkoffs?select=key,done_on,user_id&order=key")) {
     if (r.done_on < cutoff) stale = true;
-    else done[r.key] = r.done_on;
+    else {
+      done[r.key] = r.done_on;
+      if (r.user_id && r.user_id !== session?.user && names.has(r.user_id)) doneBy[r.key] = names.get(r.user_id);
+    }
   }
   if (stale) rest(`checkoffs?done_on=lt.${cutoff}`, { method: "DELETE", prefer: "return=minimal" }).catch(() => {});
   for (const r of await rest("frosts?select=year,first_frost")) frosts[r.year] = r.first_frost;
@@ -151,8 +157,11 @@ async function load() {
       (edits[r.plant_id] ??= {})[r.field] = e;
     }
   }
-  const others = (people || []).filter((m) => m.user_id !== session?.user).map((m) => m.email);
-  return { done, frosts, edits, shared: Boolean(people), sharedWith: others };
+  const others = (people || []).filter((m) => m.user_id !== session?.user);
+  return {
+    done, frosts, edits, doneBy, shared: Boolean(people),
+    sharedWith: others.map((m) => m.email), partners: others.map((m) => names.get(m.user_id) || m.email.split("@")[0]),
+  };
 }
 
 const eq = (v) => `eq.${encodeURIComponent(v)}`;
@@ -237,6 +246,14 @@ async function listNotes(plantId) {
   return rows.map((r) => noteOf(r, names));
 }
 
+// The newest notes with a photo, across every plant, newest first: Today's "Latest photos" and each job card's
+// picture.
+async function latestPhotos(limit = 200) {
+  const rows = await rest(`plant_notes?select=${NOTE_COLUMNS}&photo=not.is.null&order=noted_on.desc,created_at.desc&limit=${limit}`);
+  const names = await peopleNames();
+  return rows.map((r) => noteOf(r, names));
+}
+
 // Sends a photo and its small copy to the private folder. Safe to repeat: one already there is left as it is.
 async function sendPhoto(name, photo, thumb) {
   const headers = { "Content-Type": "image/jpeg", "cache-control": "max-age=31536000", "x-upsert": "false" };
@@ -317,7 +334,7 @@ async function photoUse() {
 // The name shown on your own notes.
 const myName = async () => (await peopleNames()).get(session?.user) || "";
 
-export const notesBackend = { list: listNotes, add: addNote, remove: removeNote, photo: photoAddress, keepPhoto, use: photoUse, me: myName };
+export const notesBackend = { list: listNotes, latest: latestPhotos, add: addNote, remove: removeNote, photo: photoAddress, keepPhoto, use: photoUse, me: myName };
 
 // ---------- photo checks: Plant health and Friend or foe ----------
 // The app saves a check as "waiting" (with its photo), then you send the photo to Claude in the Claude app. Your

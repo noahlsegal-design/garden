@@ -2,14 +2,16 @@
 
 import { loadGarden, MONTH_NAMES, esc, areaAt, seasonOverride } from "./data.js";
 import { createYard } from "./scene.js";
-import { renderMonths, renderCard, renderList, renderSaveEdits, openLightbox } from "./ui.js";
+import { renderMonths, renderCard, renderSaveEdits, openLightbox } from "./ui.js";
+import { renderPlantList, NO_FILTERS, CHIPS, TYPES, ONLY } from "./plantlist.js";
 import { buildWeek, openCount, createCheckStore, macBackend, mondayOf, parseYmd, ymd, servedByMac } from "./tasks.js";
 import { cloudReady, cloudBackend, notesBackend, checksBackend, thumbOf, account, signIn, signOut } from "./cloud.js";
 import { createNotes } from "./notes.js";
 import { createChecks } from "./checks.js";
 import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant, newPlant, newPlantId,
   STRUCTURE, isStructureEdit, structureBase, withStructureEdits, unsavedStructureEdits, staleStructureEdits } from "./edits.js";
-import { renderTasks } from "./tasklist.js";
+import { renderTasks, revealRow } from "./tasklist.js";
+import { renderToday, renderAllPhotos, renderSettings, resortJobs } from "./today.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
 import { plantHeight, plantRadius, isVine, SUPPORTS, SHAPES, LOOK } from "./look.js";
@@ -23,7 +25,6 @@ function today() {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 const TODAY = today().getMonth();
-const NO_FILTERS = { q: "", area: "all", unconfirmed: false, toxic: false, attention: false };
 
 const HINT = matchMedia("(pointer: coarse)").matches
   ? "Drag to move around · Pinch to zoom · Twist two fingers to turn · Tap a plant"
@@ -52,7 +53,7 @@ const checks = cloudReady ? createChecks({
   access: () => editAccess("use photo checks"),
   onPlant: (id) => { if (editMode.on) setEditing(false); selectPlant(id, { focus: true }); },
   onShowInYard: (ids, label, color) => setHighlight(ids, label, color),
-  onClose: () => $("checksBtn").focus({ preventScroll: true }),
+  onClose: () => $("checksBtn")?.focus({ preventScroll: true }),
 }) : null;
 // data/plants.json as it is, before the plant changes made in the app (edits.js) go on top, and layout.json's
 // structures (the arch trellises can be changed in Edit mode too).
@@ -66,6 +67,7 @@ const MAC_ITSELF = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostnam
 // Which screen the tab bar shows (today, calendar or plants), and whether Today has stepped aside for the Yard view.
 const nav = { screen: "today", yard: false };
 let playTimer = null; // set while the bloom timeline is playing
+let notePhotos = []; // the newest notes with photos, across every plant (Today's job cards and Latest photos)
 let hintDone = false; // the how-to-move hint goes away once you've moved the view
 
 async function start() {
@@ -87,10 +89,14 @@ async function start() {
   // Check-offs and plant changes go to the shared garden on Supabase once it's set up (app/config.js), or to
   // the Mac until then.
   store = createCheckStore(filePlants, cloudReady ? cloudBackend : macBackend, () => {
-    if (!applyEdits()) refreshSelection(); // the card's controls depend on being signed in
+    if (!applyEdits()) { // the card's controls depend on being signed in, and the Plants cards on the to-dos left
+      refreshSelection();
+      if (!$("listPanel").hidden) drawList();
+    }
     updateEditButton();
     if (!$("tasksPanel").hidden) drawTasks();
-    updateTaskCount();
+    if (!$("settingsPanel").hidden) drawSettings();
+    drawToday();
     setTimeout(clearOldEdits);
   });
   store.refresh();
@@ -100,7 +106,10 @@ async function start() {
     store.refresh();
     notes?.refresh();
     checks?.refresh();
+    resortJobs();
+    refreshPhotos();
   });
+  refreshPhotos();
 
   let has3d = true;
   try {
@@ -141,13 +150,14 @@ async function start() {
   new ResizeObserver(() => {
     if (editMode.on) $("stage").style.setProperty("--bloombar", `${$("editBar").offsetHeight}px`);
   }).observe($("editBar"));
-  $("tasksBtn").onclick = openTasks;
-  $("checksBtn").hidden = !checks;
-  $("checksBtn").onclick = () => openChecks();
-  updateTaskCount();
+  $("tasksBtn").onclick = () => openTasks();
+  $("settingsBtn").onclick = openSettings;
+  drawToday();
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || !$("lightbox").hidden) return;
     if (!$("savePanel").hidden) closeSaveEdits();
+    else if (!$("settingsPanel").hidden) closeSettings();
+    else if (!$("photosPanel").hidden) closePhotos();
     else if (checks?.isOpen) checks.close();
     else if (!$("viewsMenu").hidden) { showViews(false); $("viewsBtn").focus(); }
     else if (!$("tasksPanel").hidden) closeTasks();
@@ -193,6 +203,7 @@ function setUpScreens() {
 function showScreen(name) {
   setYardView(false);
   if (name === nav.screen) return;
+  if (name === "today") { resortJobs(); drawToday(); }
   nav.screen = name;
   document.body.dataset.screen = name;
   if (state.card) closeCard(); // the card belongs to the yard, which is only behind the veil on the other screens
@@ -233,7 +244,7 @@ function drawMonths() {
   $("monthNote").innerHTML = state.month === TODAY
     ? `The yard shows <b>${MONTH_NAMES[TODAY]}</b>, this month. Pick another month to see how it looks then.`
     : `The yard shows <b>${MONTH_NAMES[state.month]}</b>. ${back}`;
-  $("todayMonth").innerHTML = `The yard shows <b>${MONTH_NAMES[state.month]}</b> · ${back}`;
+  $("todayMonth").innerHTML = `Showing <b>${MONTH_NAMES[state.month]}</b> · ${back}`;
   $("todayMonth").hidden = state.month === TODAY;
   for (const b of document.querySelectorAll("[data-month-back]")) b.onclick = () => { stopPlaying(); setMonth(TODAY); };
 }
@@ -323,8 +334,9 @@ function showViews(open) {
 }
 
 // ---------- card ----------
+// From the Plants screen the card opens over it, and closing the card goes back to it.
 function selectPlant(id, { focus = false } = {}) {
-  if (nav.screen !== "today") showScreen("today");
+  if (nav.screen === "calendar") showScreen("today");
   state.selectedId = id;
   state.card = true;
   yard.select(id);
@@ -340,13 +352,35 @@ function refreshSelection() {
 function showCard() {
   const p = byId.get(state.selectedId);
   if (!p) return closeCard();
+  const now = today();
   renderCard($("sheet"), {
     plant: p, species: garden.species.get(p.speciesId), month: state.month,
     areaName: garden.areaNames.get(p.area) || p.area, edit: editControls(p),
+    hero: heroOf(p), checkOffs: state.month === now.getMonth() ? checkOffsFor(p, weekFor(mondayOf(now))) : null,
+    onToggle: (keys, on) => store.change(on ? { set: Object.fromEntries(keys.map((k) => [k, ymd(now)])) } : { unset: keys }),
     onClose: closeCard, onPhoto: openLightbox,
     onNotes: notes && ((el) => notes.draw(el, p.id, editAccess("see and add notes and photos"))),
     onChecks: checks && ((el) => checks.drawCard(el, p, editAccess("use photo checks"))),
   });
+}
+// The card's big photo: the plant's newest photo from its notes, else its first photo in plants.json.
+function heroOf(p) {
+  const n = notePhotos.find((x) => x.plantId === p.id);
+  if (n) return { load: () => notesBackend.photo(n.photo), open: [{ caption: `${p.name} · ${n.date}${n.by ? ` · ${n.by}` : ""}`, load: () => notesBackend.photo(n.photo) }] };
+  return p.photos?.length ? { src: p.photos[0], open: p.photos } : null;
+}
+// This week's check-offs for one plant, by care entry: the same keys This week and Today use (one per plant for
+// one-time jobs, one for the whole kind for weekly rounds). Each is { keys, done }.
+function checkOffsFor(p, week) {
+  const out = new Map();
+  for (const j of [...week.jobs, ...week.earlier]) {
+    const i = j.plants.findIndex((x) => x.id === p.id);
+    if (i >= 0 && !out.has(j.care)) out.set(j.care, { keys: [j.plantKeys[i]], done: Boolean(store.checks.done[j.plantKeys[i]]) });
+  }
+  for (const r of week.rounds) for (const it of r.items) {
+    if (it.plants.some((x) => x.id === p.id) && !out.has(it.care)) out.set(it.care, { keys: [it.key], done: Boolean(it.done) });
+  }
+  return out;
 }
 function closeCard() {
   state.selectedId = null;
@@ -355,6 +389,7 @@ function closeCard() {
   $("sheet").hidden = true;
   syncHash();
   if (editMode.on) drawEditBar();
+  refreshPhotos(); // a photo may have just been added on the card
 }
 
 // ---------- plant changes made in the app ----------
@@ -696,26 +731,51 @@ function openChecks(options) {
 
 // ---------- the Plants screen ----------
 function drawList() {
-  renderList($("listPanel"), {
+  renderPlantList($("listPanel"), {
     plants: garden.plants, species: garden.species, areaNames: garden.areaNames, areaOrder,
-    month: state.month, filters: state.filters,
+    month: state.month, today: today(), filters: state.filters, todos: todosByPlant(), added: addedDates(),
+    notePhotos, thumb: (photo) => notesBackend.photo(thumbOf(photo)),
     unsaved: MAC_ITSELF ? unsavedRows().length : 0, onSaveEdits: openSaveEdits,
     onFilters: (f) => { state.filters = f; drawList(); },
-    onPick: (id) => selectPlant(id, { focus: true }),
+    onPick: (id) => selectPlant(id),
     onShowInYard: (ids) => setHighlight(ids, describeFilters(state.filters), filterColor(state.filters)),
   });
+}
+
+// How many of this week's to-dos are still open for each plant (one-time jobs and weekly rounds).
+function todosByPlant() {
+  const week = weekFor(mondayOf(today()));
+  const out = new Map();
+  const add = (id) => out.set(id, (out.get(id) || 0) + 1);
+  for (const j of week.jobs) j.plants.forEach((p, i) => { if (!store.checks.done[j.plantKeys[i]]) add(p.id); });
+  for (const r of week.rounds) for (const it of r.items) if (!it.done) for (const p of it.plants) add(p.id);
+  return out;
+}
+// When each plant added in the app was added: from its "added" change, or, once that's been saved into
+// plants.json, from the time in its ID (see newPlantId). Plants that were in plants.json from the start have none.
+function addedDates() {
+  const out = new Map();
+  for (const p of garden.plants) {
+    const at = store.checks.edits?.[p.id]?.added?.at;
+    const fromId = /-([0-9a-z]{8,})[0-9a-z]{2}$/.exec(p.id)?.[1];
+    const t = at ? Date.parse(at) : fromId ? parseInt(fromId, 36) : NaN;
+    if (t > Date.UTC(2025, 0, 1) && t < Date.now() + 864e5) out.set(p.id, new Date(t));
+  }
+  return out;
 }
 
 // ---------- this week ----------
 const weekFor = (monday) => buildWeek(garden, { weekStart: monday, frosts: store.checks.frosts, done: store.checks.done, areaOrder });
 
-function openTasks() {
+// Opens This week, with one job's row open when a job card on Today was tapped.
+function openTasks(row) {
   checks?.close();
   state.taskWeek = mondayOf(today());
+  if (row) revealRow(row);
   drawTasks();
   store.refresh();
   syncHash();
-  $("tasksPanel").querySelector(".close")?.focus({ preventScroll: true });
+  if (!row) $("tasksPanel").querySelector(".close")?.focus({ preventScroll: true }); // otherwise the job's row has it
 }
 function closeTasks({ restoreFocus = true } = {}) {
   if ($("tasksPanel").hidden) return;
@@ -731,11 +791,8 @@ function drawTasks() {
     week, today: now, thisMonday: mondayOf(now), refDay: nowInWeek ? now : week.weekStart,
     site: garden.layout.site || {}, frosts: store.checks.frosts, done: store.checks.done, saveStatus: store.checks.status,
     cloud: cloudReady, account: account(), sharedWith: store.checks.sharedWith,
-    onSignIn: async (email, password) => {
-      await signIn(email, password); // shows its own message if it doesn't work
-      await store.refresh();
-    },
-    onSignOut: () => { signOut(); store.forget(); notes?.forget(); checks?.forget(); },
+    onSignIn: signInHere,
+    onSignOut: signOutHere,
     areaNames: garden.areaNames, areaOrder,
     onToggle: (keys, on) => {
       // Dated no earlier than the week shown, so a job ticked off ahead of time stays visible in that week.
@@ -750,24 +807,93 @@ function drawTasks() {
     onClose: closeTasks,
   });
 }
-function updateTaskCount() {
-  const n = openCount(weekFor(mondayOf(today())));
-  $("tasksCount").textContent = n;
-  $("tasksCount").hidden = !n;
-  $("tasksBtn").setAttribute("aria-label", n ? `This week, ${n} to do` : "This week");
+async function signInHere(email, password) {
+  await signIn(email, password); // shows its own message if it doesn't work
+  await store.refresh();
+  refreshPhotos();
+}
+function signOutHere() {
+  signOut(); store.forget(); notes?.forget(); checks?.forget();
+  notePhotos = [];
+  drawToday();
+}
+
+// ---------- Today ----------
+function drawToday() {
+  if (!garden || !store) return;
+  const now = today();
+  const { done, doneBy, partners, status } = store.checks;
+  renderToday({
+    week: weekFor(mondayOf(now)), today: now, done, doneBy, species: garden.species, plantsById: byId,
+    partners: cloudReady && status !== "signed-out" ? partners : [],
+    plants: garden.plants.filter((p) => !p.removed), notePhotos, checks: Boolean(checks),
+    thumb: (photo) => notesBackend.photo(thumbOf(photo)), full: (photo) => notesBackend.photo(photo),
+    onToggle: (keys, on) => store.change(on ? { set: Object.fromEntries(keys.map((k) => [k, ymd(now)])) } : { unset: keys }),
+    onOpenJob: (key) => openTasks(key),
+    onWeek: () => openTasks(),
+    onPhoto: openLightbox,
+    onAllPhotos: openPhotos,
+    onChecks: () => openChecks(),
+  });
+}
+// The newest notes with photos, fetched again when coming back to the app or after a card closes.
+let fetchingPhotos = null;
+function refreshPhotos() {
+  if (!cloudReady || !account() || fetchingPhotos) return;
+  fetchingPhotos = notesBackend.latest()
+    .then((list) => {
+      const changed = JSON.stringify(list.map((n) => n.id)) !== JSON.stringify(notePhotos.map((n) => n.id));
+      notePhotos = list;
+      if (changed) { drawToday(); if (!$("photosPanel").hidden) drawPhotos(); if (!$("listPanel").hidden) drawList(); if (state.card) showCard(); }
+    })
+    .catch(() => {}) // not signed in, offline or not in the garden: the garden's own photos still show
+    .finally(() => { fetchingPhotos = null; });
+}
+
+// ---------- every photo ("All" under Latest photos) ----------
+function openPhotos() { drawPhotos(); }
+function drawPhotos() {
+  renderAllPhotos($("photosPanel"), {
+    plants: garden.plants.filter((p) => !p.removed), notePhotos,
+    thumb: (photo) => notesBackend.photo(thumbOf(photo)), full: (photo) => notesBackend.photo(photo),
+    onPhoto: openLightbox,
+    onPlant: (id) => { closePhotos({ restoreFocus: false }); selectPlant(id, { focus: true }); },
+    onClose: closePhotos,
+  });
+}
+function closePhotos({ restoreFocus = true } = {}) {
+  $("photosPanel").hidden = true;
+  if (restoreFocus) $("todayPhotos").querySelector("[data-all]")?.focus({ preventScroll: true });
+}
+
+// ---------- Settings (the gear on Today) ----------
+function openSettings() {
+  drawSettings();
+  $("settingsPanel").querySelector(".close")?.focus({ preventScroll: true });
+}
+function drawSettings() {
+  renderSettings($("settingsPanel"), {
+    cloud: cloudReady, account: account(), saveStatus: store.checks.status, sharedWith: store.checks.sharedWith,
+    onSignIn: signInHere, onSignOut: signOutHere, onRedraw: drawSettings, onClose: closeSettings,
+  });
+}
+function closeSettings() {
+  $("settingsPanel").hidden = true;
+  $("settingsBtn").focus({ preventScroll: true });
 }
 
 // ---------- rings in the yard ("Show these in the yard") ----------
 function describeFilters(f) {
+  const named = (list, ids) => ids.map((id) => list.find(([k]) => k === id)?.[1] || id);
   const parts = [];
-  if (f.toxic) parts.push("toxic to dogs");
-  if (f.unconfirmed) parts.push("unconfirmed");
-  if (f.attention) parts.push("needs attention");
-  if (f.area !== "all") parts.push(garden.areaNames.get(f.area) || f.area);
-  if (f.q) parts.push(`“${f.q}”`);
+  if (f.chip !== "all") parts.push(named(CHIPS, [f.chip])[0].toLowerCase());
+  parts.push(...named(TYPES, f.types).map((t) => t.toLowerCase()));
+  parts.push(...f.beds.map((a) => garden.areaNames.get(a) || a));
+  parts.push(...named(ONLY, f.only).map((t) => t.toLowerCase()));
+  if (f.q.trim()) parts.push(`“${f.q.trim()}”`);
   return parts.join(" · ") || "selected plants";
 }
-const filterColor = (f) => (f.toxic ? "#e0402f" : f.attention ? "#f0a020" : f.unconfirmed ? "#f2c94c" : "#3b82f6");
+const filterColor = (f) => (f.chip === "toxic" ? "#e0402f" : f.chip === "safe" ? "#2e9b4f" : f.chip === "blooming" ? "#d6487f" : "#3b82f6");
 
 function setHighlight(ids, label, color) {
   showScreen("today");

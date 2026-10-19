@@ -1,11 +1,13 @@
 // Everything on screen that isn't the 3D yard or the Edit mode bar (editbar.js): the Calendar's months, the plant card
 // (with its confirm, rename and finish controls; its notes and photos are drawn by notes.js, its photo checks by
-// checks.js), the Plants list, "Save app edits into files", and the photo viewer.
+// checks.js), "Save app edits into files", and the photo viewer.
 
 import {
-  MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, isDogRisk, TOX_INFO,
+  MONTHS, MONTH_NAMES, seasonOf, isUnconfirmed, dogSafety, TOX_INFO,
   stateText, careFor, restOfYear, CARE_TYPES, sourceName, photoUrl, thumbUrl, esc, canOverrideSeason, seasonWords,
+  shownStateFor, STATE_TEXT,
 } from "./data.js";
+import { firstSentence, hueOf } from "./today.js";
 import { dateText, fieldText, spotText } from "./edits.js";
 import { acrossText, tallText, stemsText } from "./look.js";
 
@@ -25,16 +27,21 @@ export function renderMonths(el, month, today, blooms, onChange) {
 }
 
 // ---------- small building blocks ----------
-function badgesHtml(p, sp) {
+// Over the photo: the ID and whether it needs attention. (Dog safety has its own tile.)
+function badgesHtml(p) {
   const out = [];
   if (p.confirmedByOwner) out.push(`<span class="badge safe">✓ ID confirmed</span>`);
   else if (isUnconfirmed(p)) out.push(`<span class="badge unconfirmed">? Unconfirmed ID · ${p.idConfidence}%</span>`);
   else out.push(`<span class="badge">ID ${p.idConfidence}% sure</span>`);
-  const dog = dogSafety(p, sp);
-  const t = TOX_INFO[dog.status] || TOX_INFO.check;
-  if (dog.status !== "not-listed") out.push(`<span class="badge ${t.cls}">${dog.status === "toxic" ? "⚠ " : ""}${t.label}</span>`);
   if (p.issues?.length) out.push(`<span class="badge attention">Needs attention</span>`);
   return out.join("");
+}
+// The same, with dog safety, for About this plant.
+function badgesFull(p, sp) {
+  const dog = dogSafety(p, sp);
+  const t = TOX_INFO[dog.status] || TOX_INFO.check;
+  const dogBadge = dog.status !== "not-listed" ? `<span class="badge ${t.cls}">${dog.status === "toxic" ? "⚠ " : ""}${t.label}</span>` : "";
+  return `<div class="badges">${badgesHtml(p)}${dogBadge}</div>`;
 }
 
 const link = (url) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(sourceName(url))}</a>`;
@@ -117,14 +124,87 @@ function seasonHtml(p, sp, month, edit) {
       ${on ? `<p class="small">Tap it again to go back to the calendar.</p>` : ""}`;
 }
 
-export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes, onChecks }) {
+// ---------- the card's pieces ----------
+// Months as short runs: ["Apr", "May", "Jun", "Sep"] → "Apr–Jun, Sep". A run can wrap past December (Dec–Feb).
+function monthRuns(months) {
+  const set = new Set(months.map((m) => MONTHS.indexOf(m)).filter((i) => i >= 0));
+  if (set.size === 12) return "All year";
+  const starts = [...set].filter((i) => !set.has((i + 11) % 12)).sort((a, b) => a - b);
+  return starts.map((a) => {
+    let b = a;
+    while (set.has((b + 1) % 12)) b = (b + 1) % 12;
+    return a === b ? MONTHS[a] : `${MONTHS[a]}–${MONTHS[b]}`;
+  }).join(", ");
+}
+const careOfType = (sp, type) => (sp.care || []).filter((c) => c.type === type);
+const careLines = (list) => list.map((c) => `<li><span class="tag">${esc(monthRuns(c.months))}</span>${esc(c.text)}</li>`).join("");
+
+// Water and Feed tiles: when that care comes round, and whether it's due in the month shown.
+function careTile(sp, type, month) {
+  const list = careOfType(sp, type);
+  const months = [...new Set(list.flatMap((c) => c.months))];
+  if (!months.length) return { value: "Not listed", sub: "No set times", now: false };
+  const now = months.includes(MONTHS[month]);
+  let next = null;
+  for (let i = 1; i < 12 && next == null; i++) if (months.includes(MONTHS[(month + i) % 12])) next = (month + i) % 12;
+  return { value: monthRuns(months), sub: now ? "Due this month" : `Next in ${MONTH_NAMES[next]}`, now };
+}
+const DOG_SHORT = { toxic: "Toxic", caution: "Caution", check: "Unknown", "not-listed": "Not listed", "non-toxic": "Safe" };
+
+// The season strip: what the plant is doing each month, grouped into a few colours.
+const STAGE_GROUP = {
+  dormant: "rest", bare: "rest", stored: "rest", gone: "rest", "bare-flowerheads": "rest", "dormant-tan": "rest",
+  emerging: "up", seedling: "up", leafing: "up", rosette: "up",
+  foliage: "leaf", evergreen: "leaf", ferns: "leaf",
+  bloom: "bloom", "aging-bloom": "bloom",
+  fruit: "crop", harvest: "crop",
+  "fall-color": "fade", yellowing: "fade", seedheads: "fade", spent: "fade", "frost-blackened": "fade",
+};
+const GROUP_NAMES = { rest: "Resting", up: "Coming up", leaf: "In leaf", bloom: "In bloom", crop: "Fruit & harvest", fade: "Fading" };
+function seasonStrip(sp, month, seasonNow) {
+  const year = MONTHS.map((m, i) => {
+    const st = shownStateFor(sp, i, seasonNow);
+    return { i, st, group: STAGE_GROUP[st] || "leaf", label: (STATE_TEXT[st] || [st])[0] };
+  });
+  const used = Object.keys(GROUP_NAMES).filter((g) => year.some((y) => y.group === g));
+  return `
+    <section class="cpanel glass seasonpanel" aria-labelledby="seasonTitle">
+      <h3 class="eyebrow" id="seasonTitle">Its year</h3>
+      <ol class="seasonstrip">${year.map((y) => `
+        <li class="${y.i === month ? "on" : ""}" style="--sc:var(--st-${y.group})" aria-label="${MONTH_NAMES[y.i]}: ${esc(y.label)}${y.i === month ? " (shown now)" : ""}" title="${MONTH_NAMES[y.i]}: ${esc(y.label)}">
+          <i></i><span aria-hidden="true">${MONTHS[y.i][0]}</span></li>`).join("")}</ol>
+      <ul class="seasonkey" aria-hidden="true">${used.map((g) => `<li style="--sc:var(--st-${g})"><i></i>${GROUP_NAMES[g]}</li>`).join("")}</ul>
+    </section>`;
+}
+
+// One care entry in the Now box, with its done circle when it's on this week's list.
+const CHECK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg>`;
+function nowCareLi(c, checkOffs, i) {
+  const off = checkOffs?.get(c);
+  const what = CARE_TYPES[c.type] || c.type;
+  return `<li class="${off?.done ? "done" : ""}">
+    ${off ? `<button type="button" class="cdone" role="checkbox" aria-checked="${off.done}" data-done="${i}" data-focus="done-${i}" aria-label="Done: ${esc(what)}">${CHECK}</button>` : `<span class="cdot" aria-hidden="true"></span>`}
+    <span><span class="tag">${esc(what)}</span>${esc(c.text)}</span></li>`;
+}
+
+// Which sections are open (kept as you move between plants) and which tile's details are showing.
+const openSecs = new Set();
+let openTile = null;
+const section = (id, title, body, { hidden = false } = {}) => `
+    <details class="cpanel glass csec" data-sec="${id}" ${openSecs.has(id) ? "open" : ""} ${hidden ? "hidden" : ""}>
+      <summary><span>${title}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></summary>
+      <div class="csecbody">${body}</div>
+    </details>`;
+
+export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit, hero, checkOffs, onToggle, onClose, onPhoto, onNotes, onChecks }) {
   // Keep what's typed in an open form, and the scroll position, when the same card redraws.
   const same = lastCardId === p.id;
-  if (!same) editing = null;
+  if (!same) { editing = null; openTile = null; }
   const typed = same ? { name: sheet.querySelector("#editName")?.value, kind: sheet.querySelector("#editKind")?.value } : {};
-  const focusId = same && sheet.contains(document.activeElement) ? document.activeElement.id : null;
+  const focusId = same && sheet.contains(document.activeElement) ? document.activeElement.id || document.activeElement.dataset.focus : null;
   const scroll = same ? sheet.scrollTop : 0;
   lastCardId = p.id;
+  if (editing?.id === p.id) openSecs.add("about");
   const away = p.removed || p.finished; // not in the yard right now
   const [statusLabel, calendarSentence] = p.removed ? removedText(p) : p.finished ? finishedText(p) : stateText(sp, month, p.seasonNow);
   const statusSentence = !away && covers(p, month)
@@ -132,99 +212,161 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     : calendarSentence;
   const now = away ? [] : careFor(sp, month);
   const later = restOfYear(sp, month);
+  // Next: the first later month with care that isn't already in Now (a job running Oct–Nov isn't "next").
+  const next = away ? null : later.map(({ month: mm, items }) => ({ month: mm, items: items.filter((c) => !now.includes(c)) })).find((x) => x.items.length);
   const dog = dogSafety(p, sp);
-  const dogCls = dog.status === "toxic" ? "dog-toxic" : ["caution", "check"].includes(dog.status) ? "dog-caution" : "";
+  const dogInfo = TOX_INFO[dog.status] || TOX_INFO.check;
+  const dogCls = dog.status === "toxic" ? "toxic" : ["caution", "check"].includes(dog.status) ? "caution" : dog.status === "non-toxic" ? "safe" : "";
   const unsure = isUnconfirmed(p) || (!p.confirmedByOwner && p.idConfidence < 70);
   const title = p.name;
+  const water = careTile(sp, "water", month), feed = careTile(sp, "feed", month);
+  const pests = careOfType(sp, "pest");
+  const tile = (id, label, t, cls = "") => `
+        <button type="button" class="ctile glass ${cls}${t.now ? " now" : ""}" data-tile="${id}" data-focus="tile-${id}" aria-expanded="${openTile === id}" aria-controls="tileMore">
+          <span class="eyebrow">${label}</span><b>${esc(t.value)}</b><span class="tsub">${esc(t.sub)}</span></button>`;
+  const tileMore = (id) => id === "water" || id === "feed"
+    ? `<ul class="tasks">${careLines(careOfType(sp, id)) || `<li>No ${id === "water" ? "watering" : "feeding"} listed for this plant.</li>`}</ul>`
+    : id === "dog" ? `
+        <div class="status">${esc(dogInfo.label)}</div>
+        <p>${esc(dog.detail)}</p>
+        ${dog.source ? `<p class="small">Source: ${link(dog.source)}</p>` : ""}` : "";
+  const tileMoreCls = (id) => `cpanel glass tilemore${id === "dog" ? ` dog ${dogCls}` : ""}`;
+  const heroImg = hero?.src ? `<img src="${photoUrl(hero.src)}" alt="">` : hero?.load ? `<img alt="" data-hero>` : "";
+  const glow = hero?.src ? `style="background-image:url('${photoUrl(hero.src)}')"` : "";
 
   sheet.innerHTML = `
-    <div class="grab" aria-hidden="true"></div>
-    <div class="sheethead">
-      <div>
+    <header class="chero${heroImg ? "" : " nophoto"}" style="--h:${hueOf(p.speciesId || p.name)}">
+      ${heroImg ? `<button type="button" class="cheropic" data-hero-open aria-label="Open the photo of ${esc(title)}">${heroImg}</button>` : ""}
+      <div class="cherotop">
+        <button class="cround glass cardback" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
+        ${onNotes ? `<button class="cround glass" type="button" data-addphoto aria-label="Add a photo of ${esc(title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button>` : ""}
+      </div>
+      <div class="cherotext">
         <h2 id="sheetTitle">${esc(title)}</h2>
         <p class="where">${esc(p.label)} · ${esc(areaName)}${sp.scientificName && sp.scientificName !== "unknown" ? ` · <i>${esc(sp.scientificName)}</i>` : ""}</p>
+        <div class="badges">${badgesHtml(p)}${hero?.open?.length > 1 ? `<span class="badge">${hero.open.length} photos</span>` : ""}</div>
       </div>
-      <button class="close" type="button" aria-label="Close">✕</button>
+    </header>
+
+    <div class="cbody">
+      <div class="cglow" ${glow} aria-hidden="true"></div>
+
+      <section class="cpanel glass nowbox" style="--c:${seasonOf(month).color}" aria-labelledby="nowTitle">
+        <h3 class="eyebrow" id="nowTitle">Now · ${MONTH_NAMES[month]}</h3>
+        <div class="status">${esc(statusLabel)}</div>
+        <p class="nowsentence">${esc(statusSentence)}</p>
+        ${seasonHtml(p, sp, month, edit)}
+        ${p.issues?.length ? `<ul class="issues">${p.issues.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}
+        ${now.length ? `<ul class="nowcare">${now.map((c, i) => nowCareLi(c, checkOffs, i)).join("")}</ul>` : away ? "" : `<p class="small">No care needed this month.</p>`}
+        ${unsure && !away ? `<p class="small">Care shown is for the best guess. It depends on confirming the ID${p.alsoPossible?.length ? `. It could also be: ${esc(p.alsoPossible.join("; "))}` : ""}.</p>` : ""}
+        ${p.removed && edit?.can ? `<button type="button" class="btn" data-edit="restore">Put it back in the yard</button>`
+          : p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
+        ${next ? `<button type="button" class="nextline" data-next>
+          <span class="eyebrow" style="--c:${seasonOf(next.month).color}">Next · ${MONTH_NAMES[next.month]}</span>
+          <span>${esc(CARE_TYPES[next.items[0].type] || next.items[0].type)}: ${esc(firstSentence(next.items[0].text))}${next.items.length > 1 ? ` <span class="more">+${next.items.length - 1} more</span>` : ""}</span></button>` : ""}
+      </section>
+
+      <div class="ctiles">
+        ${tile("water", "Water", water)}
+        ${tile("feed", "Feed", feed)}
+        ${tile("dog", "Dog safety", { value: DOG_SHORT[dog.status] || dogInfo.label, sub: dog.source ? sourceName(dog.source) : "No source yet" }, `dog ${dogCls}`)}
+      </div>
+      <div class="${tileMoreCls(openTile)}" id="tileMore" ${openTile ? "" : "hidden"}>${tileMore(openTile)}</div>
+
+      ${seasonStrip(sp, month, p.seasonNow)}
+
+      ${section("care", "Care all year", MONTHS.map((_, k) => (month + k) % 12).map((mm) => {
+        const items = careFor(sp, mm);
+        return items.length ? `<div class="monthblock"><h4>${MONTH_NAMES[mm]}${mm === month ? ` <span class="small">· now</span>` : ""}</h4><ul class="tasks">${items.map(taskLi).join("")}</ul></div>` : "";
+      }).join("") || `<p class="small">No care listed for this plant.</p>`)}
+
+      ${sp.cutFlower ? section("cut", "Cut flowers", `
+        <p><b>When:</b> ${esc(sp.cutFlower.when)}</p>
+        <p><b>How:</b> ${esc(sp.cutFlower.how)}</p>
+        <p class="small">Confidence ${sp.cutFlower.confidence}/100: ${esc(sp.cutFlower.confidenceWhy)}${sp.cutFlower.source ? ` Source: ${link(sp.cutFlower.source)}` : ""}</p>`) : ""}
+
+      ${section("pests", "Pests to watch", `
+        ${pests.length ? `<ul class="tasks">${careLines(pests)}</ul>` : `<p class="small">No pests or diseases listed for this kind of plant.</p>`}
+        <section class="notes" id="cardChecks" aria-labelledby="checksCardTitle" hidden></section>`)}
+
+      ${section("notes", "Notes &amp; photos", `<section class="notes" id="cardNotes" aria-labelledby="notesTitle" hidden></section>`, { hidden: !onNotes })}
+
+      ${section("about", "About this plant", `
+        ${badgesFull(p, sp)}
+        <p><b>ID:</b> ${p.confirmedByOwner ? "Confirmed." : `${p.idConfidence}% sure from photos.`}${p.alsoPossible?.length && !p.confirmedByOwner ? ` Also possible: ${esc(p.alsoPossible.join("; "))}.` : ""}</p>
+        ${p.notes ? `<p>${esc(p.notes)}</p>` : ""}
+        ${sp.notes ? `<p>${esc(sp.notes)}</p>` : ""}
+        <p><b>Size:</b> ${esc(tallText(p, sp))}, ${esc(acrossText(p, sp))}${p.stems ? `, ${esc(stemsText(p.stems))}` : ""}.${p.width == null && p.height == null ? " A guess for this kind; enter your own in Edit mode." : ""}</p>
+        ${sp.wildlife ? `<p><b>Wildlife value:</b> ${esc(sp.wildlife)}</p>` : ""}
+        ${p.photos?.length ? `<div class="photos">${p.photos.map((ph, i) =>
+          `<button type="button" data-photo="${i}" aria-label="Open photo ${i + 1}"><img src="${thumbUrl(ph)}" alt="Photo of ${esc(title)}" loading="lazy"></button>`).join("")}</div>` : ""}
+        ${editHtml(p, edit)}
+        <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code></p>`)}
+
+      ${section("sources", "Sources", `
+        <div class="conf"><b>${sp.confidence}/100</b><span class="small">${esc(sp.confidenceWhy)}</span></div>
+        ${sp.sources?.length ? `<ul class="sources">${sp.sources.map((u) => `<li>${link(u)}</li>`).join("")}</ul>` : `<p class="small">No specific source for this general advice.</p>`}
+        ${dog.source ? `<p class="small">Dog safety: ${link(dog.source)}</p>` : ""}`)}
     </div>
-    <div class="badges">${badgesHtml(p, sp)}</div>
-    ${editHtml(p, edit)}
-
-    ${p.photos?.length ? `<div class="photos">${p.photos.map((ph, i) =>
-      `<button type="button" data-photo="${i}" aria-label="Open photo ${i + 1}"><img src="${thumbUrl(ph)}" alt="Photo of ${esc(title)}" loading="lazy"></button>`).join("")}</div>` : ""}
-
-    <div class="box now" style="--c:${seasonOf(month).color}">
-      <h3>Right now · ${MONTH_NAMES[month]}</h3>
-      <div class="status">${esc(statusLabel)}</div>
-      <p>${esc(statusSentence)}</p>
-      ${seasonHtml(p, sp, month, edit)}
-      ${p.issues?.length ? `<ul class="issues">${p.issues.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}
-      ${now.length ? `<ul class="tasks">${now.map(taskLi).join("")}</ul>` : away ? "" : `<p class="small">No care needed this month.</p>`}
-      ${p.removed && edit?.can ? `<button type="button" class="btn" data-edit="restore">Put it back in the yard</button>`
-        : p.finished && edit?.can ? `<button type="button" class="btn" data-edit="unfinish">Bring it back</button>` : ""}
-    </div>
-
-    <section class="notes" id="cardChecks" aria-labelledby="checksCardTitle" hidden></section>
-    <section class="notes" id="cardNotes" aria-labelledby="notesTitle" hidden></section>
-
-    ${unsure ? `<p class="small" style="margin-top:10px">Care shown is for the best guess. It depends on confirming the ID${p.alsoPossible?.length ? `. It could also be: ${esc(p.alsoPossible.join("; "))}` : ""}.</p>` : ""}
-
-    <div class="box ${dogCls}">
-      <h3>Dog safety</h3>
-      <div class="status">${esc((TOX_INFO[dog.status] || TOX_INFO.check).label)}</div>
-      <p>${esc(dog.detail)}</p>
-      ${dog.source ? `<p class="small">Source: ${link(dog.source)}</p>` : ""}
-    </div>
-
-    <details ${later.length ? "" : "hidden"}>
-      <summary>Rest of the year</summary>
-      ${later.map(({ month: mm, items }) => `<div class="monthblock"><h4>${MONTH_NAMES[mm]}</h4><ul class="tasks">${items.map(taskLi).join("")}</ul></div>`).join("")}
-    </details>
-
-    ${sp.cutFlower ? `
-    <details>
-      <summary>Cut flowers</summary>
-      <p><b>When:</b> ${esc(sp.cutFlower.when)}</p>
-      <p><b>How:</b> ${esc(sp.cutFlower.how)}</p>
-      <p class="small">Confidence ${sp.cutFlower.confidence}/100: ${esc(sp.cutFlower.confidenceWhy)}${sp.cutFlower.source ? ` Source: ${link(sp.cutFlower.source)}` : ""}</p>
-    </details>` : ""}
-
-    ${sp.wildlife ? `<details><summary>Wildlife value</summary><p>${esc(sp.wildlife)}</p></details>` : ""}
-
-    <details>
-      <summary>About this plant</summary>
-      <p><b>ID:</b> ${p.confirmedByOwner ? "Confirmed." : `${p.idConfidence}% sure from photos.`}${p.alsoPossible?.length && !p.confirmedByOwner ? ` Also possible: ${esc(p.alsoPossible.join("; "))}.` : ""}</p>
-      ${p.notes ? `<p>${esc(p.notes)}</p>` : ""}
-      ${sp.notes ? `<p>${esc(sp.notes)}</p>` : ""}
-      <p><b>Size:</b> ${esc(tallText(p, sp))}, ${esc(acrossText(p, sp))}${p.stems ? `, ${esc(stemsText(p.stems))}` : ""}.${p.width == null && p.height == null ? " A guess for this kind; enter your own in Edit mode." : ""}</p>
-      <p class="small">Plant ID in data/plants.json: <code>${esc(p.id)}</code> · kind: <code>${esc(sp.id)}</code></p>
-    </details>
-
-    <details>
-      <summary>Sources & confidence</summary>
-      <div class="conf"><b>${sp.confidence}/100</b><span class="small">${esc(sp.confidenceWhy)}</span></div>
-      ${sp.sources?.length ? `<ul class="sources">${sp.sources.map((u) => `<li>${link(u)}</li>`).join("")}</ul>` : `<p class="small">No specific source for this general advice.</p>`}
-    </details>
   `;
   sheet.hidden = false;
   onChecks?.(sheet.querySelector("#cardChecks"));
   onNotes?.(sheet.querySelector("#cardNotes"));
   sheet.scrollTop = scroll;
-  sheet.querySelector(".close").onclick = onClose;
+  sheet.querySelector(".cardback").onclick = onClose;
   sheet.querySelectorAll("[data-photo]").forEach((b) => (b.onclick = () => onPhoto(p.photos, Number(b.dataset.photo))));
+  // A photo from the notes is fetched first; the soft colour behind the panels comes from it too.
+  const heroEl = sheet.querySelector("img[data-hero]");
+  if (heroEl) hero.load().then((url) => {
+    if (!heroEl.isConnected) return;
+    heroEl.src = url;
+    sheet.querySelector(".cglow").style.backgroundImage = `url("${url}")`;
+  }).catch(() => heroEl.closest(".chero")?.classList.add("nophoto"));
+  sheet.querySelector("[data-hero-open]")?.addEventListener("click", () => onPhoto(hero.open, 0));
+  sheet.querySelectorAll("details[data-sec]").forEach((d) => d.addEventListener("toggle", () => {
+    if (d.open) openSecs.add(d.dataset.sec); else openSecs.delete(d.dataset.sec);
+  }));
+  const openSec = (id) => {
+    const d = sheet.querySelector(`details[data-sec="${id}"]`);
+    d.open = true;
+    openSecs.add(id);
+    return d;
+  };
+  const reveal = (el) => el?.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  sheet.querySelector("[data-next]")?.addEventListener("click", () => reveal(openSec("care")));
+  // A tile opens its details just below the row (one at a time).
+  sheet.querySelectorAll("[data-tile]").forEach((b) => (b.onclick = () => {
+    openTile = openTile === b.dataset.tile ? null : b.dataset.tile;
+    sheet.querySelectorAll("[data-tile]").forEach((t) => t.setAttribute("aria-expanded", String(t.dataset.tile === openTile)));
+    const more = sheet.querySelector("#tileMore");
+    Object.assign(more, { className: tileMoreCls(openTile), innerHTML: tileMore(openTile), hidden: !openTile });
+  }));
+  // The camera button starts a new note with a photo, the same as "Add a note" then "Add a photo".
+  sheet.querySelector("[data-addphoto]")?.addEventListener("click", () => {
+    const d = openSec("notes");
+    sheet.querySelector("#cardNotes [data-noteadd]")?.click();
+    const pick = sheet.querySelector("#notePhoto");
+    reveal(d);
+    pick?.click();
+  });
+  sheet.querySelectorAll("[data-done]").forEach((b) => (b.onclick = () => {
+    const off = checkOffs.get(now[Number(b.dataset.done)]);
+    onToggle(off.keys, !off.done);
+  }));
+  if (focusId && !sheet.contains(document.activeElement)) {
+    const f = sheet.querySelector(`#${CSS.escape(focusId)}`) || sheet.querySelector(`[data-focus="${CSS.escape(focusId)}"]`);
+    f?.focus({ preventScroll: true });
+    if (f?.tagName === "TEXTAREA") f.setSelectionRange(f.value.length, f.value.length);
+  }
   if (!edit?.can) return;
 
   const redraw = (focus) => {
-    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, onClose, onPhoto, onNotes, onChecks });
+    renderCard(sheet, { plant: p, species: sp, month, areaName, edit, hero, checkOffs, onToggle, onClose, onPhoto, onNotes, onChecks });
     if (focus) sheet.querySelector(focus)?.focus();
   };
   const name = sheet.querySelector("#editName"), kind = sheet.querySelector("#editKind");
   if (name && typed.name != null) name.value = typed.name;
   if (kind && typed.kind != null) kind.value = typed.kind;
-  if (focusId && !sheet.contains(document.activeElement)) {
-    const f = sheet.querySelector(`#${CSS.escape(focusId)}`);
-    f?.focus({ preventScroll: true });
-    if (f?.tagName === "TEXTAREA") f.setSelectionRange(f.value.length, f.value.length);
-  }
   // Picking a different kind suggests its name, until you type a name of your own.
   let nameTouched = typed.name != null && typed.name !== p.name;
   if (name) name.oninput = () => { nameTouched = true; };
@@ -256,7 +398,7 @@ export function renderCard(sheet, { plant: p, species: sp, month, areaName, edit
     if (form.dataset.form === "confirm") Object.assign(values, { speciesId: kind.value, confirmedByOwner: true, idConfidence: 100 });
     editing = null;
     edit.onSave(values);
-    sheet.scrollTop = 0; // back up to the new name and badges
+    sheet.scrollTop = 0; // back up to the new name
   };
 }
 
@@ -325,99 +467,6 @@ function newPlantLines(p, species, areaNames) {
 }
 
 // ---------- all-plants list ----------
-export function renderList(panel, { plants: everything, species, areaNames, areaOrder, month, filters, unsaved = 0, onFilters, onPick, onShowInYard, onSaveEdits, onClose }) {
-  // Plants removed from the yard are listed apart at the bottom, so they can be found and put back.
-  const plants = everything.filter((p) => !p.removed);
-  const removed = everything.filter((p) => p.removed);
-  const q = filters.q.trim().toLowerCase();
-  const matches = plants.filter((p) => {
-    const sp = species.get(p.speciesId);
-    if (filters.area !== "all" && p.area !== filters.area) return false;
-    if (filters.unconfirmed && !isUnconfirmed(p)) return false;
-    if (filters.toxic && !isDogRisk(p, sp)) return false;
-    if (filters.attention && !p.issues?.length) return false;
-    if (q) {
-      const hay = [p.name, p.label, sp.commonName, sp.scientificName, areaNames.get(p.area), ...(p.alsoPossible || [])].join(" ").toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  });
-  const byArea = new Map();
-  for (const p of matches) {
-    if (!byArea.has(p.area)) byArea.set(p.area, []);
-    byArea.get(p.area).push(p);
-  }
-  const areasWithPlants = areaOrder.filter((a) => plants.some((p) => p.area === a));
-  const anyFilter = filters.q || filters.area !== "all" || filters.unconfirmed || filters.toxic || filters.attention;
-
-  const focusId = document.activeElement?.id;
-  panel.innerHTML = `
-    <div class="listhead">
-      <div class="row">
-        <h2 id="listTitle">Plants <span class="small">(${plants.length})</span></h2>
-        ${onClose ? `<button class="close" type="button" aria-label="Close list">✕</button>` : ""}
-      </div>
-      <input class="search" id="listSearch" type="search" placeholder="Search by name, number or kind…" value="${esc(filters.q)}" aria-label="Search plants" autocomplete="off">
-      <div class="filters">
-        <select id="listArea" aria-label="Area">
-          <option value="all">All areas</option>
-          ${areasWithPlants.map((a) => `<option value="${esc(a)}" ${filters.area === a ? "selected" : ""}>${esc(areaNames.get(a) || a)}</option>`).join("")}
-        </select>
-        <button class="toggle" type="button" data-f="unconfirmed" aria-pressed="${filters.unconfirmed}">Unconfirmed ID</button>
-        <button class="toggle" type="button" data-f="toxic" aria-pressed="${filters.toxic}">Toxic or maybe toxic to dogs</button>
-        <button class="toggle" type="button" data-f="attention" aria-pressed="${filters.attention}">Needs attention</button>
-      </div>
-      <div class="listmeta">
-        <span>${matches.length} showing · status for ${MONTH_NAMES[month]}</span>
-        <span>
-          ${anyFilter ? `<button class="linkbtn" type="button" id="listClear">Clear</button> · ` : ""}
-          <button class="linkbtn" type="button" id="listShow" ${matches.length && anyFilter ? "" : "disabled"}>Show these in the yard</button>
-        </span>
-      </div>
-    </div>
-    <div class="plist">
-      ${unsaved ? `<div class="editsnote"><p><b>${unsaved} change${unsaved === 1 ? "" : "s"} made in the app</b> ${unsaved === 1 ? "isn't" : "aren't"} in plants.json yet.</p><button type="button" class="btn" id="saveEditsBtn">Save app edits into files</button></div>` : ""}
-      ${matches.length ? areaOrder.filter((a) => byArea.has(a)).map((a) => `
-        <h3>${esc(areaNames.get(a) || a)}</h3>
-        <ul>${byArea.get(a).map((p) => {
-          const sp = species.get(p.speciesId);
-          const dog = dogSafety(p, sp);
-          const b = [];
-          if (isUnconfirmed(p)) b.push(`<span class="badge unconfirmed">Unconfirmed</span>`);
-          if (dog.status === "toxic") b.push(`<span class="badge toxic">Toxic to dogs</span>`);
-          else if (["caution", "check"].includes(dog.status)) b.push(`<span class="badge caution">${dog.status === "caution" ? "Dog caution" : "Dog safety unknown"}</span>`);
-          if (p.issues?.length) b.push(`<span class="badge attention">Needs attention</span>`);
-          return `<li><button type="button" data-id="${esc(p.id)}">
-            <span class="pname">${esc(p.name)} <span class="plabel">${p.label.startsWith("#") ? esc(p.label) : ""}</span></span>
-            <span class="pstate">${esc(p.finished ? "Finished" : stateText(sp, month, p.seasonNow)[0])}</span>
-            ${b.length ? `<span class="pbadges">${b.join("")}</span>` : ""}
-          </button></li>`;
-        }).join("")}</ul>`).join("") : `<p class="empty">No plants match. Try clearing the filters.</p>`}
-      ${removed.length ? `
-        <details class="removedlist" ${listState.removedOpen ? "open" : ""}>
-          <summary>Removed from the yard (${removed.length})</summary>
-          <ul>${removed.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
-            <span class="pname">${esc(p.name)} <span class="plabel">${p.label.startsWith("#") ? esc(p.label) : ""}</span></span>
-            <span class="pstate">${esc(dateText(p.removed).replace(/, \d{4}$/, ""))}</span>
-          </button></li>`).join("")}</ul>
-        </details>` : ""}
-    </div>`;
-  panel.hidden = false;
-
-  if (onClose) panel.querySelector(".close").onclick = onClose;
-  const search = panel.querySelector("#listSearch");
-  search.oninput = () => onFilters({ ...filters, q: search.value });
-  if (focusId === "listSearch") { search.focus(); search.setSelectionRange(search.value.length, search.value.length); }
-  panel.querySelector("#listArea").onchange = (e) => onFilters({ ...filters, area: e.target.value });
-  panel.querySelectorAll("[data-f]").forEach((b) => (b.onclick = () => onFilters({ ...filters, [b.dataset.f]: !filters[b.dataset.f] })));
-  panel.querySelector("#listClear")?.addEventListener("click", () => onFilters({ q: "", area: "all", unconfirmed: false, toxic: false, attention: false }));
-  panel.querySelector("#listShow").onclick = () => onShowInYard(matches.map((p) => p.id));
-  panel.querySelectorAll("[data-id]").forEach((b) => (b.onclick = () => onPick(b.dataset.id)));
-  panel.querySelector("#saveEditsBtn")?.addEventListener("click", onSaveEdits);
-  panel.querySelector(".removedlist")?.addEventListener("toggle", (e) => { listState.removedOpen = e.target.open; });
-}
-const listState = { removedOpen: false }; // whether the removed plants are showing in the list
-
 // ---------- photo viewer ----------
 // photos are the garden's own photo names (from plants.json), or notes' photos as { caption, load }, where
 // load() gives the picture's address once it's fetched.

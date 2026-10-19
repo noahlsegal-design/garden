@@ -11,10 +11,17 @@ let frostFormOpen = false;
 let lastWeek = "";
 let scrollPos = 0; // kept here because a hidden panel always reports 0
 const signingIn = { busy: false, error: "" };
+let reveal = null; // a row to open and scroll to on the next draw (a job card tapped on Today)
+
+// Opens a row (a job's key, or "round:<id>") the next time the panel is drawn, and scrolls it into view.
+export function revealRow(key) {
+  openRows.add(key);
+  reveal = key;
+}
 
 // Where check-offs are being saved, in words: on the Mac (before the app went online) or in the shared garden
 // on Supabase.
-const SAVE_NOTE = {
+export const SAVE_NOTE = {
   mac: {
     loading: "Getting your check-offs from your Mac…",
     saved: "Check-offs are saved on your Mac, so your phone and computer share them.",
@@ -325,7 +332,7 @@ function signInBox(notes) {
     </form>`;
 }
 
-const footNote = (o, notes) => (o.saveStatus === "saved" && o.sharedWith?.length ? notes.shared : notes[o.saveStatus] || notes.saved);
+export const footNote = (o, notes) => (o.saveStatus === "saved" && o.sharedWith?.length ? notes.shared : notes[o.saveStatus] || notes.saved);
 
 // ---------- the panel ----------
 export function renderTasks(panel, o) {
@@ -393,6 +400,15 @@ export function renderTasks(panel, o) {
     panel.querySelector("#signinPassword").value = typed.password || "";
   }
   if (focusKey) panel.querySelector(`[data-f="${CSS.escape(focusKey)}"]`)?.focus({ preventScroll: true });
+  if (reveal) {
+    const row = panel.querySelector(`[data-open="${CSS.escape(reveal)}"]`);
+    reveal = null;
+    if (row) {
+      const heading = list.querySelector("h3")?.offsetHeight || 0; // the list's headings stick to the top
+      list.scrollTop = scrollPos = Math.max(0, row.closest("li").offsetTop - list.offsetTop - heading - 12);
+      row.focus({ preventScroll: true });
+    }
+  }
 
   panel.onclick = (e) => {
     const t = e.target.closest("button");

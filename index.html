@@ -20,28 +20,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..800&family=Newsreader:opsz,wght@6..72,500..600&display=swap" rel="stylesheet">
 <!-- The ?v=… on each app file is the app's version, so after a publish browsers fetch all the new files together
      instead of mixing old and new. Don't edit it by hand: "node stamp-version.mjs" updates it. -->
-<link rel="stylesheet" href="app/styles.css?v=2114148815">
+<link rel="stylesheet" href="app/styles.css?v=0f86166c70">
 <script type="importmap">
 { "imports": {
     "three": "./vendor/three/three.module.js",
     "three/addons/": "./vendor/three/addons/",
-    "./app/arches.js": "./app/arches.js?v=2114148815",
-    "./app/bloom.js": "./app/bloom.js?v=2114148815",
-    "./app/checks.js": "./app/checks.js?v=2114148815",
-    "./app/cloud.js": "./app/cloud.js?v=2114148815",
-    "./app/config.js": "./app/config.js?v=2114148815",
-    "./app/data.js": "./app/data.js?v=2114148815",
-    "./app/editbar.js": "./app/editbar.js?v=2114148815",
-    "./app/edits.js": "./app/edits.js?v=2114148815",
-    "./app/look.js": "./app/look.js?v=2114148815",
-    "./app/main.js": "./app/main.js?v=2114148815",
-    "./app/notes.js": "./app/notes.js?v=2114148815",
-    "./app/reports.js": "./app/reports.js?v=2114148815",
-    "./app/scene.js": "./app/scene.js?v=2114148815",
-    "./app/shapes.js": "./app/shapes.js?v=2114148815",
-    "./app/tasklist.js": "./app/tasklist.js?v=2114148815",
-    "./app/tasks.js": "./app/tasks.js?v=2114148815",
-    "./app/ui.js": "./app/ui.js?v=2114148815"
+    "./app/arches.js": "./app/arches.js?v=0f86166c70",
+    "./app/bloom.js": "./app/bloom.js?v=0f86166c70",
+    "./app/checks.js": "./app/checks.js?v=0f86166c70",
+    "./app/cloud.js": "./app/cloud.js?v=0f86166c70",
+    "./app/config.js": "./app/config.js?v=0f86166c70",
+    "./app/data.js": "./app/data.js?v=0f86166c70",
+    "./app/editbar.js": "./app/editbar.js?v=0f86166c70",
+    "./app/edits.js": "./app/edits.js?v=0f86166c70",
+    "./app/look.js": "./app/look.js?v=0f86166c70",
+    "./app/main.js": "./app/main.js?v=0f86166c70",
+    "./app/notes.js": "./app/notes.js?v=0f86166c70",
+    "./app/plantlist.js": "./app/plantlist.js?v=0f86166c70",
+    "./app/reports.js": "./app/reports.js?v=0f86166c70",
+    "./app/scene.js": "./app/scene.js?v=0f86166c70",
+    "./app/shapes.js": "./app/shapes.js?v=0f86166c70",
+    "./app/tasklist.js": "./app/tasklist.js?v=0f86166c70",
+    "./app/tasks.js": "./app/tasks.js?v=0f86166c70",
+    "./app/today.js": "./app/today.js?v=0f86166c70",
+    "./app/ui.js": "./app/ui.js?v=0f86166c70"
 } }
 </script>
 </head>
@@ -77,17 +79,22 @@
 <!-- On Calendar and Plants the yard shows through, blurred. -->
 <div class="veil" id="veil" aria-hidden="true"></div>
 
-<!-- Today: panels floating over the live yard. Tapping an empty spot of the yard opens the Yard view. -->
-<section class="screen today" id="todayScreen" aria-labelledby="todayTitle">
+<!-- Today: over the live yard. The count of jobs left at the top, and the jobs, the other person's latest
+     check-off and the newest photos at the bottom. Tapping the yard between them opens the Yard view. -->
+<section class="screen today" id="todayScreen" aria-labelledby="todayCount">
   <div class="todaypanels" id="todayPanels">
-    <div class="todaycard glass">
-      <p class="todaydate" id="todayDate"></p>
-      <h1 id="todayTitle">Noah's Garden</h1>
-      <p class="todaymonth" id="todayMonth" hidden></p>
-      <div class="todaybtns">
-        <button class="ghostbtn primary" id="tasksBtn" aria-haspopup="dialog">This week<span class="count" id="tasksCount" hidden></span></button>
-        <button class="ghostbtn" id="checksBtn" aria-haspopup="dialog" hidden>Photo check</button>
+    <header class="todayhead">
+      <div class="todaytop">
+        <p class="todaydate" id="todayDate"></p>
+        <button type="button" class="gearbtn glass" id="settingsBtn" aria-label="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       </div>
+      <button type="button" class="todaycount" id="tasksBtn" aria-haspopup="dialog"><span class="bignum" id="todayCount"></span><span class="numlabel" id="todayCountLabel"></span></button>
+      <p class="todaymonth glass" id="todayMonth" hidden></p>
+    </header>
+    <div class="todaybottom">
+      <div id="todayJobs"></div>
+      <div class="partnerline glass" id="todayPartner" hidden></div>
+      <div class="photospanel glass" id="todayPhotos"></div>
     </div>
   </div>
 </section>
@@ -114,6 +121,8 @@
 <section class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetTitle" hidden></section>
 <section class="listpanel taskpanel" id="tasksPanel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle" hidden></section>
 <section class="listpanel" id="checksPanel" role="dialog" aria-modal="true" aria-labelledby="checksTitle" hidden></section>
+<section class="listpanel" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden></section>
+<section class="listpanel" id="photosPanel" role="dialog" aria-modal="true" aria-labelledby="photosTitle" hidden></section>
 <section class="listpanel" id="savePanel" role="dialog" aria-modal="true" aria-labelledby="saveTitle" hidden></section>
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo" hidden></div>
 
