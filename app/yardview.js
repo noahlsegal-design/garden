@@ -59,7 +59,7 @@ export function createLabels(el, { onPick }) {
     hit(x, y) {
       for (let i = placed.length - 1; i >= 0; i--) {
         const p = placed[i];
-        if (x >= p.x0 - 4 && x <= p.x1 + 4 && y >= p.y0 - 4 && y <= p.y1 + 2) return p.id;
+        if (x >= p.x0 - 4 && x <= p.x1 + 4 && y >= p.y0 - 8 && y <= p.y1 + 8) return p.id; // a 44px-tall target for a 28px label
       }
       return null;
     },

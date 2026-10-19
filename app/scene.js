@@ -406,7 +406,9 @@ const PLACES = [
 const GROUND = new THREE.Plane(V(0, 1, 0), 0);
 
 // ---------- public ----------
-export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace, onRender }) {
+// covered(): true while something hides the whole yard (the full-screen plant card on a phone); it isn't drawn
+// then, and catches up once it shows again.
+export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace, onRender, covered }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -990,7 +992,7 @@ export function createYard(canvas, { layout, onPick, onMove, onDrop, onPlace, on
       selRing.material.opacity = 0.6 + 0.35 * Math.sin(now / 300);
       needsRender = true;
     }
-    if (needsRender) {
+    if (needsRender && !covered?.()) {
       fadeTrees();
       renderer.render(scene, camera);
       needsRender = false;

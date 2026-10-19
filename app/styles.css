@@ -10,6 +10,9 @@
   --text-onsky:#10170F; --accent-onsky:#C2386F;
 
   --text:#10170F; --accent:#C2386F;
+  /* --on-accent: text and ticks on a pink fill. --accent-ink: pink words on the lighter "lens" pill (the chosen tab,
+     Year/Month/Week, Auto/Light/Dark). Dark mode's pink is light, so both change there to stay readable. */
+  --on-accent:#fff; --accent-ink:var(--accent);
   --paper:#EEF2E6; --muted:#5A6955; --moss:#3F5A3A;
   --line:#D2DAC5; --sheet:#FAFCF5; --chip:#E3EBD6;
   --danger:#B42318; --danger-bg:#FDECEA; --warn:#9A5B00; --warn-bg:#FFF4DC; --ok:#2E6B2F; --ok-bg:#E4F2E1;
@@ -34,7 +37,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --text:#F2F5EF; --accent:#F07FAE;
+    --text:#F2F5EF; --accent:#F07FAE; --on-accent:#131A14; --accent-ink:#FF9FC6;
     --paper:#131A14; --muted:#9BAA95; --moss:#8DB27F;
     --line:#29352A; --sheet:#1A231B; --chip:#243024;
     --danger:#FF8A7A; --danger-bg:#3A1C18; --warn:#F2C26B; --warn-bg:#33291A; --ok:#9BD39A; --ok-bg:#1F3320;
@@ -44,7 +47,7 @@
   }
 }
 :root[data-theme="dark"]{
-  --text:#F2F5EF; --accent:#F07FAE;
+  --text:#F2F5EF; --accent:#F07FAE; --on-accent:#131A14; --accent-ink:#FF9FC6;
   --paper:#131A14; --muted:#9BAA95; --moss:#8DB27F;
   --line:#29352A; --sheet:#1A231B; --chip:#243024;
   --danger:#FF8A7A; --danger-bg:#3A1C18; --warn:#F2C26B; --warn-bg:#33291A; --ok:#9BD39A; --ok-bg:#1F3320;
@@ -83,6 +86,10 @@ body{
 button{font:inherit; color:inherit; cursor:pointer}
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--bloom); outline-offset:2px}
 a{color:var(--moss)}
+/* Small controls that should look compact still take a 44px finger: an invisible ::before, centred on the control,
+   reaches past its edges. (The done circles have their own, in their rules.) */
+:is(.photocheck, .photoshead .linkbtn, .todaymonth .linkbtn, .todaybtn, .calswitch button, .seg button, .switch, .highlightchip button, .bloomoff, .changes .linkbtn, .tmore > .linkbtn){position:relative}
+:is(.photocheck, .photoshead .linkbtn, .todaymonth .linkbtn, .todaybtn, .calswitch button, .seg button, .switch, .highlightchip button, .bloomoff, .changes .linkbtn, .tmore > .linkbtn)::before{content:""; position:absolute; left:50%; top:50%; width:max(100%, 44px); height:max(100%, 44px); transform:translate(-50%, -50%); border-radius:inherit}
 h1, h2, h3, h4{font-family:var(--font-head); font-weight:600}
 /* small all-caps labels stay in the body font */
 .viewsmenu h3, .plist h3, .tlist h3, .rsec h4{font-family:var(--font-body); font-weight:700}
@@ -104,7 +111,7 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 .tab{flex:1 1 0; min-width:0; border:0; background:transparent; border-radius:var(--radius-pill); display:grid; place-items:center; align-content:center; gap:2px; padding:0 4px; color:var(--text); transition:background-color .2s, color .2s}
 .tab svg, .searchbtn svg, .yardback svg{width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
 .tab span{font-size:.72rem; font-weight:700; letter-spacing:.01em; white-space:nowrap}
-.tab[aria-current="page"]{background:var(--lens); color:var(--accent); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.08)}
+.tab[aria-current="page"]{background:var(--lens); color:var(--accent-ink); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.08)}
 .searchbtn{flex:none; width:var(--tabbar-h); height:var(--tabbar-h); border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text)}
 @media (prefers-reduced-motion: reduce){ .tab{transition:none} }
 
@@ -162,7 +169,7 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .placeholder{background:hsl(var(--h) 22% 30%); color:hsl(var(--h) 40% 84%)} }
 :root[data-theme="dark"] .placeholder{background:hsl(var(--h) 22% 30%); color:hsl(var(--h) 40% 84%)}
 .nojobs{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 16px; border-radius:var(--radius); padding:10px 14px; color:var(--text)}
-.nojobs .linkbtn{min-height:32px; padding:0}
+.nojobs .linkbtn{padding:0}
 
 /* The other person's latest check-off, with their initial. */
 .partnerline{display:flex; align-items:center; gap:10px; min-height:54px; padding:8px 16px 8px 9px; border-radius:var(--radius-pill); color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.1)}
@@ -173,7 +180,7 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 
 /* Latest photos */
 .photospanel{border-radius:var(--radius); padding:10px 14px 14px; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.1)}
-.photoshead{display:flex; align-items:center; gap:8px; min-height:36px}
+.photoshead{display:flex; align-items:center; gap:10px; min-height:36px}
 .photoshead h2{flex:1; margin:0; font-size:1.15rem; letter-spacing:-.005em}
 .photocheck{display:inline-flex; align-items:center; gap:5px; border:0; border-radius:var(--radius-pill); background:var(--lens); padding:0 11px 0 9px; min-height:32px; font-size:.8rem; font-weight:700}
 .photocheck svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linejoin:round}
@@ -185,10 +192,10 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 .photospanel > p.small{margin:6px 0 0}
 
 /* Every photo ("All"), and Settings */
-.photogrid{list-style:none; margin:0; padding:14px 0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px 10px}
-.photogrid li{display:grid; gap:4px; min-width:0}
+.photogrid{list-style:none; margin:0; padding:14px 0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:0 10px}
+.photogrid li{display:grid; gap:0; min-width:0}
 .photogrid .pgpic{aspect-ratio:3/4; padding:0; border:0; border-radius:10px; overflow:hidden; background:var(--chip)}
-.photogrid .pgname{border:0; background:transparent; padding:0; text-align:left; font-size:.8rem; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.photogrid .pgname{border:0; background:transparent; min-height:44px; padding:5px 0 0; text-align:left; font-size:.8rem; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 /* Hidden from Settings (Latest photos, Who did it): their display rules would otherwise win over [hidden]. */
 .partnerline[hidden], .photospanel[hidden]{display:none}
 
@@ -230,7 +237,7 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 /* Auto / Light / Dark */
 .seg{flex:1; display:flex; gap:2px; padding:3px; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--text) 8%, transparent)}
 .seg button{flex:1 1 0; min-height:40px; border:0; background:transparent; border-radius:var(--radius-pill); font-size:.92rem; font-weight:700; color:var(--text); transition:background-color .2s, color .2s}
-.seg button[aria-checked="true"]{background:var(--lens); color:var(--accent); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.1)}
+.seg button[aria-checked="true"]{background:var(--lens); color:var(--accent-ink); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.1)}
 @media (prefers-reduced-motion: reduce){ .switch, .switch span, .seg button{transition:none} }
 @media (prefers-reduced-motion: reduce){ .jobopen img, .jobdone, .jobdone svg{transition:none} }
 
@@ -250,19 +257,19 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .calhead{display:grid; gap:12px; margin-bottom:16px}
 .calswitch{display:flex; gap:2px; padding:4px; border-radius:var(--radius-pill); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 4px 16px rgba(0,0,0,.07)}
 .calswitch button{flex:1 1 0; min-height:38px; border:0; background:transparent; border-radius:var(--radius-pill); font-size:.92rem; font-weight:700; color:var(--text); transition:background-color .2s, color .2s}
-.calswitch button[aria-pressed="true"]{background:var(--lens); color:var(--accent); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.08)}
+.calswitch button[aria-pressed="true"]{background:var(--lens); color:var(--accent-ink); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.08)}
 .calbody{display:grid; grid-template-columns:minmax(0,1fr); gap:14px}
 .calbody > .glass{border-radius:var(--radius); padding:12px 14px 14px; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.08)}
 .calh2{margin:0 2px 10px; font-size:1.45rem; font-weight:500; letter-spacing:-.01em}
 .calempty, .calnone{margin:0; font-size:.92rem; color:var(--muted)}
 .calnone{padding:4px 0 2px}
-.todaytag{display:inline-block; vertical-align:2px; margin-left:6px; padding:3px 8px; border-radius:var(--radius-pill); background:var(--accent); color:#fff; font-family:var(--font-body); font-size:.66rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; line-height:1}
+.todaytag{display:inline-block; vertical-align:2px; margin-left:6px; padding:3px 8px; border-radius:var(--radius-pill); background:var(--accent); color:var(--on-accent); font-family:var(--font-body); font-size:.66rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; line-height:1}
 
 /* The month or week heading, with arrows either side (and a way back to today). */
 .calnav{display:flex; align-items:center; gap:6px; min-height:44px; margin-bottom:6px}
 .calnav h2{flex:1; margin:0; font-size:1.35rem; font-weight:600; letter-spacing:-.01em; text-align:center; white-space:nowrap}
 .calnav h2 span{font-weight:500; color:var(--muted)}
-.calarrow{flex:none; width:40px; height:40px; border-radius:50%; border:0; background:var(--lens); display:grid; place-items:center; padding:0; color:var(--text)}
+.calarrow{flex:none; width:44px; height:44px; border-radius:50%; border:0; background:var(--lens); display:grid; place-items:center; padding:0; color:var(--text)}
 .calarrow svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
 .todaybtn{flex:none; min-height:32px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius-pill); background:transparent; font-size:.8rem; font-weight:700; color:var(--accent)}
 
@@ -282,7 +289,7 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .mcard .pcardtext b i{font-family:var(--font-body); font-style:normal; font-size:.75rem; font-weight:700; opacity:.8}
 .mcard .pcardtext span{white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
 .ptag.bloomtag{background:var(--accent-onsky); border-color:transparent}
-.ptag.picktag{background:#D07A1E; border-color:transparent}
+.ptag.picktag{background:#A9600F; border-color:transparent}
 
 .yeartl{--namew:118px; --tl-bloom:var(--accent); --tl-harvest:#E0892B}
 .tlhead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px}
@@ -298,7 +305,7 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .tlmonths{position:relative; height:24px; font-size:.7rem; font-weight:700; color:var(--muted); text-align:center}
 .tlmonths .now{color:var(--accent); font-weight:800}
 .tlrows ul{list-style:none; margin:0; padding:0}
-.tlrow{position:relative; width:100%; min-height:30px; padding:0; border:0; border-top:1px solid color-mix(in srgb, var(--line) 70%, transparent); background:transparent; text-align:left; color:var(--text)}
+.tlrow{position:relative; width:100%; min-height:44px; padding:0; border:0; border-top:1px solid color-mix(in srgb, var(--line) 70%, transparent); background:transparent; text-align:left; color:var(--text)}
 .tlrow:focus-visible{outline-offset:-2px; border-radius:6px}
 .tlname{grid-column:1; grid-row:1; padding-right:8px; font-size:.82rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .tlbar{grid-row:1; height:10px; margin:0 2px; border-radius:5px; background:var(--tl-bloom)}
@@ -312,9 +319,9 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .mday.blank{pointer-events:none}
 .mnum{display:grid; place-items:center; width:32px; height:32px; border-radius:50%; font-size:.95rem; font-weight:600; font-variant-numeric:tabular-nums}
 .mday.past .mnum{color:var(--muted)}
-.mday.today .mnum{box-shadow:inset 0 0 0 2px var(--accent); color:var(--accent); font-weight:800}
+.mday.today .mnum{box-shadow:inset 0 0 0 2px var(--accent); color:var(--accent-ink); font-weight:800}
 .mday[aria-pressed="true"] .mnum{background:var(--text); color:var(--paper); box-shadow:none}
-.mday.today[aria-pressed="true"] .mnum{background:var(--accent); color:#fff; box-shadow:0 0 0 2px var(--glass-solid), 0 0 0 4px var(--accent)}
+.mday.today[aria-pressed="true"] .mnum{background:var(--accent); color:var(--on-accent); box-shadow:0 0 0 2px var(--glass-solid), 0 0 0 4px var(--accent)}
 .mdots{display:flex; gap:3px; height:6px}
 .mdots i, .mkey i{width:6px; height:6px; border-radius:50%; background:var(--c)}
 .mkey{list-style:none; margin:10px 0 0; padding:10px 0 0; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.76rem; font-weight:600; color:var(--muted)}
@@ -344,7 +351,7 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .jwho .initial{width:28px; height:28px; font-size:.95rem; box-shadow:0 0 0 2px var(--glass-solid)}
 .jwho .initial + .initial{margin-left:-6px}
 .initial.other{background:var(--moss)}
-.jcheck{position:relative; flex:none; width:32px; height:32px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid var(--muted); background:transparent; color:#fff; transition:background-color .15s, border-color .15s}
+.jcheck{position:relative; flex:none; width:32px; height:32px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid var(--muted); background:transparent; color:var(--on-accent); transition:background-color .15s, border-color .15s}
 .jcheck::before{content:""; position:absolute; inset:-6px; border-radius:50%}
 .jcheck svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s}
 .jcheck[aria-checked="true"]{background:var(--accent); border-color:var(--accent)}
@@ -353,7 +360,7 @@ body:not(.yardview) .stage :is(.mapbar, .hint, .viewsmenu, .mapctl, .bloombar, .
 .jcheck[aria-checked="mixed"]::after{content:""; width:11px; height:2.5px; border-radius:2px; background:var(--accent)}
 
 /* Week: the seven days with how many jobs each has, then a panel for each day that has some. */
-.wdays{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:4px}
+.wdays{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:2px}
 .wday{width:100%; display:grid; justify-items:center; gap:2px; padding:8px 0 9px; border:0; border-radius:12px; background:transparent; color:var(--text)}
 button.wday{background:var(--lens)}
 .wname{font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted)}
@@ -364,8 +371,8 @@ button.wday{background:var(--lens)}
 .wday.past .wcount{background:var(--muted)}
 .wday.past.none .wcount{background:transparent}
 .wday.today{box-shadow:inset 0 0 0 2px var(--accent)}
-.wday.today .wnum, .wday.today .wname{color:var(--accent)}
-.wday.today .wcount{background:var(--accent); color:#fff}
+.wday.today .wnum, .wday.today .wname{color:var(--accent-ink)}
+.wday.today .wcount{background:var(--accent); color:var(--on-accent)}
 .weekday{scroll-margin-top:calc(var(--safe-top) + 12px)}
 @media (prefers-reduced-motion: reduce){ .calswitch button, .mcard, .jcheck, .jcheck svg{transition:none} }
 
@@ -384,11 +391,11 @@ canvas:focus-visible{outline:3px solid var(--bloom); outline-offset:-3px}
 .yardback, .monthswitch, .mapbtn, .mapctl button, .hint{box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 18px rgba(0,0,0,.14)}
 .yardback{justify-self:start; width:44px; height:44px; border-radius:50%; padding:0; display:grid; place-items:center}
 .yardback:active, .mapctl button:active, .monthswitch button:active{transform:scale(.94)}
-.monthswitch{display:flex; align-items:center; height:44px; border-radius:var(--radius-pill); padding:0 2px}
+.monthswitch{display:flex; align-items:center; height:44px; border-radius:var(--radius-pill); padding:0}
 .monthswitch button{border:0; background:transparent; color:inherit; padding:0}
-.monthswitch button:not(.monthname){width:40px; height:40px; border-radius:50%; display:grid; place-items:center}
+.monthswitch button:not(.monthname){width:44px; height:44px; border-radius:50%; display:grid; place-items:center}
 .monthswitch svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
-.monthname{min-width:96px; height:40px; display:grid; place-content:center; text-align:center; font-family:var(--font-head); font-weight:600; font-size:1.12rem; line-height:1; letter-spacing:-.005em; border-radius:var(--radius-pill)}
+.monthname{min-width:96px; height:44px; display:grid; place-content:center; text-align:center; font-family:var(--font-head); font-weight:600; font-size:1.12rem; line-height:1; letter-spacing:-.005em; border-radius:var(--radius-pill)}
 .monthname:disabled{cursor:default; opacity:1}
 .monthnow{display:block; margin-top:2px; font-family:var(--font-body); font-size:.62rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--accent-onsky)}
 .mapbtns{justify-self:end; display:grid; justify-items:end; gap:6px}
@@ -441,7 +448,7 @@ body.yardview{--dock-space:calc(var(--dock-bottom) + 4px)}
 .peekwhere{font-size:.78rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .peeknow{margin-top:2px; font-size:.82rem; line-height:1.32; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .peekeyebrow{font-weight:800; color:var(--accent)}
-.peekgo{flex:none; width:46px; height:46px; margin-left:6px; border:0; border-radius:50%; padding:0; display:grid; place-items:center; background:var(--accent); color:#fff; box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent)}
+.peekgo{flex:none; width:46px; height:46px; margin-left:6px; border:0; border-radius:50%; padding:0; display:grid; place-items:center; background:var(--accent); color:var(--on-accent); box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent)}
 .peekgo svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round}
 .peekgo:active{transform:scale(.94)}
 body.peeking .stage .bloombar{visibility:hidden}
@@ -492,7 +499,7 @@ body.peeking .stage .bloombar{visibility:hidden}
 .ebplant{min-width:0}
 .ebplant .ebtitle{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .ebplant span{display:block; font-size:.82rem; color:var(--muted); line-height:1.3}
-.edittray .close{width:36px; height:36px; font-size:1rem}
+.edittray .close{width:44px; height:44px; font-size:1rem}
 .ebhelp{margin:0; font-size:.86rem; color:var(--muted); line-height:1.4}
 .ebmsg{margin:0; font-size:.88rem; font-weight:600; color:var(--moss); line-height:1.4}
 .ebbtns{display:flex; flex-wrap:wrap; gap:6px}
@@ -507,7 +514,7 @@ body.peeking .stage .bloombar{visibility:hidden}
 .ebnum input{width:4.6em; font:inherit; font-size:1rem; color:var(--ink); text-align:right; padding:7px 8px; border-radius:9px; border:1px solid var(--line); background:var(--paper); min-height:40px}
 .ebnote{grid-column:1 / -1; margin:0; font-size:.78rem; color:var(--muted); line-height:1.35}
 .ebshapes{display:flex; flex-wrap:wrap; gap:6px}
-.ebshapes .pill{padding:5px 10px; min-height:36px}
+.ebshapes .pill{padding:5px 10px; min-height:44px}
 .ebshapes .pill[aria-checked="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
 .growson{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-top:10px; font-size:.9rem; font-weight:600}
 .growson select{font:inherit; font-weight:400; font-size:1rem; padding:7px 10px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:40px; max-width:100%}
@@ -528,6 +535,7 @@ body.peeking .stage .bloombar{visibility:hidden}
    same photo: Now, the Water / Feed / Dog safety tiles, its year as a colour strip, and the folding sections. */
 .sheet{
   position:fixed; inset:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  overflow-x:hidden; /* the blurred glow is scaled up past the right edge */
   background:var(--paper); padding:0 0 calc(env(safe-area-inset-bottom,0px) + 28px);
   animation:cardin .24s ease;
   /* the season strip's colours */
@@ -574,6 +582,9 @@ body.peeking .stage .bloombar{visibility:hidden}
 .cglow{position:absolute !important; z-index:0; inset:0 0 auto; height:620px; background-color:hsl(var(--h, 100) 30% 60% / .2); background-size:cover; background-position:center;
   filter:blur(48px) saturate(140%); opacity:.55; transform:scale(1.15); pointer-events:none;
   -webkit-mask-image:linear-gradient(#000 30%, transparent); mask-image:linear-gradient(#000 30%, transparent)}
+/* The card's panels use the solid glass colour rather than a live blur: a dozen blurred panels scrolling over the
+   photo glow dropped frames on a slower phone, and the glow behind them is already soft. */
+.cbody .glass{background:var(--glass-solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 .cpanel{border-radius:var(--radius); padding:14px 16px; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.06)}
 .eyebrow{display:block; margin:0; font-family:var(--font-body); font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
 .cpanel .status{margin-top:4px; font-family:var(--font-head); font-weight:600; font-size:1.45rem; line-height:1.1}
@@ -586,7 +597,7 @@ body.peeking .stage .bloombar{visibility:hidden}
 .nowcare li{display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); font-size:.95rem; line-height:1.45}
 .nowcare li:first-child{border-top:0; padding-top:2px}
 .nowcare li.done > span:last-child{color:var(--muted)}
-.cdone{position:relative; flex:none; width:30px; height:30px; margin-top:-2px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid var(--muted); background:transparent; color:#fff; transition:background-color .15s, border-color .15s}
+.cdone{position:relative; flex:none; width:30px; height:30px; margin-top:-2px; border-radius:50%; padding:0; display:grid; place-items:center; border:2px solid var(--muted); background:transparent; color:var(--on-accent); transition:background-color .15s, border-color .15s}
 .cdone::before{content:""; position:absolute; inset:-7px; border-radius:50%}
 .cdone svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s}
 .cdone[aria-checked="true"]{background:var(--accent); border-color:var(--accent)}
@@ -607,7 +618,7 @@ body.peeking .stage .bloombar{visibility:hidden}
 .ctile .tsub{font-size:.76rem; line-height:1.25; color:var(--muted)}
 .ctile.now .tsub{color:var(--ok); font-weight:700}
 .ctile[aria-expanded="true"]{outline:2px solid var(--text); outline-offset:-2px}
-.ctile.dog.toxic{--glass-bg:rgba(178,34,24,.9); --glass-border:rgba(255,160,150,.45); --glass-highlight:rgba(255,255,255,.25); color:#fff}
+.ctile.dog.toxic{--glass-bg:rgba(178,34,24,.9); --glass-solid:#B22218; --glass-border:rgba(255,160,150,.45); --glass-highlight:rgba(255,255,255,.25); color:#fff}
 .ctile.dog.toxic .eyebrow, .ctile.dog.toxic .tsub{color:rgba(255,255,255,.88)}
 .ctile.dog.toxic[aria-expanded="true"]{outline-color:#fff; outline-offset:-4px}
 .ctile.dog.caution b{color:var(--warn)}
@@ -648,7 +659,7 @@ body.peeking .stage .bloombar{visibility:hidden}
 .csec .tag{background:var(--chip)}
 .csec .photos{margin:12px -16px 0; padding:0 16px 4px}
 @media (prefers-reduced-motion: reduce){ .csec > summary svg{transition:none} }
-.close{border:0; background:var(--chip); border-radius:50%; width:40px; height:40px; font-size:1.2rem; line-height:1; flex:none}
+.close{border:0; background:var(--chip); border-radius:50%; width:44px; height:44px; font-size:1.2rem; line-height:1; flex:none}
 .badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
 .badge{display:inline-flex; align-items:center; gap:4px; font-size:.78rem; font-weight:700; padding:4px 9px; border-radius:var(--radius-pill); background:var(--chip); color:var(--ink); white-space:nowrap}
 .badge.unconfirmed{background:var(--warn-bg); color:var(--warn); border:1px dashed currentColor}
@@ -666,20 +677,22 @@ body.peeking .stage .bloombar{visibility:hidden}
 .tag{display:inline-block; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 6px; border-radius:5px; margin-right:6px; background:var(--sheet); color:var(--muted); vertical-align:1px}
 .issues{margin:8px 0 0; padding-left:18px; color:var(--warn); font-weight:600; font-size:.92rem; line-height:1.45}
 details{margin-top:14px; border-top:1px solid var(--line); padding-top:10px}
-summary{cursor:pointer; font-weight:700; font-size:1rem; list-style:none; display:flex; justify-content:space-between; align-items:center; min-height:36px}
+summary{cursor:pointer; font-weight:700; font-size:1rem; list-style:none; display:flex; justify-content:space-between; align-items:center; min-height:44px}
 summary::-webkit-details-marker{display:none}
 summary::after{content:"+"; font-size:1.3rem; color:var(--muted)}
 details[open] > summary::after{content:"–"}
 .monthblock{margin-top:10px}
 .monthblock h4{margin:0 0 4px; font-size:.9rem; color:var(--moss)}
 .small{font-size:.85rem; color:var(--muted); line-height:1.45}
-.sources{margin:6px 0 0; padding-left:18px; font-size:.88rem; line-height:1.6}
+.sources{margin:6px 0 12px; padding-left:18px; font-size:.88rem; line-height:1.6}
+.sources a{display:inline-block; padding:11px 0}
+.sheet p.small a{display:inline-block; padding:12px 0; margin:-12px 0} /* "Source: …" and "Dog safety: …": a 44px target without moving the lines */
 .conf{display:flex; gap:10px; align-items:baseline; margin-top:8px}
 .conf b{font-size:1.1rem}
 
 /* the card's own controls: confirm, rename, finish */
 .editbar{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
-.pill{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:var(--radius-pill); padding:6px 13px 6px 10px; font-size:.86rem; font-weight:600; min-height:40px}
+.pill{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:var(--radius-pill); padding:6px 13px 6px 10px; font-size:.86rem; font-weight:600; min-height:44px}
 .pill svg{width:16px; height:16px; fill:none; stroke:var(--moss); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
 .pill:active{background:var(--chip)}
 .seasonbtns{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px}
@@ -760,11 +773,11 @@ details[open] > summary::after{content:"–"}
 .psearch input::placeholder{color:var(--muted)}
 .pchips{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 4px}
 .pchips::-webkit-scrollbar{display:none}
-.pfilter{position:relative; flex:none; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text)}
+.pfilter{position:relative; flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; padding:0; color:var(--text)}
 .pfilter svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round}
 .pfilter[aria-expanded="true"]{background:var(--lens)}
-.pfiltern{position:absolute; top:-4px; right:-4px; min-width:19px; height:19px; padding:0 5px; border-radius:10px; display:grid; place-items:center; background:var(--accent); color:#fff; font-size:.7rem; font-weight:800; line-height:1}
-.pchip{flex:none; min-height:40px; padding:0 15px; border-radius:var(--radius-pill); font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap}
+.pfiltern{position:absolute; top:-4px; right:-4px; min-width:19px; height:19px; padding:0 5px; border-radius:10px; display:grid; place-items:center; background:var(--accent); color:var(--on-accent); font-size:.7rem; font-weight:800; line-height:1}
+.pchip{flex:none; min-height:44px; padding:0 15px; border-radius:var(--radius-pill); font-size:.88rem; font-weight:700; color:var(--text); white-space:nowrap}
 .pchip[aria-pressed="true"]{background:var(--text); color:var(--paper); border:1px solid var(--text)}
 
 /* The filter drop-down. The see-through layer behind it closes it when tapped. */
@@ -782,12 +795,12 @@ details[open] > summary::after{content:"–"}
 .fsorts{display:grid; grid-template-columns:1fr 1fr; gap:6px}
 .fsort, .fbox{position:relative; cursor:pointer}
 .fsort input, .fbox input{position:absolute; opacity:0; width:1px; height:1px; pointer-events:none}
-.fsort span{display:grid; place-items:center; min-height:38px; padding:0 8px; border-radius:var(--radius-pill); border:1px solid var(--line); font-size:.86rem; font-weight:700; text-align:center}
+.fsort span{display:grid; place-items:center; min-height:44px; padding:0 8px; border-radius:var(--radius-pill); border:1px solid var(--line); font-size:.86rem; font-weight:700; text-align:center}
 .fsort input:checked + span{background:var(--text); color:var(--paper); border-color:var(--text)}
 .fsort input:focus-visible + span, .fbox input:focus-visible + .fmark{outline:2px solid var(--accent); outline-offset:2px}
-.fbox{display:flex; align-items:center; gap:11px; min-height:42px; font-size:.95rem}
+.fbox{display:flex; align-items:center; gap:11px; min-height:44px; font-size:.95rem}
 .fmark{flex:none; width:22px; height:22px; border-radius:7px; border:1.5px solid var(--muted); display:grid; place-items:center; transition:background-color .12s, border-color .12s}
-.fmark svg{width:15px; height:15px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0}
+.fmark svg{width:15px; height:15px; fill:none; stroke:var(--on-accent); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0}
 .fbox input:checked + .fmark{background:var(--accent); border-color:var(--accent)}
 .fbox input:checked + .fmark svg{opacity:1}
 .fmenubtns{flex:none; display:flex; gap:8px; padding:12px 16px 14px; border-top:1px solid var(--line)}
@@ -810,7 +823,7 @@ details[open] > summary::after{content:"–"}
 .pcardtext b{font-family:var(--font-head); font-weight:600; font-size:1.14rem; line-height:1.08; letter-spacing:-.005em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .pcardtext span{font-size:.75rem; line-height:1.3; color:rgba(255,255,255,.86); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .ptags{position:absolute; z-index:1; top:8px; left:8px; right:8px; display:flex; flex-wrap:wrap; gap:4px}
-.ptag{font-size:.68rem; font-weight:800; line-height:1; padding:5px 8px; border-radius:var(--radius-pill); color:#fff; background:rgba(20,26,20,.4); border:1px solid rgba(255,255,255,.28); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); white-space:nowrap}
+.ptag{font-size:.68rem; font-weight:800; line-height:1; padding:5px 8px; border-radius:var(--radius-pill); color:#fff; background:rgba(20,26,20,.55); border:1px solid rgba(255,255,255,.28); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); white-space:nowrap}
 .ptag.toxic{background:rgba(180,35,24,.86); border-color:rgba(255,255,255,.2)}
 .ptag.caution{background:rgba(140,82,0,.82); border-color:rgba(255,255,255,.2)}
 .ptag.todo{background:rgba(255,255,255,.88); color:#10170F; border-color:transparent}
@@ -833,11 +846,11 @@ details[open] > summary::after{content:"–"}
 .search{width:100%; font:inherit; font-size:1rem; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:44px}
 .filters{display:flex; flex-wrap:wrap; gap:6px}
 .filters select{flex:none; max-width:100%; font:inherit; font-size:.88rem; padding:7px 10px; border-radius:var(--radius-pill); border:1px solid var(--line); background:var(--paper); color:var(--ink); min-height:38px}
-.toggle{border:1px solid var(--line); background:var(--paper); border-radius:var(--radius-pill); padding:7px 11px; font-size:.84rem; font-weight:600; min-height:38px}
+.toggle{border:1px solid var(--line); background:var(--paper); border-radius:var(--radius-pill); padding:7px 11px; font-size:.84rem; font-weight:600; min-height:44px}
 .toggle[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
 .listmeta{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:2px 12px; font-size:.88rem; color:var(--muted)}
 .listmeta .linkbtn:disabled{color:var(--muted); text-decoration:none; cursor:default}
-.linkbtn{border:0; background:transparent; color:var(--moss); font-weight:700; padding:6px 0; text-decoration:underline; min-height:36px}
+.linkbtn{border:0; background:transparent; color:var(--moss); font-weight:700; padding:6px 0; text-decoration:underline; min-height:44px}
 .plist{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 24px)}
 .plist h3{position:sticky; top:0; margin:0; padding:12px 0 6px; background:var(--sheet); font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
 .plist ul{list-style:none; margin:0; padding:0}
@@ -886,10 +899,10 @@ details[open] > summary::after{content:"–"}
 .season .stitle{font-weight:700; font-size:1.02rem; line-height:1.3}
 .season p{margin:6px 0 0; font-size:.93rem; line-height:1.5}
 .season details{margin-top:10px; padding-top:4px}
-.season summary{font-size:.9rem; min-height:32px}
+.season summary{font-size:.9rem; min-height:44px}
 .season .linkbtn{padding:6px 0 0; min-height:0; margin-top:6px}
 .notes{margin:6px 0 0; padding-left:18px; font-size:.88rem; line-height:1.5}
-.btn{border:0; border-radius:var(--radius-pill); background:var(--ink); color:var(--paper); font-weight:700; font-size:.9rem; padding:9px 16px; min-height:40px; margin-top:10px}
+.btn{border:0; border-radius:var(--radius-pill); background:var(--ink); color:var(--paper); font-weight:700; font-size:.9rem; padding:9px 16px; min-height:44px; margin-top:10px}
 .frostform{margin-top:10px; display:grid; gap:6px}
 .frostform label{font-size:.88rem; font-weight:600}
 .frostrow{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px}
@@ -920,7 +933,7 @@ details[open] > summary::after{content:"–"}
 .tmore > p.small{font-size:.82rem}
 .tmore > .linkbtn{justify-self:start; padding:2px 0; min-height:32px}
 .chips{display:flex; flex-wrap:wrap; gap:6px}
-.chip{border:1px solid var(--line); background:var(--paper); border-radius:var(--radius-pill); padding:4px 11px; font-size:.82rem; font-weight:600; min-height:36px}
+.chip{border:1px solid var(--line); background:var(--paper); border-radius:var(--radius-pill); padding:4px 11px; font-size:.82rem; font-weight:600; min-height:44px}
 .chip.unconfirmed{border-style:dashed; border-color:var(--warn); color:var(--warn)}
 .linkbtn.inline{min-height:0; padding:0; font-size:inherit; vertical-align:baseline}
 .progress{color:var(--moss); font-weight:700}
@@ -976,7 +989,7 @@ details[open] > summary::after{content:"–"}
 .claudestep .formbtns .btn{margin-top:0}
 .steps{margin:2px 0 4px; padding-left:20px; font-size:.93rem; line-height:1.45}
 .steps li + li{margin-top:4px}
-.promptbox summary{font-size:.85rem; font-weight:700; color:var(--moss); min-height:32px; cursor:pointer}
+.promptbox summary{font-size:.85rem; font-weight:700; color:var(--moss); min-height:44px; cursor:pointer}
 .promptbox pre{margin:4px 0 0; padding:10px; border-radius:8px; background:var(--paper); font-size:.78rem; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere; max-height:240px; overflow:auto}
 .checkitem.waiting .checkline b{color:var(--muted)}
 .buglist .checkline[aria-expanded="true"]{border-bottom-color:transparent}
@@ -1032,7 +1045,7 @@ details[open] > summary::after{content:"–"}
 .buggroup > .linkbtn{margin-bottom:6px}
 .buggroup > .stitle, .bugplants .stitle{margin:16px 0 6px; font-weight:700}
 .bugplants .chips{margin-bottom:4px}
-.bugplants .pill{min-height:36px; padding:4px 12px}
+.bugplants .pill{min-height:44px; padding:4px 12px}
 .checkbody .growson{font-size:.85rem; flex-wrap:nowrap}
 .checkbody .growson select{flex:1; min-width:0; width:0}
 .rsec, .rnote, .rtrust{overflow-wrap:anywhere}

@@ -121,7 +121,7 @@ async function start() {
   let has3d = true;
   try {
     yard = createYard($("yard"), {
-      layout: garden.layout, onMove: movedView, onDrop: movedPlant, onPlace: placePlant, onRender: placeLabels,
+      layout: garden.layout, onMove: movedView, onDrop: movedPlant, onPlace: placePlant, onRender: placeLabels, covered: yardCovered,
       onPick: (id, at) => (editMode.on ? pickToEdit(id) : pickedInYard((labelsShown() && labels.hit(at.x, at.y)) || id)),
     });
   } catch (err) {
@@ -431,6 +431,13 @@ function showViews(open) {
 }
 
 // ---------- card ----------
+// On phones the card, This week, Photo check, All photos and the photo viewer cover the whole yard, so it stops
+// redrawing behind them (the picked plant's pulsing ring would otherwise redraw it every frame while the card scrolls).
+const WIDE = matchMedia("(min-width: 900px)");
+const COVERS = ["sheet", "tasksPanel", "checksPanel", "photosPanel", "savePanel"];
+function yardCovered() {
+  return !$("lightbox").hidden || (!WIDE.matches && COVERS.some((id) => !$(id).hidden));
+}
 // From the Calendar and Plants screens the card opens over them, and closing the card goes back to them.
 function selectPlant(id, { focus = false } = {}) {
   state.selectedId = id;
