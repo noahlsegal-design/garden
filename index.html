@@ -20,32 +20,43 @@
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..800&family=Newsreader:opsz,wght@6..72,500..600&display=swap" rel="stylesheet">
 <!-- The ?v=… on each app file is the app's version, so after a publish browsers fetch all the new files together
      instead of mixing old and new. Don't edit it by hand: "node stamp-version.mjs" updates it. -->
-<link rel="stylesheet" href="app/styles.css?v=0f86166c70">
+<link rel="stylesheet" href="app/styles.css?v=9457f484ae">
+<script>
+// Light or Dark from Settings, set before the page draws so it doesn't flash the other look first (app/prefs.js).
+try {
+  const t = JSON.parse(localStorage.getItem("garden.prefs"))?.theme;
+  if (t === "light" || t === "dark") {
+    document.documentElement.dataset.theme = t;
+    for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = t === "dark" ? "#131A14" : "#EEF2E6";
+  }
+} catch {}
+</script>
 <script type="importmap">
 { "imports": {
     "three": "./vendor/three/three.module.js",
     "three/addons/": "./vendor/three/addons/",
-    "./app/arches.js": "./app/arches.js?v=0f86166c70",
-    "./app/bloom.js": "./app/bloom.js?v=0f86166c70",
-    "./app/calendar.js": "./app/calendar.js?v=0f86166c70",
-    "./app/checks.js": "./app/checks.js?v=0f86166c70",
-    "./app/cloud.js": "./app/cloud.js?v=0f86166c70",
-    "./app/config.js": "./app/config.js?v=0f86166c70",
-    "./app/data.js": "./app/data.js?v=0f86166c70",
-    "./app/editbar.js": "./app/editbar.js?v=0f86166c70",
-    "./app/edits.js": "./app/edits.js?v=0f86166c70",
-    "./app/look.js": "./app/look.js?v=0f86166c70",
-    "./app/main.js": "./app/main.js?v=0f86166c70",
-    "./app/notes.js": "./app/notes.js?v=0f86166c70",
-    "./app/plantlist.js": "./app/plantlist.js?v=0f86166c70",
-    "./app/reports.js": "./app/reports.js?v=0f86166c70",
-    "./app/scene.js": "./app/scene.js?v=0f86166c70",
-    "./app/shapes.js": "./app/shapes.js?v=0f86166c70",
-    "./app/tasklist.js": "./app/tasklist.js?v=0f86166c70",
-    "./app/tasks.js": "./app/tasks.js?v=0f86166c70",
-    "./app/today.js": "./app/today.js?v=0f86166c70",
-    "./app/ui.js": "./app/ui.js?v=0f86166c70",
-    "./app/yardview.js": "./app/yardview.js?v=0f86166c70"
+    "./app/arches.js": "./app/arches.js?v=9457f484ae",
+    "./app/bloom.js": "./app/bloom.js?v=9457f484ae",
+    "./app/calendar.js": "./app/calendar.js?v=9457f484ae",
+    "./app/checks.js": "./app/checks.js?v=9457f484ae",
+    "./app/cloud.js": "./app/cloud.js?v=9457f484ae",
+    "./app/config.js": "./app/config.js?v=9457f484ae",
+    "./app/data.js": "./app/data.js?v=9457f484ae",
+    "./app/editbar.js": "./app/editbar.js?v=9457f484ae",
+    "./app/edits.js": "./app/edits.js?v=9457f484ae",
+    "./app/look.js": "./app/look.js?v=9457f484ae",
+    "./app/main.js": "./app/main.js?v=9457f484ae",
+    "./app/notes.js": "./app/notes.js?v=9457f484ae",
+    "./app/plantlist.js": "./app/plantlist.js?v=9457f484ae",
+    "./app/prefs.js": "./app/prefs.js?v=9457f484ae",
+    "./app/reports.js": "./app/reports.js?v=9457f484ae",
+    "./app/scene.js": "./app/scene.js?v=9457f484ae",
+    "./app/shapes.js": "./app/shapes.js?v=9457f484ae",
+    "./app/tasklist.js": "./app/tasklist.js?v=9457f484ae",
+    "./app/tasks.js": "./app/tasks.js?v=9457f484ae",
+    "./app/today.js": "./app/today.js?v=9457f484ae",
+    "./app/ui.js": "./app/ui.js?v=9457f484ae",
+    "./app/yardview.js": "./app/yardview.js?v=9457f484ae"
 } }
 </script>
 </head>
@@ -126,7 +137,7 @@
 <section class="sheet" id="sheet" role="dialog" aria-modal="false" aria-labelledby="sheetTitle" hidden></section>
 <section class="listpanel taskpanel" id="tasksPanel" role="dialog" aria-modal="true" aria-labelledby="tasksTitle" hidden></section>
 <section class="listpanel" id="checksPanel" role="dialog" aria-modal="true" aria-labelledby="checksTitle" hidden></section>
-<section class="listpanel" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden></section>
+<section class="listpanel setpanel" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden></section>
 <section class="listpanel" id="photosPanel" role="dialog" aria-modal="true" aria-labelledby="photosTitle" hidden></section>
 <section class="listpanel" id="savePanel" role="dialog" aria-modal="true" aria-labelledby="saveTitle" hidden></section>
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo" hidden></div>

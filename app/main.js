@@ -13,6 +13,7 @@ import { withEdits, editFor, unsavedEdits, staleEdits, describeEdits, basePlant,
   STRUCTURE, isStructureEdit, structureBase, withStructureEdits, unsavedStructureEdits, staleStructureEdits } from "./edits.js";
 import { renderTasks, revealRow } from "./tasklist.js";
 import { renderToday, renderAllPhotos, renderSettings, resortJobs } from "./today.js";
+import { THEMES, getPrefs, setPref } from "./prefs.js";
 import { bloomCounts, createBloomBar } from "./bloom.js";
 import { renderEditBar } from "./editbar.js";
 import { plantHeight, plantRadius, isVine, SUPPORTS, SHAPES, LOOK } from "./look.js";
@@ -929,7 +930,7 @@ function drawToday() {
   renderToday({
     week: weekFor(mondayOf(now)), today: now, done, doneBy, species: garden.species, plantsById: byId,
     partners: cloudReady && status !== "signed-out" ? partners : [],
-    plants: garden.plants.filter((p) => !p.removed), notePhotos, checks: Boolean(checks),
+    plants: garden.plants.filter((p) => !p.removed), notePhotos, checks: Boolean(checks), show: getPrefs(),
     thumb: (photo) => notesBackend.photo(thumbOf(photo)), full: (photo) => notesBackend.photo(photo),
     onToggle: (keys, on) => store.change(on ? { set: Object.fromEntries(keys.map((k) => [k, ymd(now)])) } : { unset: keys }),
     onOpenJob: (key) => openTasks(key),
@@ -957,7 +958,7 @@ function drawCalendar() {
 let fetchingPhotos = null;
 function refreshPhotos() {
   if (!cloudReady || !account() || fetchingPhotos) return;
-  if (!myName) notesBackend.me().then((name) => { myName = name; if (name && nav.screen === "calendar") drawCalendar(); }).catch(() => {});
+  if (!myName) notesBackend.me().then((name) => { myName = name; if (name && nav.screen === "calendar") drawCalendar(); if (name && !$("settingsPanel").hidden) drawSettings(); }).catch(() => {});
   fetchingPhotos = notesBackend.latest()
     .then((list) => {
       const changed = JSON.stringify(list.map((n) => n.id)) !== JSON.stringify(notePhotos.map((n) => n.id));
@@ -991,7 +992,10 @@ function openSettings() {
 }
 function drawSettings() {
   renderSettings($("settingsPanel"), {
+    prefs: getPrefs(), themes: THEMES,
     cloud: cloudReady, account: account(), saveStatus: store.checks.status, sharedWith: store.checks.sharedWith,
+    me: myName, partners: store.checks.partners,
+    onPref: (name, value) => { setPref(name, value); drawSettings(); drawToday(); }, // a new look shows at once (styles.css)
     onSignIn: signInHere, onSignOut: signOutHere, onRedraw: drawSettings, onClose: closeSettings,
   });
 }

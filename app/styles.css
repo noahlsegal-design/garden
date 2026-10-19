@@ -189,10 +189,49 @@ body:is([data-screen="calendar"], [data-screen="plants"]) .veil{display:block}
 .photogrid li{display:grid; gap:4px; min-width:0}
 .photogrid .pgpic{aspect-ratio:3/4; padding:0; border:0; border-radius:10px; overflow:hidden; background:var(--chip)}
 .photogrid .pgname{border:0; background:transparent; padding:0; text-align:left; font-size:.8rem; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.settings p{line-height:1.5; margin:6px 0}
-.setrow{display:grid; gap:1px; padding:8px 0; border-bottom:1px solid var(--line)}
-.setrow span{font-size:.82rem; color:var(--muted)}
-.setrow b{overflow-wrap:anywhere}
+/* Hidden from Settings (Latest photos, Who did it): their display rules would otherwise win over [hidden]. */
+.partnerline[hidden], .photospanel[hidden]{display:none}
+
+/* ---------- Settings: glass sections over the blurred yard ---------- */
+/* Fading the panel itself in would switch its blur off, so only what's in it fades in. */
+.listpanel.setpanel{background:var(--veil); -webkit-backdrop-filter:blur(30px) saturate(160%); backdrop-filter:blur(30px) saturate(160%); color:var(--text); animation:none}
+.setpanel > *{animation:fadein .15s ease}
+@media (prefers-reduced-motion: reduce){ .setpanel > *{animation:none} }
+@media (prefers-reduced-transparency: reduce){ .listpanel.setpanel{background:var(--paper); -webkit-backdrop-filter:none; backdrop-filter:none} }
+:root[data-transparency="reduce"] .listpanel.setpanel{background:var(--paper); -webkit-backdrop-filter:none; backdrop-filter:none}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){ .listpanel.setpanel{background:var(--paper)} }
+.sethead{flex:none; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:calc(var(--safe-top) + 14px) max(16px, (100% - 600px) / 2) 6px}
+.sethead h2{margin:0; font-weight:500; font-size:2.6rem; line-height:1; letter-spacing:-.03em; font-optical-sizing:auto}
+.sethead .close{width:44px; height:44px; font-size:1.05rem; color:var(--text); box-shadow:inset 0 1px 0 var(--glass-highlight), 0 4px 14px rgba(0,0,0,.1)}
+.setbody{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:4px max(16px, (100% - 600px) / 2) calc(env(safe-area-inset-bottom,0px) + 28px)}
+.setsec{margin-top:18px}
+.setsec h3{margin:0 0 7px 4px; font-family:var(--font-body); font-weight:700; font-size:.76rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted)}
+.setgroup{border-radius:var(--radius); padding:0 14px; box-shadow:inset 0 1px 0 var(--glass-highlight), 0 6px 20px rgba(0,0,0,.08)}
+.setline{display:flex; align-items:center; gap:12px; min-height:56px; padding:9px 0}
+.setline + .setline{border-top:1px solid color-mix(in srgb, var(--text) 10%, transparent)}
+.settext{flex:1; min-width:0; display:grid; gap:2px}
+.settext b{font-size:.98rem; font-weight:600; overflow-wrap:anywhere}
+.settext span{font-size:.82rem; color:var(--muted); line-height:1.35}
+.setline.later .settext b{color:var(--muted)}
+.setline .btn{flex:none; margin:0}
+.setnote{margin:7px 4px 0; font-size:.8rem; line-height:1.4; color:var(--muted)}
+.soon{flex:none; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 8px; border-radius:var(--radius-pill); background:var(--lens); color:var(--muted); white-space:nowrap}
+.person .initial{width:34px; height:34px; font-size:1.05rem}
+.setgroup .signin{margin:0; padding:14px 0; background:transparent; border:0; border-radius:0}
+.setgroup .signin input{background:color-mix(in srgb, var(--sheet) 70%, transparent)}
+
+/* An on/off switch: the knob slides right and the track turns pink when it's on. */
+.switch{flex:none; position:relative; width:51px; height:31px; padding:0; border:0; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--text) 18%, transparent); transition:background-color .2s}
+.switch span{position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,.22); transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"] span{transform:translateX(20px)}
+.switch:disabled{opacity:.45; cursor:default}
+
+/* Auto / Light / Dark */
+.seg{flex:1; display:flex; gap:2px; padding:3px; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--text) 8%, transparent)}
+.seg button{flex:1 1 0; min-height:40px; border:0; background:transparent; border-radius:var(--radius-pill); font-size:.92rem; font-weight:700; color:var(--text); transition:background-color .2s, color .2s}
+.seg button[aria-checked="true"]{background:var(--lens); color:var(--accent); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.1)}
+@media (prefers-reduced-motion: reduce){ .switch, .switch span, .seg button{transition:none} }
 @media (prefers-reduced-motion: reduce){ .jobopen img, .jobdone, .jobdone svg{transition:none} }
 
 /* The Yard view (styled further down, with the yard's controls): Today's panels step aside and the yard's own

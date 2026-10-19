@@ -141,7 +141,7 @@ export function loadNoteThumbs(el, thumb) {
 
 // ---------- the screen ----------
 // o: { week, today, done, doneBy, partners, species, plantsById, plants (in the yard), notePhotos (newest first),
-// checks (whether Photo check is available), thumb(photo) and full(photo) for photos from notes,
+// checks (whether Photo check is available), show ({ photos, whoDid } from Settings), thumb(photo) and full(photo) for photos from notes,
 // onToggle(keys, on), onOpenJob(key), onWeek(), onPhoto(items, i), onAllPhotos(), onChecks() }
 export function renderToday(o) {
   const $ = (id) => document.getElementById(id);
@@ -174,9 +174,13 @@ export function renderToday(o) {
     if (b.hasAttribute("data-week")) return o.onWeek();
   };
 
-  const partner = partnerLine(o);
+  // Settings can turn off the other person's line and Latest photos (o.show).
+  const partner = o.show.whoDid ? partnerLine(o) : "";
   $("todayPartner").innerHTML = partner;
   $("todayPartner").hidden = !partner;
+
+  $("todayPhotos").hidden = !o.show.photos;
+  if (!o.show.photos) { $("todayPhotos").innerHTML = ""; return; }
 
   const photos = allPhotos(o.plants, o.notePhotos).slice(0, 4);
   $("todayPhotos").innerHTML = `
@@ -222,24 +226,61 @@ export function renderAllPhotos(panel, { plants, notePhotos, thumb, full, onPhot
 }
 
 // ---------- Settings (the gear) ----------
-// The account check-offs are saved under (signing in and out), who the garden is shared with, and where things
-// are being saved right now.
+// Glass sections over the blurred yard: what Today shows and the look (both kept on this phone, app/prefs.js), who
+// the garden is shared with, notifications (not built yet), and the account check-offs are saved under.
 const settingsForm = { busy: false, error: "" };
+const toggle = (id, on, label, { disabled = false } = {}) =>
+  `<button type="button" class="switch" role="switch" aria-checked="${on}" data-pref="${id}" data-f="s:${id}" aria-label="${esc(label)}"${disabled ? " disabled" : ""}><span></span></button>`;
+const switchRow = (id, on, title, about, opts = {}) => `
+  <div class="setline${opts.disabled ? " later" : ""}">
+    <span class="settext"><b>${esc(title)}</b>${about ? `<span>${esc(about)}</span>` : ""}</span>
+    ${opts.disabled ? `<span class="soon">Coming later</span>` : ""}
+    ${toggle(id, on, title, opts)}
+  </div>`;
+const section = (title, body, note = "") => `
+  <section class="setsec"><h3>${esc(title)}</h3><div class="setgroup glass">${body}</div>${note ? `<p class="setnote">${esc(note)}</p>` : ""}</section>`;
+
+// o: { prefs, themes, cloud, account, saveStatus, me, partners, onPref(name, value), onSignIn, onSignOut, onRedraw,
+// onClose }
 export function renderSettings(panel, o) {
   const notes = o.cloud ? SAVE_NOTE.cloud : SAVE_NOTE.mac;
   const signedIn = o.cloud && o.account && o.saveStatus !== "signed-out";
   const typed = { email: panel.querySelector("#setEmail")?.value, password: panel.querySelector("#setPassword")?.value };
+  const focusKey = panel.contains(document.activeElement) ? document.activeElement?.dataset?.f : null;
+  const scroll = panel.querySelector(".setbody")?.scrollTop || 0;
+  const people = signedIn ? [...(o.me ? [{ name: o.me, you: true }] : []), ...(o.partners || []).map((name) => ({ name }))] : [];
   panel.innerHTML = `
-    <div class="listhead">
-      <div class="row"><h2 id="settingsTitle">Settings</h2><button class="close" type="button" aria-label="Close settings">✕</button></div>
+    <div class="sethead">
+      <h2 id="settingsTitle">Settings</h2>
+      <button class="close glass" type="button" aria-label="Close settings" data-f="s:close">✕</button>
     </div>
-    <div class="tlist settings">
-      <h3>Account</h3>
-      ${!o.cloud ? `<p>${esc(footNote(o, notes))}</p>`
+    <div class="setbody settings">
+      ${section("Today screen", `
+        ${switchRow("photos", o.prefs.photos, "Latest photos", "The newest plant photos")}
+        ${switchRow("whoDid", o.prefs.whoDid, "Who did it", "The last job someone else checked off")}`,
+        "Saved on this phone.")}
+      ${section("Look", `
+        <div class="setline">
+          <div class="seg" role="radiogroup" aria-label="Look">
+            ${o.themes.map(([id, name]) => `<button type="button" role="radio" aria-checked="${o.prefs.theme === id}" data-theme-pick="${id}" data-f="t:${id}">${esc(name)}</button>`).join("")}
+          </div>
+        </div>`,
+        "Auto follows your phone's light or dark setting.")}
+      ${section("Shared garden", people.length
+        ? people.map((p) => `
+          <div class="setline person">
+            <span class="initial" aria-hidden="true">${esc(p.name.trim().charAt(0).toUpperCase() || "?")}</span>
+            <span class="settext"><b>${esc(p.name)}</b></span>
+            ${p.you ? `<span class="soon">You</span>` : ""}
+          </div>`).join("")
+        : `<div class="setline"><span class="settext"><span>${o.cloud ? "Sign in below to see who's in the garden." : "The garden isn't shared from this Mac."}</span></span></div>`)}
+      ${section("Notifications", `
+        ${switchRow("morning", false, "Morning summary", "Today's jobs, first thing", { disabled: true })}
+        ${switchRow("frost", false, "Frost alerts", "When frost is on the way", { disabled: true })}`)}
+      ${section("Account", !o.cloud ? `<div class="setline"><span class="settext"><span>${esc(footNote(o, notes))}</span></span></div>`
         : signedIn ? `
-          <div class="setrow"><span>Signed in as</span><b>${esc(o.account)}</b></div>
-          ${o.sharedWith?.length ? `<div class="setrow"><span>Sharing the garden with</span><b>${o.sharedWith.map(esc).join(" and ")}</b></div>` : ""}
-          <button type="button" class="btn" data-signout>Sign out</button>`
+          <div class="setline"><span class="settext"><span>Signed in as</span><b>${esc(o.account)}</b></span>
+            <button type="button" class="btn" data-signout data-f="s:signout">Sign out</button></div>`
         : `
           <form class="signin" data-signin>
             <p class="stitle">Sign in to save your check-offs</p>
@@ -250,20 +291,35 @@ export function renderSettings(panel, o) {
             <input id="setPassword" type="password" autocomplete="current-password" required>
             <button type="submit" class="btn" ${settingsForm.busy ? "disabled" : ""}>${settingsForm.busy ? "Signing in…" : "Sign in"}</button>
             ${settingsForm.error ? `<p class="signinerror" role="alert">${esc(settingsForm.error)}</p>` : ""}
-          </form>`}
-      ${o.cloud && signedIn ? `<h3>Saving</h3><p>${esc(footNote(o, notes))}</p>` : ""}
+          </form>`, o.cloud && signedIn ? footNote(o, notes) : "")}
     </div>`;
   panel.hidden = false;
+  panel.querySelector(".setbody").scrollTop = scroll;
+  if (focusKey) panel.querySelector(`[data-f="${CSS.escape(focusKey)}"]`)?.focus({ preventScroll: true });
   if (typed.email != null && panel.querySelector("#setEmail")) {
     panel.querySelector("#setEmail").value = typed.email;
     panel.querySelector("#setPassword").value = typed.password || "";
   }
   panel.onclick = (e) => {
     const b = e.target.closest("button");
-    if (!b) return;
+    if (!b || b.disabled) return;
     if (b.classList.contains("close")) return o.onClose();
     if (b.hasAttribute("data-signout")) return o.onSignOut();
+    if (b.dataset.pref) return o.onPref(b.dataset.pref, b.getAttribute("aria-checked") !== "true");
+    if (b.dataset.themePick) return o.onPref("theme", b.dataset.themePick);
   };
+  // Arrow keys move between Auto, Light and Dark, like any set of radio buttons.
+  panel.querySelector(".seg").onkeydown = (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const i = o.themes.findIndex(([id]) => id === o.prefs.theme);
+    const next = o.themes[(i + step + o.themes.length) % o.themes.length][0];
+    o.onPref("theme", next);
+    panel.querySelector(`[data-theme-pick="${next}"]`)?.focus({ preventScroll: true });
+  };
+  // Only the chosen look is a tab stop.
+  panel.querySelectorAll(".seg button").forEach((b) => { b.tabIndex = b.getAttribute("aria-checked") === "true" ? 0 : -1; });
   const form = panel.querySelector("[data-signin]");
   if (form) form.onsubmit = async (e) => {
     e.preventDefault();
